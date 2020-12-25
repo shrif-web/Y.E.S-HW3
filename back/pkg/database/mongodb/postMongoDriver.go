@@ -6,13 +6,15 @@ import (
 	"yes-blog/pkg/database"
 )
 
-type PostMongoDriver struct{
+type PostMongoDriver struct {
 	client mongo.Client
+	db     string
 }
 
-func NewPostMongoDriver() *PostMongoDriver {
+func NewPostMongoDriver(db string) *PostMongoDriver {
 	return &PostMongoDriver{
 		client: GetMongoClient(),
+		db:     db,
 	}
 }
 
@@ -31,4 +33,3 @@ func (p PostMongoDriver) Delete(name string) database.QueryStatus {
 func (p PostMongoDriver) Update(name string) database.QueryStatus {
 	panic("implement me")
 }
-

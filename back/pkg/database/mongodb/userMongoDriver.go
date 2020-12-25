@@ -6,13 +6,15 @@ import (
 	"yes-blog/pkg/database"
 )
 
-type UserMongoDriver struct{
+type UserMongoDriver struct {
 	client mongo.Client
+	db     string
 }
 
-func NewUserMongoDriver() *UserMongoDriver {
+func NewUserMongoDriver(db string) *UserMongoDriver {
 	return &UserMongoDriver{
 		client: GetMongoClient(),
+		db:     db,
 	}
 }
 
