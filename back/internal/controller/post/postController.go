@@ -7,8 +7,16 @@ type PostController struct{
 	dbDriver database.UserDBDriver
 }
 
-func NewPostController(dbDriver database.UserDBDriver) *PostController {
-	return &PostController{
-		dbDriver: dbDriver,
-	}
+var postC *PostController
+
+func init(){
+	postC=&PostController{}
+}
+
+func GetPostController() *PostController {
+	return postC
+}
+
+func SetDBDriver(dbDriver database.UserDBDriver){
+	postC.dbDriver=dbDriver
 }

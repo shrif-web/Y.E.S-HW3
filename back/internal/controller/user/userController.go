@@ -6,8 +6,17 @@ type UserController struct{
 	dbDriver database.UserDBDriver
 }
 
-func NewUserController(dbDriver database.UserDBDriver) *UserController {
-	return &UserController{
-		dbDriver: dbDriver,
-	}
+var userC *UserController
+
+func setDBDriver(dbDriver database.UserDBDriver){
+	userC.dbDriver=dbDriver
+}
+
+func init(){
+	userC=&UserController{}
+}
+
+func GetUserController() *UserController {
+	return userC
+
 }
