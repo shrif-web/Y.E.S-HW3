@@ -9,12 +9,14 @@ import (
 type PostMongoDriver struct {
 	client mongo.Client
 	db     string
+	collection string
 }
 
-func NewPostMongoDriver(db string) *PostMongoDriver {
+func NewPostMongoDriver(db,collection string) *PostMongoDriver {
 	return &PostMongoDriver{
 		client: GetMongoClient(),
 		db:     db,
+		collection: collection,
 	}
 }
 

@@ -7,14 +7,16 @@ import (
 )
 
 type UserMongoDriver struct {
-	client mongo.Client
-	db     string
+	client     mongo.Client
+	db         string
+	collection string
 }
 
-func NewUserMongoDriver(db string) *UserMongoDriver {
+func NewUserMongoDriver(db, collection string) *UserMongoDriver {
 	return &UserMongoDriver{
-		client: GetMongoClient(),
-		db:     db,
+		client:     GetMongoClient(),
+		db:         db,
+		collection: collection,
 	}
 }
 
