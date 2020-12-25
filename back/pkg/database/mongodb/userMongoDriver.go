@@ -6,13 +6,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 	"yes-blog/internal/model/user"
-	"yes-blog/pkg/database"
 	"yes-blog/pkg/database/status"
 )
 
 type UserMongoDriver struct {
-	client     mongo.Client
-	collection mongo.Collection
+	collection *mongo.Collection
 }
 
 func (u UserMongoDriver) Insert(user *user.User) status.QueryStatus {
