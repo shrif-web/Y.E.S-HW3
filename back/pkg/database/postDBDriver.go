@@ -1,11 +1,14 @@
 package database
 
-import "yes-blog/internal/model/post"
+import (
+	"yes-blog/internal/model/post"
+	"yes-blog/pkg/database/status"
+)
 
 
 type PostDBDriver interface {
-	Insert() (*post.Post,QueryStatus)
-	Get(name string) (*post.Post,QueryStatus)
-	Delete(name string) QueryStatus
-	Update(name string)	QueryStatus
+	Insert(post *post.Post) status.QueryStatus
+	Get(name string) (*post.Post,status.QueryStatus)
+	Delete(name string) status.QueryStatus
+	Update(name string)	status.QueryStatus
 }

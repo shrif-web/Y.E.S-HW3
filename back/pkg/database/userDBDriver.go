@@ -1,11 +1,14 @@
 package database
 
-import "yes-blog/internal/model/user"
+import (
+	"yes-blog/internal/model/user"
+	"yes-blog/pkg/database/status"
+)
 
 
 type UserDBDriver interface {
-	Insert() (*user.User,QueryStatus)
-	Get(name string) (*user.User,QueryStatus)
-	Delete(name string) QueryStatus
-	Update(name string)	QueryStatus
+	Insert(user *user.User) status.QueryStatus
+	Get(name string) (*user.User,status.QueryStatus)
+	Delete(name string) status.QueryStatus
+	Update(user *user.User)	status.QueryStatus
 }

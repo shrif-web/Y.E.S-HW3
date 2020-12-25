@@ -12,9 +12,6 @@ const mongoURI = "mongodb://localhost:27017"
 
 var client *mongo.Client
 
-func GetMongoClient() *mongo.Client {
-	return client
-}
 func init() {
 	mongoClient, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 	if err != nil {

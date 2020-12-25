@@ -1,4 +1,4 @@
-package database
+package status
 
 type QueryStatus int
 
