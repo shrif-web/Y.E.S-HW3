@@ -6,6 +6,8 @@ import (
 	"os"
 	"yes-blog/graph"
 	"yes-blog/graph/generated"
+	controller "yes-blog/internal/controller/user"
+	"yes-blog/pkg/database/mongodb"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -18,6 +20,7 @@ func main() {
 	if port == "" {
 		port = defaultPort
 	}
+	controller.GetUserController().SetDBDriver(mongodb.NewUserMongoDriver("yes-blog","users"))
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
 
