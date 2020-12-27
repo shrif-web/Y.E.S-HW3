@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"yes-blog/graph/generated"
 	"yes-blog/graph/model"
+	controller "yes-blog/internal/controller/user"
 )
 
 func (r *mutationResolver) CreatePost(ctx context.Context, input model.NewPost) (*model.Post, error) {
@@ -31,13 +32,7 @@ func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	return []*model.User{{
-		Name:  "ArshiA",
-		Posts: []*model.Post{{
-			Body:  "body",
-			Title: "title",
-				}},
-	}},nil
+	return controller.GetUserController().GetAll()
 	//panic(fmt.Errorf("not implemented"))
 	
 	//return controller.GetUserController().GetAll()

@@ -1,23 +1,28 @@
 package post
 
 import (
+	"strconv"
 	"time"
-	"yes-blog/graph/model"
 )
 
+var uuid = 0
+
 type Post struct {
+	ID        string
 	Title     string
 	Body      string
-	Author    *model.User
-	TimeStamp time.Time
+	AuthorID  string
+	TimeStamp int64
 }
 
-func NewPost(title, body string, author *model.User) *Post {
+func NewPost(title, body string, authorID string) *Post {
+	defer func() { uuid++ }()
 	return &Post{
+		ID:        strconv.Itoa(uuid),
 		Title:     title,
 		Body:      body,
-		Author:    author,
-		TimeStamp: time.Now(),
+		AuthorID:  authorID,
+		TimeStamp: time.Now().Unix(),
 	}
 }
 
