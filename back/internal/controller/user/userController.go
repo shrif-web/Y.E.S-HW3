@@ -4,20 +4,26 @@ import (
 	"yes-blog/pkg/database"
 )
 
-type UserController struct {
+/* 	singleton object for userController
+	this controller task is to perform CRUD for user.User model
+	it takes a dbDriver implementing database.UserDBDriver and
+	speaks to the database with the dbDriver for performing
+	the CRUD
+*/
+type userController struct {
 	dbDriver database.UserDBDriver
 }
 
-var userC *UserController
+var userC *userController
 
-func (c *UserController) SetDBDriver(dbDriver database.UserDBDriver) {
+func (c *userController) SetDBDriver(dbDriver database.UserDBDriver) {
 	userC.dbDriver = dbDriver
 }
 
 func init() {
-	userC = &UserController{}
+	userC = &userController{}
 }
 
-func GetUserController() *UserController {
+func GetUserController() *userController {
 	return userC
 }

@@ -31,21 +31,24 @@ func newUser(name, password string, admin bool) *User {
 	}
 }
 
-func (u *User) AddPost(p *post.Post) {
+func (u *User) AddPost(p *post.Post) *User {
 	u.Posts = append(u.Posts, p)
+	return u
 }
 
-func (u *User) DeletePost(id string){
+func (u *User) DeletePost(id string) *User{
 	for i,p := range u.Posts{
 		if p.ID==id{
 			u.Posts = append(u.Posts[:i], u.Posts[i+1:]...)
-			return
+			return u
 		}
 	}
+	return u
 }
 
-func (u *User) UpdatePassword(password string) {
+func (u *User) UpdatePassword(password string) *User {
 	u.password = password
+	return u
 }
 
 func (u *User) UpdateName(name string) {

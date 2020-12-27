@@ -5,6 +5,8 @@ import (
 	"yes-blog/internal/model/user"
 )
 
+/* some useful functions to convert model objects from our models to graphql models
+*/
 func reformatUsers(all []*user.User) []*model.User {
 	var result []*model.User
 	for _, blogUser := range all {

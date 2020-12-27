@@ -5,7 +5,6 @@ import (
 	"yes-blog/pkg/database/status"
 )
 
-
 type PostDBDriver interface {
 	Insert(post *post.Post) status.QueryStatus
 	Get(name string) (*post.Post,status.QueryStatus)

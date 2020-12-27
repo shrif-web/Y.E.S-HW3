@@ -13,7 +13,10 @@ import (
 type UserMongoDriver struct {
 	collection *mongo.Collection
 }
-
+/*	mongoDB implementation of the UserDBDriver interface
+	here we have a UserMongoDriver which can be initialized with a collaborating collection
+	to perform the CRUD for user.User model on mongo
+*/
 func (u UserMongoDriver) GetAll(start,amount int64) ([]*user.User, status.QueryStatus) {
 	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Microsecond)
 	defer cancel()
@@ -83,6 +86,10 @@ func (u UserMongoDriver) Update(user *user.User) status.QueryStatus {
 
 }
 
+
+/*	here in this new function we take a dbname and collection name and retrieve
+	the corresponding collection for our UserMongoDriver instance to work with
+*/
 func NewUserMongoDriver(db, collection string) *UserMongoDriver {
 	return &UserMongoDriver{
 		collection: client.Database(db).Collection(collection),

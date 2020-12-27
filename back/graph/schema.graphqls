@@ -13,7 +13,7 @@ type Post {
 type Query {
     timeline(start:Int!=0,amount:Int!=5):[Post!]!
     users(start:Int!=0,amount:Int!=5): [User!]!
-    user(name:String):User
+    user(name:String!):User
 }
 input TargetPost {
     title: String!
@@ -33,13 +33,13 @@ input Login {
 }
 
 type Mutation {
-    createPost(input: TargetPost!): Post!
-    deletePost(input: TargetPost!): Post!
-    updatePost(input: TargetPost!): Post!
+#    createPost(input: TargetPost!): Post!
+#    deletePost(input: TargetPost!): Post!
+#    updatePost(input: TargetPost!): Post!
 
-    createUser(input: TargetUser!): String!
-    deleteUser(input: TargetUser!): String!
-    updateUser(input: TargetUser!): String!
+    createUser(target: TargetUser!): User!
+    deleteUser(name: String!): String!
+    updateUser(target: TargetUser!): User!
 
     login(input: Login!): String!
     # we'll talk about this in authentication section

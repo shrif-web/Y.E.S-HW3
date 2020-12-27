@@ -11,28 +11,17 @@ import (
 	controller "yes-blog/internal/controller/user"
 )
 
-func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPost) (*model.Post, error) {
+func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUser) (*model.User, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) DeletePost(ctx context.Context, input model.TargetPost) (*model.Post, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (string, error) {
+	return "", controller.GetUserController().Delete(&name)
 }
 
-func (r *mutationResolver) UpdatePost(ctx context.Context, input model.TargetPost) (*model.Post, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.TargetUser) (string, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) DeleteUser(ctx context.Context, input model.TargetUser) (string, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) UpdateUser(ctx context.Context, input model.TargetUser) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) UpdateUser(ctx context.Context, target model.TargetUser) (*model.User, error) {
+	_ = controller.GetUserController().Update(target)
+	return nil,nil
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
