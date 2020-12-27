@@ -13,6 +13,7 @@ type Post {
 type Query {
     timeline(start:Int!=0,amount:Int!=5):[Post!]!
     users(start:Int!=0,amount: Int!=5): [User!]!
+    user(id:Int,name: Int):User
 }
 input NewPost {
     title: String!
