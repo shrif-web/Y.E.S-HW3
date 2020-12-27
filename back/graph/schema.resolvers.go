@@ -36,7 +36,7 @@ func (r *queryResolver) Users(ctx context.Context, start int, amount int) ([]*mo
 }
 
 func (r *queryResolver) User(ctx context.Context, name *string) (*model.User, error) {
-	return controller.GetUserController().GetUser(name)
+	return controller.GetUserController().Get(name)
 }
 
 // Mutation returns generated.MutationResolver implementation.

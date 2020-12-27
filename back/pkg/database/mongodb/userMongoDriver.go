@@ -62,11 +62,11 @@ func (u UserMongoDriver) Get(name *string) (*user.User, status.QueryStatus) {
 	return &result, status.SUCCESSFUL
 }
 
-func (u UserMongoDriver) Delete(name string) status.QueryStatus {
+func (u UserMongoDriver) Delete(name *string) status.QueryStatus {
 	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Microsecond)
 	defer cancel()
 
-	if _, err := u.collection.DeleteOne(ctx, fmt.Sprintf("{name:%s}", name)); err != nil {
+	if _, err := u.collection.DeleteOne(ctx, fmt.Sprintf("{name:%s}", *name)); err != nil {
 		return status.FAILED
 	}
 	return status.SUCCESSFUL
