@@ -1,40 +1,40 @@
 type User {
-  id: ID!
-  name: String!
-  posts: [Post!]!
+    id: ID!
+    name: String!
+    posts: [Post!]!
 }
 type Post {
-  id: ID!
-  auther: User!
-  timestamp: Int!
-  body: String!
-  title: String!
+    id: ID!
+    auther: User!
+    timestamp: Int!
+    body: String!
+    title: String!
 }
 type Query {
-  posts: [Post!]!
-  users: [User!]!
+    timeline(start:Int!=0,amount:Int!=5):[Post!]!
+    users(start:Int!=0,amount: Int!=5): [User!]!
 }
 input NewPost {
-  title: String!
-  body: String!
+    title: String!
+    body: String!
 }
 input RefreshTokenInput{
-  token: String!
+    token: String!
 }
 input NewUser {
-  username: String!
-  password: String!
+    username: String!
+    password: String!
 }
 
 input Login {
-  username: String!
-  password: String!
+    username: String!
+    password: String!
 }
 
 type Mutation {
-  createPost(input: NewPost!): Post!
-  createUser(input: NewUser!): String!
-  login(input: Login!): String!
-  # we'll talk about this in authentication section
-  refreshToken(input: RefreshTokenInput!): String!
+    createPost(input: NewPost!): Post!
+    createUser(input: NewUser!): String!
+    login(input: Login!): String!
+    # we'll talk about this in authentication section
+    refreshToken(input: RefreshTokenInput!): String!
 }

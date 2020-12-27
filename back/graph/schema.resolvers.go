@@ -27,12 +27,12 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
+func (r *queryResolver) Timeline(ctx context.Context, start int, amount int) ([]*model.Post, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	return controller.GetUserController().GetAll(-1)
+func (r *queryResolver) Users(ctx context.Context, start int, amount int) ([]*model.User, error) {
+	return controller.GetUserController().GetAll(int64(start), int64(amount))
 }
 
 // Mutation returns generated.MutationResolver implementation.

@@ -14,7 +14,7 @@ type UserMongoDriver struct {
 	collection *mongo.Collection
 }
 
-func (u UserMongoDriver) GetAll(amount int64) ([]*user.User, status.QueryStatus) {
+func (u UserMongoDriver) GetAll(start,amount int64) ([]*user.User, status.QueryStatus) {
 	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Microsecond)
 	defer cancel()
 
@@ -24,13 +24,17 @@ func (u UserMongoDriver) GetAll(amount int64) ([]*user.User, status.QueryStatus)
 	} else {
 		defer cur.Close(ctx)
 		for cur.Next(context.Background()) {
+			if start>0{
+				start--
+				continue
+			}
 			if amount >0{
 				break
 			}
 			amount--
-			var user user.User
-			_ = cur.Decode(&user)
-			result = append(result, &user)
+			var blogUser user.User
+			_ = cur.Decode(&blogUser)
+			result = append(result, &blogUser)
 		}
 		return result,status.SUCCESSFUL
 	}

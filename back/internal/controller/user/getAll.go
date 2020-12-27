@@ -7,8 +7,8 @@ import (
 	"yes-blog/pkg/database/status"
 )
 
-func (c *UserController) GetAll(amount int64) ([]*model.User, error) {
-	all, err := c.dbDriver.GetAll(amount)
+func (c *UserController) GetAll(start,amount int64) ([]*model.User, error) {
+	all, err := c.dbDriver.GetAll(start,amount)
 	if err == status.FAILED {
 		return nil, errors.New("couldn't fetch the users required")
 	}
