@@ -11,4 +11,5 @@ type UserDBDriver interface {
 	Get(name string) (*user.User,status.QueryStatus)
 	Delete(name string) status.QueryStatus
 	Update(user *user.User)	status.QueryStatus
+	GetAll(amount int64) ([]*user.User,status.QueryStatus)
 }

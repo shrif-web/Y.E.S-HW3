@@ -12,7 +12,7 @@ type Post {
 }
 type Query {
   posts: [Post!]!
-  Users: [User!]!
+  users: [User!]!
 }
 input NewPost {
   title: String!
