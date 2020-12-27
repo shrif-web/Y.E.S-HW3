@@ -7,16 +7,6 @@ type Login struct {
 	Password string `json:"password"`
 }
 
-type NewPost struct {
-	Title string `json:"title"`
-	Body  string `json:"body"`
-}
-
-type NewUser struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
 type Post struct {
 	ID        string `json:"id"`
 	Auther    *User  `json:"auther"`
@@ -27,6 +17,16 @@ type Post struct {
 
 type RefreshTokenInput struct {
 	Token string `json:"token"`
+}
+
+type TargetPost struct {
+	Title string `json:"title"`
+	Body  string `json:"body"`
+}
+
+type TargetUser struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type User struct {
