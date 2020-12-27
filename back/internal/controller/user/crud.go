@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"yes-blog/graph/model"
+	"yes-blog/internal/model/user"
 	"yes-blog/pkg/database/status"
 )
 
@@ -26,6 +27,14 @@ func (c *UserController) Get(name *string) (*model.User, error) {
 func (c *UserController) Delete(name *string) error{
 	if stat:= c.dbDriver.Delete(name); stat==status.FAILED{
 		return errors.New("couldn't delete the user")
+	}else{
+		return nil
+	}
+}
+
+func (c *UserController)update(blogUser *user.User) error{
+	if stat := c.dbDriver.Update(blogUser); stat==status.FAILED{
+		return errors.New("couldn't update the user")
 	}else{
 		return nil
 	}
