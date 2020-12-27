@@ -32,10 +32,7 @@ func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	return controller.GetUserController().GetAll()
-	//panic(fmt.Errorf("not implemented"))
-	
-	//return controller.GetUserController().GetAll()
+	return controller.GetUserController().GetAll(-1)
 }
 
 // Mutation returns generated.MutationResolver implementation.
