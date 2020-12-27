@@ -35,6 +35,10 @@ func (r *queryResolver) Users(ctx context.Context, start int, amount int) ([]*mo
 	return controller.GetUserController().GetAll(int64(start), int64(amount))
 }
 
+func (r *queryResolver) User(ctx context.Context, name *string) (*model.User, error) {
+	return controller.GetUserController().GetUser(name)
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

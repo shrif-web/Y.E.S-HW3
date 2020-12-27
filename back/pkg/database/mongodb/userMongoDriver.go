@@ -51,12 +51,12 @@ func (u UserMongoDriver) Insert(user *user.User) status.QueryStatus {
 
 }
 
-func (u UserMongoDriver) Get(name string) (*user.User, status.QueryStatus) {
+func (u UserMongoDriver) Get(name *string) (*user.User, status.QueryStatus) {
 	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Microsecond)
 	defer cancel()
 
 	var result user.User
-	if err := u.collection.FindOne(ctx, fmt.Sprintf("{name:%s}", name)).Decode(&result); err != nil {
+	if err := u.collection.FindOne(ctx, fmt.Sprintf("{name:%s}", *name)).Decode(&result); err != nil {
 		return &result, status.FAILED
 	}
 	return &result, status.SUCCESSFUL
