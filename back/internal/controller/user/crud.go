@@ -6,6 +6,7 @@ import (
 	"yes-blog/internal/model/user"
 	"yes-blog/pkg/database/status"
 )
+
 /*	the actual implementation of CRUD for userController is here
 	we also added getAll method due to our certain needs
 */
@@ -44,5 +45,15 @@ func (c *userController) Update(target model.TargetUser) error {
 		return errors.New("couldn't update the user")
 	} else {
 		return nil
+	}
+}
+
+func (c *userController) Create(name, password string) (*user.User,error) {
+	newUser := user.NewUser(name, password)
+
+	if stat := c.dbDriver.Insert(newUser); stat == status.FAILED {
+		return nil,errors.New("couldn't update the user")
+	} else {
+		return newUser,nil
 	}
 }

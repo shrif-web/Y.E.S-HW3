@@ -28,3 +28,7 @@ func init() {
 	client = mongoClient
 
 }
+
+func GetClient() *mongo.Client {
+	return client
+}

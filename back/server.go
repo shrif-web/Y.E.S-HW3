@@ -20,6 +20,9 @@ func main() {
 	if port == "" {
 		port = defaultPort
 	}
+	//_insertResult, _err := mongodb.GetClient().Database("yes-blog").Collection("users").InsertOne(context.TODO(), user.NewUser("ArshiA", "aliali"))
+	//_insertResult=_insertResult
+	//_err=_err
 
 	//setting a mongodb.UserMongoDriver for UserDBDriver filed of our controller.GetUserController instance
 	controller.GetUserController().SetDBDriver(mongodb.NewUserMongoDriver("yes-blog","users"))

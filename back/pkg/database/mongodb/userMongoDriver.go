@@ -44,7 +44,7 @@ func (u UserMongoDriver) GetAll(start,amount int64) ([]*user.User, status.QueryS
 }
 
 func (u UserMongoDriver) Insert(user *user.User) status.QueryStatus {
-	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Microsecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
 
 	if _, err := u.collection.InsertOne(ctx, user); err != nil {

@@ -6,10 +6,10 @@ import (
 )
 var uuid=0
 type User struct {
-	ID		 string
+	ID       string
 	Name     string
-	password string
-	admin    bool
+	Password string
+	Admin    bool
 	Posts    []*post.Post
 }
 
@@ -24,10 +24,10 @@ func NewAdmin(name, password string) *User {
 func newUser(name, password string, admin bool) *User {
 	defer func(){uuid++}()
 	return &User{
-		ID:	strconv.Itoa(uuid),
+		ID:       strconv.Itoa(uuid),
 		Name:     name,
-		password: password,
-		admin:    admin,
+		Password: password,
+		Admin:    admin,
 	}
 }
 
@@ -47,7 +47,7 @@ func (u *User) DeletePost(id string) *User{
 }
 
 func (u *User) UpdatePassword(password string) *User {
-	u.password = password
+	u.Password = password
 	return u
 }
 
@@ -56,9 +56,9 @@ func (u *User) UpdateName(name string) {
 }
 
 func (u *User) Upgrade() {
-	u.admin = true
+	u.Admin = true
 }
 
 func (u *User) degrade() {
-	u.admin = false
+	u.Admin = false
 }
