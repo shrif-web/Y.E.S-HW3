@@ -37,11 +37,13 @@ func (r *queryResolver) Timeline(ctx context.Context, start int, amount int) ([]
 }
 
 func (r *queryResolver) Users(ctx context.Context, start int, amount int) ([]*model.User, error) {
-	return controller.GetUserController().GetAll(int64(start), int64(amount))
+	all, err := controller.GetUserController().GetAll(int64(start), int64(amount))
+	return reformatUsers(all),err
 }
 
 func (r *queryResolver) User(ctx context.Context, name *string) (*model.User, error) {
-	return controller.GetUserController().Get(name)
+	blogUser, err := controller.GetUserController().Get(name)
+	return reformatUser(blogUser),err
 }
 
 // Mutation returns generated.MutationResolver implementation.

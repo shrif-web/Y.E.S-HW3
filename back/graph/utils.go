@@ -1,4 +1,4 @@
-package controller
+package graph
 
 import (
 	"yes-blog/graph/model"

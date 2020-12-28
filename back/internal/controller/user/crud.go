@@ -13,19 +13,19 @@ import (
 	we use status.FAILED to return a failed status and
 	status.SUCCESSFUL to return a successful status (obviously)
 */
-func (c *userController) GetAll(start, amount int64) ([]*model.User, error) {
+func (c *userController) GetAll(start, amount int64) ([]*user.User, error) {
 	all, err := c.dbDriver.GetAll(start, amount)
 	if err == status.FAILED {
 		return nil, errors.New("couldn't fetch the users required")
 	}
-	return reformatUsers(all), nil
+	return all, nil
 }
 
-func (c *userController) Get(name *string) (*model.User, error) {
+func (c *userController) Get(name *string) (*user.User, error) {
 	if blogUser, stat := c.dbDriver.Get(name); stat == status.FAILED {
 		return nil, errors.New("couldn't find the requested user")
 	} else {
-		return reformatUser(blogUser), nil
+		return blogUser, nil
 	}
 }
 
