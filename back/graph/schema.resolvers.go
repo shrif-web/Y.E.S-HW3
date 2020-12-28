@@ -21,7 +21,7 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (string,
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, target model.TargetUser) (*model.User, error) {
 	_ = controller.GetUserController().Update(target)
-	return nil,nil
+	return nil, nil
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
@@ -38,12 +38,12 @@ func (r *queryResolver) Timeline(ctx context.Context, start int, amount int) ([]
 
 func (r *queryResolver) Users(ctx context.Context, start int, amount int) ([]*model.User, error) {
 	all, err := controller.GetUserController().GetAll(int64(start), int64(amount))
-	return reformatUsers(all),err
+	return reformatUsers(all), err
 }
 
-func (r *queryResolver) User(ctx context.Context, name *string) (*model.User, error) {
-	blogUser, err := controller.GetUserController().Get(name)
-	return reformatUser(blogUser),err
+func (r *queryResolver) User(ctx context.Context, name string) (*model.User, error) {
+	blogUser, err := controller.GetUserController().Get(&name)
+	return reformatUser(blogUser), err
 }
 
 // Mutation returns generated.MutationResolver implementation.

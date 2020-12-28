@@ -61,7 +61,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Timeline func(childComplexity int, start int, amount int) int
-		User     func(childComplexity int, name *string) int
+		User     func(childComplexity int, name string) int
 		Users    func(childComplexity int, start int, amount int) int
 	}
 
@@ -82,7 +82,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Timeline(ctx context.Context, start int, amount int) ([]*model.Post, error)
 	Users(ctx context.Context, start int, amount int) ([]*model.User, error)
-	User(ctx context.Context, name *string) (*model.User, error)
+	User(ctx context.Context, name string) (*model.User, error)
 }
 
 type executableSchema struct {
@@ -217,7 +217,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.User(childComplexity, args["name"].(*string)), true
+		return e.complexity.Query.User(childComplexity, args["name"].(string)), true
 
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
@@ -331,7 +331,7 @@ type Post {
 type Query {
     timeline(start:Int!=0,amount:Int!=5):[Post!]!
     users(start:Int!=0,amount:Int!=5): [User!]!
-    user(name:String):User
+    user(name:String!):User
 }
 input TargetPost {
     title: String!
@@ -488,10 +488,10 @@ func (ec *executionContext) field_Query_timeline_args(ctx context.Context, rawAr
 func (ec *executionContext) field_Query_user_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
+	var arg0 string
 	if tmp, ok := rawArgs["name"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1056,7 +1056,7 @@ func (ec *executionContext) _Query_user(ctx context.Context, field graphql.Colle
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().User(rctx, args["name"].(*string))
+		return ec.resolvers.Query().User(rctx, args["name"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
