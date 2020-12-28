@@ -18,7 +18,7 @@ type UserMongoDriver struct {
 	to perform the CRUD for user.User model on mongo
 */
 func (u UserMongoDriver) GetAll(start,amount int64) ([]*user.User, status.QueryStatus) {
-	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Microsecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
 
 	var result []*user.User
@@ -55,7 +55,7 @@ func (u UserMongoDriver) Insert(user *user.User) status.QueryStatus {
 }
 
 func (u UserMongoDriver) Get(name *string) (*user.User, status.QueryStatus) {
-	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Microsecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
 
 	var result user.User
@@ -66,7 +66,7 @@ func (u UserMongoDriver) Get(name *string) (*user.User, status.QueryStatus) {
 }
 
 func (u UserMongoDriver) Delete(name *string) status.QueryStatus {
-	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Microsecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
 
 	if _, err := u.collection.DeleteOne(ctx, fmt.Sprintf("{name:%s}", *name)); err != nil {
@@ -76,7 +76,7 @@ func (u UserMongoDriver) Delete(name *string) status.QueryStatus {
 }
 
 func (u UserMongoDriver) Update(user *user.User) status.QueryStatus {
-	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Microsecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
 
 	if _, err := u.collection.UpdateOne(ctx, fmt.Sprintf("{name:%s}", user.Name), user); err != nil {

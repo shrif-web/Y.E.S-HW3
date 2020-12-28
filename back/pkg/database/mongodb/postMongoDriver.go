@@ -13,7 +13,7 @@ type PostMongoDriver struct {
 }
 
 func (p PostMongoDriver) Insert(post *post.Post) status.QueryStatus {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Microsecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Millisecond)
 	defer cancel()
 
 	if _, err := p.collection.InsertOne(ctx, post); err != nil {
