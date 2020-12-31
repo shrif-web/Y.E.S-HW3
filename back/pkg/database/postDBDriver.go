@@ -2,14 +2,13 @@ package database
 
 import (
 	"yes-blog/internal/model/post"
-	"yes-blog/pkg/database/status"
 )
 
 type PostDBDriver interface {
-	Insert(post *post.Post) status.QueryStatus
-	Get(postID string) (*post.Post, status.QueryStatus)
-	GetAll(startID, amount uint64) ([]*post.Post, status.QueryStatus)
-	GetByUser(userID string) ([]*post.Post, status.QueryStatus)
-	Delete(postID string) status.QueryStatus
-	Update(post *post.Post) (status.QueryStatus, error)
+	Insert(post *post.Post) error
+	Get(postID string) (*post.Post, error)
+	GetAll(startID string, amount int) ([]*post.Post, error)
+	GetByUser(userID string) ([]*post.Post, error)
+	Delete(postID string, authorName string) error
+	Update(post *post.Post) error
 }

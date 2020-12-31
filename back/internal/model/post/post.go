@@ -2,35 +2,36 @@ package post
 
 import (
 	"errors"
+	"sort"
 	"strconv"
 	"time"
 	"yes-blog/internal"
 )
 
-const ConstructorErrMsg string = "POST constructor argument input exception"
+const ConstructorErrMsg string = "both title & content fields are empty"
 const ArgErrMsg string = "POST empty exception"
 
-var uuid = 0
+var upid = 0
 
 type Post struct {
-	id        string
-	title     string
-	body      string
-	authorID  string
-	timeStamp int64
+	ID        string `json:"id" bson:"id"`
+	Title     string `json:"title" bson:"title"`
+	Body      string `json:"body" bson:"body"`
+	Author    string `json:"author" bson:"author"`
+	TimeStamp int64  `json:"timeStamp" bson:"timeStamp"`
 }
 
 func NewPost(title, body, authorID string) (*Post, error) {
 	if internal.IsAllEmpty(title, body) || internal.IsEmpty(authorID) {
 		return nil, errors.New(ConstructorErrMsg)
 	}
-	defer func() { uuid++ }()
+	defer func() { upid++ }()
 	return &Post{
-		id:        strconv.Itoa(uuid),
-		title:     title,
-		body:      body,
-		authorID:  authorID,
-		timeStamp: time.Now().Unix(),
+		ID:        strconv.Itoa(upid),
+		Title:     title,
+		Body:      body,
+		Author:    authorID,
+		TimeStamp: time.Now().Unix(),
 	}, nil
 }
 
@@ -39,47 +40,45 @@ func NewRawPost(id, title, body, authorID string, timeStamp int64) (*Post, error
 		return nil, errors.New(ConstructorErrMsg)
 	}
 	return &Post{
-		id:        id,
-		title:     title,
-		body:      body,
-		authorID:  authorID,
-		timeStamp: timeStamp,
+		ID:        id,
+		Title:     title,
+		Body:      body,
+		Author:    authorID,
+		TimeStamp: timeStamp,
 	}, nil
 }
 
-func (p *Post) GetID() string {
-	return p.id
+func Sort(arr []*Post) {
+	sort.Slice(arr, func(i, j int) bool {
+		return arr[i].TimeStamp >= arr[j].TimeStamp
+	})
 }
 
-func (p *Post) GetTitle() string {
-	return p.title
-}
-func (p *Post) GetBody() string {
-	return p.body
-}
-func (p *Post) GetAuthorID() string {
-	return p.authorID
-}
-func (p *Post) GetTimeStamp() int64 {
-	return p.timeStamp
+func Find(arr []*Post, id string) (*Post, int,  bool) {
+	for i, p := range arr {
+		if p.ID == id {
+			return p, i, true
+		}
+	}
+	return nil, -1, false
 }
 
 func (p *Post) setTitle(title string) error {
-	if internal.IsAllEmpty(p.body, title) {
+	if internal.IsAllEmpty(p.Body, title) {
 		return errors.New(ArgErrMsg)
 	}
-	p.title = title
+	p.Title = title
 	return nil
 }
 
 func (p *Post) SetBody(body string) error {
-	if internal.IsAllEmpty(body, p.title) {
+	if internal.IsAllEmpty(body, p.Title) {
 		return errors.New(ArgErrMsg)
 	}
-	p.body = body
+	p.Body = body
 	return nil
 }
 
 func (p *Post) UpdateTimeStamp() {
-	p.timeStamp = time.Now().Unix()
+	p.TimeStamp = time.Now().Unix()
 }

@@ -4,7 +4,9 @@ import (
 	"strconv"
 	"yes-blog/internal/model/post"
 )
-var uuid=0
+
+var uuid = 0
+
 type User struct {
 	ID       string
 	Name     string
@@ -22,12 +24,13 @@ func NewAdmin(name, password string) *User {
 }
 
 func newUser(name, password string, admin bool) *User {
-	defer func(){uuid++}()
+	defer func() { uuid++ }()
 	return &User{
 		ID:       strconv.Itoa(uuid),
 		Name:     name,
 		Password: password,
 		Admin:    admin,
+		Posts:    []*post.Post{},
 	}
 }
 
@@ -36,9 +39,9 @@ func (u *User) AddPost(p *post.Post) *User {
 	return u
 }
 
-func (u *User) DeletePost(id string) *User{
-	for i,p := range u.Posts{
-		if p.GetID()==id{
+func (u *User) DeletePost(id string) *User {
+	for i, p := range u.Posts {
+		if p.ID == id {
 			u.Posts = append(u.Posts[:i], u.Posts[i+1:]...)
 			return u
 		}

@@ -13,16 +13,18 @@ type Post {
 }
 
 type Query {
-    posts(start:Int!=0,amount:Int!=5):[Post!]!
-    post(id:String!):Post!
-    postsByUser(userMail:String!):[Post!]!
-    users(start:Int!=0,amount:Int!=5): [User!]!
     user(name:String!):User
+    users(start:Int!=0,amount:Int!=5): [User!]!
+
+    post(id:String!):Post!
+    posts(start:Int!=0,amount:Int!=5):[Post!]!
+    postsOfUser(userName:String!):[Post!]!
 }
 
 input TargetPost {
     title: String!
     content: String!
+    authorName: String!
 }
 
 input RefreshTokenInput{
@@ -45,15 +47,14 @@ input Login {
 }
 
 type Mutation {
-    createPost(input: TargetPost!): Post!
-    deletePost(id: String!): String!
-    updatePost(input: TargetPost!, id: String!): Post!
-
     createUser(target: TargetUser!): User!
     deleteUser(name: String!): String!
     updateUser(target: String!, toBe: ToBeUser!): String!
 
     login(input: Login!): String!
-    # we'll talk about this in authentication section
     refreshToken(input: RefreshTokenInput!): String!
+
+    createPost(input: TargetPost!): Post!
+    deletePost(targetID: String!, authorName: String!): String!
+    updatePost(targetID: String!, input: TargetPost!): String!
 }

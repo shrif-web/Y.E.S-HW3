@@ -20,8 +20,9 @@ type RefreshTokenInput struct {
 }
 
 type TargetPost struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
+	Title      string `json:"title"`
+	Content    string `json:"content"`
+	AuthorName string `json:"authorName"`
 }
 
 type TargetUser struct {

@@ -6,42 +6,31 @@ package graph
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"yes-blog/graph/generated"
 	"yes-blog/graph/model"
-	controller "yes-blog/internal/controller/user"
+	postController "yes-blog/internal/controller/post"
+	userController "yes-blog/internal/controller/user"
 )
 
-func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPost) (*model.Post, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) DeletePost(ctx context.Context, input model.TargetPost) (*model.Post, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) UpdatePost(ctx context.Context, input model.TargetPost) (*model.Post, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
 func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUser) (*model.User, error) {
-	if newUser, err := controller.GetUserController().Create(target.Username, target.Password);
-	err!=nil{
-		return nil,err
-	}else {
+	if newUser, err := userController.GetUserController().Create(target.Username, target.Password); err != nil {
+		return nil, err
+	} else {
 		return reformatUser(newUser), nil
 	}
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (string, error) {
-	return name, controller.GetUserController().Delete(&name)
+	return name, userController.GetUserController().Delete(&name)
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, target string, toBe model.ToBeUser) (string, error) {
-	res:=target
-	if toBe.Username!=nil{
-		res=*toBe.Username
+	res := target
+	if toBe.Username != nil {
+		res = *toBe.Username
 	}
-	return res, controller.GetUserController().Update(target, toBe)
+	return res, userController.GetUserController().Update(target, toBe)
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
@@ -52,18 +41,74 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Posts(ctx context.Context, start int, amount int) ([]*model.Post, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPost) (*model.Post, error) {
+	newPost, err := postController.GetPostController().WritePost(input.Title, input.Content, input.AuthorName)
+	if err != nil {
+		return nil, err
+	}
+	return reformatPost(newPost, &model.User{
+		ID:    "",
+		Name:  input.AuthorName,
+		Posts: nil,
+	}), nil
 }
 
-func (r *queryResolver) Users(ctx context.Context, start int, amount int) ([]*model.User, error) {
-	all, err := controller.GetUserController().GetAll(int64(start), int64(amount))
-	return reformatUsers(all), err
+func (r *mutationResolver) DeletePost(ctx context.Context, targetID string, authorName string) (string, error) {
+	message, err := postController.GetPostController().DeletePost(targetID, authorName)
+	if err != nil {
+		return fmt.Sprint(err), err
+	}
+	return message, nil
+}
+
+func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, input model.TargetPost) (string, error) {
+	message, err := postController.GetPostController().EditPost(targetID, input.Title, input.Content, input.AuthorName)
+	if err != nil {
+		return fmt.Sprint(err), err
+	}
+	return message, nil
 }
 
 func (r *queryResolver) User(ctx context.Context, name string) (*model.User, error) {
-	blogUser, err := controller.GetUserController().Get(&name)
+	blogUser, err := userController.GetUserController().Get(&name)
 	return reformatUser(blogUser), err
+}
+
+func (r *queryResolver) Users(ctx context.Context, start int, amount int) ([]*model.User, error) {
+	all, err := userController.GetUserController().GetAll(int64(start), int64(amount))
+	return reformatUsers(all), err
+}
+
+func (r *queryResolver) Post(ctx context.Context, id string) (*model.Post, error) {
+	newPost, err := postController.GetPostController().GetPost(id)
+	if err != nil {
+		return nil, err
+	}
+	return reformatPost(newPost, &model.User{
+		ID:    "",
+		Name:  newPost.Author,
+		Posts: nil,
+	}), nil
+}
+
+func (r *queryResolver) Posts(ctx context.Context, start int, amount int) ([]*model.Post, error) {
+	posts, err := postController.GetPostController().GetAllPosts(strconv.Itoa(start), amount)
+	if err != nil {
+		return nil, err
+	}
+	return reformatAllPosts(posts), nil
+}
+
+func (r *queryResolver) PostsOfUser(ctx context.Context, userName string) ([]*model.Post, error) {
+	posts, err := postController.GetPostController().GetPostByUser(userName)
+	if err != nil {
+		return nil, err
+	}
+	return reformatPosts(posts, &model.User{
+		ID:    "",
+		Name:  userName,
+		Posts: nil,
+	}), nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
@@ -74,13 +119,3 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *queryResolver) Timeline(ctx context.Context, start int, amount int) ([]*model.Post, error) {
-	panic(fmt.Errorf("not implemented"))
-}
