@@ -50,7 +50,7 @@ func (c *userController) Update(target model.TargetUser) error {
 
 func (c *userController) Create(name, password string) (*user.User,error) {
 	newUser := user.NewUser(name, password)
-
+	//todo hash the password
 	if stat := c.dbDriver.Insert(newUser); stat == status.FAILED {
 		return nil,errors.New("couldn't update the user")
 	} else {
