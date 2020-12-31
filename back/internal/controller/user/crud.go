@@ -56,8 +56,11 @@ func (c *userController) Update(target string, toBe model.ToBeUser) error {
 func (c *userController) Create(name, password string) (*user.User, error) {
 	newUser := user.NewUser(name, password)
 	//todo hash the password
+	if _,stat := c.dbDriver.Get(&name); stat == status.SUCCESSFUL {
+		return nil, errors.New("user with this name already exist")
+	}
 	if stat := c.dbDriver.Insert(newUser); stat == status.FAILED {
-		return nil, errors.New("couldn't update the user")
+		return nil, errors.New("couldn't create user")
 	} else {
 		return newUser, nil
 	}
