@@ -43,6 +43,7 @@ func (u UserMongoDriver) GetAll(start,amount int64) ([]*user.User, status.QueryS
 }
 
 func (u UserMongoDriver) Insert(user *user.User) status.QueryStatus {
+	//todo check for uniqness
 	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
 
@@ -74,11 +75,18 @@ func (u UserMongoDriver) Delete(name *string) status.QueryStatus {
 	return status.SUCCESSFUL
 }
 
-func (u UserMongoDriver) Update(user *user.User) status.QueryStatus {
-	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+func (u UserMongoDriver) Update(target string, user *user.User) status.QueryStatus {
+	ctx, cancel := context.WithTimeout(context.Background(), 500000*time.Millisecond)
 	defer cancel()
-
-	if _, err := u.collection.UpdateOne(ctx,bson.M{"name":user.Name}, user); err != nil {
+	query:=bson.M{}
+	update:=bson.M{"$set":query}
+	if user.Name != ""{
+		query["name"]=user.Name
+	}
+	if user.Password != ""{
+		query["password"]=user.Password
+	}
+	if _, err := u.collection.UpdateOne(ctx,bson.M{"name":target}, update); err != nil {
 		return status.FAILED
 	}
 	return status.SUCCESSFUL

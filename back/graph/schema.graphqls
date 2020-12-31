@@ -27,6 +27,11 @@ input TargetUser {
     password: String!
 }
 
+input ToBeUser {
+    username: String
+    password: String
+}
+
 input Login {
     username: String!
     password: String!
@@ -39,7 +44,7 @@ type Mutation {
 
     createUser(target: TargetUser!): User!
     deleteUser(name: String!): String!
-    updateUser(target: TargetUser!): User!
+    updateUser(target: String!, toBe: ToBeUser!): String!
 
     login(input: Login!): String!
     # we'll talk about this in authentication section

@@ -20,9 +20,12 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (string,
 	return name, controller.GetUserController().Delete(&name)
 }
 
-func (r *mutationResolver) UpdateUser(ctx context.Context, target model.TargetUser) (*model.User, error) {
-	return &model.User{Name: target.Username}, controller.GetUserController().Update(target)
-
+func (r *mutationResolver) UpdateUser(ctx context.Context, target string, toBe model.ToBeUser) (string, error) {
+	res:=target
+	if toBe.Username!=nil{
+		res=*toBe.Username
+	}
+	return res, controller.GetUserController().Update(target, toBe)
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {

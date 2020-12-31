@@ -48,7 +48,7 @@ type ComplexityRoot struct {
 		DeleteUser   func(childComplexity int, name string) int
 		Login        func(childComplexity int, input model.Login) int
 		RefreshToken func(childComplexity int, input model.RefreshTokenInput) int
-		UpdateUser   func(childComplexity int, target model.TargetUser) int
+		UpdateUser   func(childComplexity int, target string, toBe model.ToBeUser) int
 	}
 
 	Post struct {
@@ -75,7 +75,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateUser(ctx context.Context, target model.TargetUser) (*model.User, error)
 	DeleteUser(ctx context.Context, name string) (string, error)
-	UpdateUser(ctx context.Context, target model.TargetUser) (*model.User, error)
+	UpdateUser(ctx context.Context, target string, toBe model.ToBeUser) (string, error)
 	Login(ctx context.Context, input model.Login) (string, error)
 	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error)
 }
@@ -158,7 +158,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateUser(childComplexity, args["target"].(model.TargetUser)), true
+		return e.complexity.Mutation.UpdateUser(childComplexity, args["target"].(string), args["toBe"].(model.ToBeUser)), true
 
 	case "Post.auther":
 		if e.complexity.Post.Auther == nil {
@@ -345,6 +345,11 @@ input TargetUser {
     password: String!
 }
 
+input ToBeUser {
+    username: String
+    password: String
+}
+
 input Login {
     username: String!
     password: String!
@@ -357,7 +362,7 @@ type Mutation {
 
     createUser(target: TargetUser!): User!
     deleteUser(name: String!): String!
-    updateUser(target: TargetUser!): User!
+    updateUser(target: String!, toBe: ToBeUser!): String!
 
     login(input: Login!): String!
     # we'll talk about this in authentication section
@@ -434,15 +439,24 @@ func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context
 func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.TargetUser
+	var arg0 string
 	if tmp, ok := rawArgs["target"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("target"))
-		arg0, err = ec.unmarshalNTargetUser2yesᚑblogᚋgraphᚋmodelᚐTargetUser(ctx, tmp)
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["target"] = arg0
+	var arg1 model.ToBeUser
+	if tmp, ok := rawArgs["toBe"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("toBe"))
+		arg1, err = ec.unmarshalNToBeUser2yesᚑblogᚋgraphᚋmodelᚐToBeUser(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["toBe"] = arg1
 	return args, nil
 }
 
@@ -671,7 +685,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateUser(rctx, args["target"].(model.TargetUser))
+		return ec.resolvers.Mutation().UpdateUser(rctx, args["target"].(string), args["toBe"].(model.ToBeUser))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -683,9 +697,9 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNUser2ᚖyesᚑblogᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2437,6 +2451,34 @@ func (ec *executionContext) unmarshalInputTargetUser(ctx context.Context, obj in
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputToBeUser(ctx context.Context, obj interface{}) (model.ToBeUser, error) {
+	var it model.ToBeUser
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "username":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+			it.Username, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "password":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			it.Password, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -3013,6 +3055,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 
 func (ec *executionContext) unmarshalNTargetUser2yesᚑblogᚋgraphᚋmodelᚐTargetUser(ctx context.Context, v interface{}) (model.TargetUser, error) {
 	res, err := ec.unmarshalInputTargetUser(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNToBeUser2yesᚑblogᚋgraphᚋmodelᚐToBeUser(ctx context.Context, v interface{}) (model.ToBeUser, error) {
+	res, err := ec.unmarshalInputToBeUser(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
