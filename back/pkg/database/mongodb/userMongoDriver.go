@@ -69,7 +69,7 @@ func (u UserMongoDriver) Delete(name *string) status.QueryStatus {
 	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
 
-	if _, err := u.collection.DeleteOne(ctx, fmt.Sprintf("{name:%s}", *name)); err != nil {
+	if _, err := u.collection.DeleteOne(ctx, bson.M{"name":name}); err != nil {
 		return status.FAILED
 	}
 	return status.SUCCESSFUL
