@@ -43,7 +43,6 @@ func (u UserMongoDriver) GetAll(start,amount int64) ([]*user.User, status.QueryS
 }
 
 func (u UserMongoDriver) Insert(user *user.User) status.QueryStatus {
-	//todo check for uniqness
 	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
 
