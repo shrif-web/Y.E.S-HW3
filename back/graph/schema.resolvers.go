@@ -13,7 +13,7 @@ import (
 
 func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUser) (*model.User, error) {
 	newUser, err := controller.GetUserController().Create(target.Username, target.Password)
-	return reformatUser(newUser),err
+	return reformatUser(newUser), err
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (string, error) {
@@ -21,8 +21,8 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (string,
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, target model.TargetUser) (*model.User, error) {
+	return &model.User{Name: target.Username}, controller.GetUserController().Update(target)
 
-	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
