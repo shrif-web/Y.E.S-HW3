@@ -6,7 +6,7 @@ import (
 	"os"
 	"yes-blog/graph"
 	"yes-blog/graph/generated"
-	controller "yes-blog/internal/controller/user"
+	"yes-blog/internal/controller/user"
 	"yes-blog/pkg/database/mongodb"
 
 	"github.com/99designs/gqlgen/graphql/handler"
