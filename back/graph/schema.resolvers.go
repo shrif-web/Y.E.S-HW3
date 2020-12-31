@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"yes-blog/graph/generated"
 	"yes-blog/graph/model"
-	controller "yes-blog/internal/controller/user"
+	"yes-blog/internal/controller/user"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUser) (*model.User, error) {
