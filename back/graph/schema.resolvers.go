@@ -11,9 +11,21 @@ import (
 	controller "yes-blog/internal/controller/user"
 )
 
+func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPost) (*model.Post, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) DeletePost(ctx context.Context, input model.TargetPost) (*model.Post, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) UpdatePost(ctx context.Context, input model.TargetPost) (*model.Post, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUser) (*model.User, error) {
 	newUser, err := controller.GetUserController().Create(target.Username, target.Password)
-	return reformatUser(newUser),err
+	return reformatUser(newUser), err
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (string, error) {
@@ -32,7 +44,7 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Timeline(ctx context.Context, start int, amount int) ([]*model.Post, error) {
+func (r *queryResolver) Posts(ctx context.Context, start int, amount int) ([]*model.Post, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -54,3 +66,13 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *queryResolver) Timeline(ctx context.Context, start int, amount int) ([]*model.Post, error) {
+	panic(fmt.Errorf("not implemented"))
+}

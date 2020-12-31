@@ -3,25 +3,32 @@ type User {
     name: String!
     posts: [Post!]!
 }
+
 type Post {
     id: ID!
-    auther: User!
-    timestamp: Int!
-    body: String!
+    created_by: User!
+    created_at: Int!
+    content: String!
     title: String!
 }
+
 type Query {
-    timeline(start:Int!=0,amount:Int!=5):[Post!]!
+    posts(start:Int!=0,amount:Int!=5):[Post!]!
+    post(id:String!):Post!
+    postsByUser(userMail:String!):[Post!]!
     users(start:Int!=0,amount:Int!=5): [User!]!
     user(name:String!):User
 }
+
 input TargetPost {
     title: String!
-    body: String!
+    content: String!
 }
+
 input RefreshTokenInput{
     token: String!
 }
+
 input TargetUser {
     username: String!
     password: String!
@@ -33,9 +40,9 @@ input Login {
 }
 
 type Mutation {
-#    createPost(input: TargetPost!): Post!
-#    deletePost(input: TargetPost!): Post!
-#    updatePost(input: TargetPost!): Post!
+    createPost(input: TargetPost!): Post!
+    deletePost(id: String!): String!
+    updatePost(input: TargetPost!, id: String!): Post!
 
     createUser(target: TargetUser!): User!
     deleteUser(name: String!): String!

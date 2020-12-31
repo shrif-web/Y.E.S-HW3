@@ -9,9 +9,9 @@ type Login struct {
 
 type Post struct {
 	ID        string `json:"id"`
-	Auther    *User  `json:"auther"`
-	Timestamp int    `json:"timestamp"`
-	Body      string `json:"body"`
+	CreatedBy *User  `json:"created_by"`
+	CreatedAt int    `json:"created_at"`
+	Content   string `json:"content"`
 	Title     string `json:"title"`
 }
 
@@ -20,8 +20,8 @@ type RefreshTokenInput struct {
 }
 
 type TargetPost struct {
-	Title string `json:"title"`
-	Body  string `json:"body"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
 }
 
 type TargetUser struct {

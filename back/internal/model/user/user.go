@@ -38,7 +38,7 @@ func (u *User) AddPost(p *post.Post) *User {
 
 func (u *User) DeletePost(id string) *User{
 	for i,p := range u.Posts{
-		if p.ID==id{
+		if p.GetID()==id{
 			u.Posts = append(u.Posts[:i], u.Posts[i+1:]...)
 			return u
 		}

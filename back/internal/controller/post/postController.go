@@ -1,22 +1,30 @@
 package controller
 
+import (
+	"yes-blog/pkg/database"
+)
 
-import "yes-blog/pkg/database"
+/* 	singleton object for postController
+this controller task is to perform CRUD for post.Post model
+it takes a dbDriver implementing database.PostDBDriver and
+speaks to the database with the dbDriver for performing
+the CRUD
+*/
 
-type PostController struct{
-	dbDriver database.UserDBDriver
+type postController struct {
+	dbDriver database.PostDBDriver
 }
 
-var postC *PostController
+var pc *postController
 
-func init(){
-	postC=&PostController{}
+func init() {
+	pc = &postController{}
 }
 
-func GetPostController() *PostController {
-	return postC
+func GetPostController() *postController {
+	return pc
 }
 
-func SetDBDriver(dbDriver database.UserDBDriver){
-	postC.dbDriver=dbDriver
+func (p *postController) SetDBDriver(dbDriver database.PostDBDriver) {
+	pc.dbDriver = dbDriver
 }

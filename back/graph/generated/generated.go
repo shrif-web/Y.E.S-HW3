@@ -44,25 +44,28 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
+		CreatePost   func(childComplexity int, input model.TargetPost) int
 		CreateUser   func(childComplexity int, target model.TargetUser) int
+		DeletePost   func(childComplexity int, input model.TargetPost) int
 		DeleteUser   func(childComplexity int, name string) int
 		Login        func(childComplexity int, input model.Login) int
 		RefreshToken func(childComplexity int, input model.RefreshTokenInput) int
+		UpdatePost   func(childComplexity int, input model.TargetPost) int
 		UpdateUser   func(childComplexity int, target model.TargetUser) int
 	}
 
 	Post struct {
-		Auther    func(childComplexity int) int
-		Body      func(childComplexity int) int
+		Content   func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		CreatedBy func(childComplexity int) int
 		ID        func(childComplexity int) int
-		Timestamp func(childComplexity int) int
 		Title     func(childComplexity int) int
 	}
 
 	Query struct {
-		Timeline func(childComplexity int, start int, amount int) int
-		User     func(childComplexity int, name string) int
-		Users    func(childComplexity int, start int, amount int) int
+		Posts func(childComplexity int, start int, amount int) int
+		User  func(childComplexity int, name string) int
+		Users func(childComplexity int, start int, amount int) int
 	}
 
 	User struct {
@@ -73,6 +76,9 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
+	CreatePost(ctx context.Context, input model.TargetPost) (*model.Post, error)
+	DeletePost(ctx context.Context, input model.TargetPost) (*model.Post, error)
+	UpdatePost(ctx context.Context, input model.TargetPost) (*model.Post, error)
 	CreateUser(ctx context.Context, target model.TargetUser) (*model.User, error)
 	DeleteUser(ctx context.Context, name string) (string, error)
 	UpdateUser(ctx context.Context, target model.TargetUser) (*model.User, error)
@@ -80,7 +86,7 @@ type MutationResolver interface {
 	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error)
 }
 type QueryResolver interface {
-	Timeline(ctx context.Context, start int, amount int) ([]*model.Post, error)
+	Posts(ctx context.Context, start int, amount int) ([]*model.Post, error)
 	Users(ctx context.Context, start int, amount int) ([]*model.User, error)
 	User(ctx context.Context, name string) (*model.User, error)
 }
@@ -100,6 +106,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Mutation.createPost":
+		if e.complexity.Mutation.CreatePost == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createPost_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreatePost(childComplexity, args["input"].(model.TargetPost)), true
+
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
 			break
@@ -111,6 +129,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["target"].(model.TargetUser)), true
+
+	case "Mutation.deletePost":
+		if e.complexity.Mutation.DeletePost == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deletePost_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeletePost(childComplexity, args["input"].(model.TargetPost)), true
 
 	case "Mutation.deleteUser":
 		if e.complexity.Mutation.DeleteUser == nil {
@@ -148,6 +178,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.RefreshToken(childComplexity, args["input"].(model.RefreshTokenInput)), true
 
+	case "Mutation.updatePost":
+		if e.complexity.Mutation.UpdatePost == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePost_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdatePost(childComplexity, args["input"].(model.TargetPost)), true
+
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
 			break
@@ -160,19 +202,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateUser(childComplexity, args["target"].(model.TargetUser)), true
 
-	case "Post.auther":
-		if e.complexity.Post.Auther == nil {
+	case "Post.content":
+		if e.complexity.Post.Content == nil {
 			break
 		}
 
-		return e.complexity.Post.Auther(childComplexity), true
+		return e.complexity.Post.Content(childComplexity), true
 
-	case "Post.body":
-		if e.complexity.Post.Body == nil {
+	case "Post.created_at":
+		if e.complexity.Post.CreatedAt == nil {
 			break
 		}
 
-		return e.complexity.Post.Body(childComplexity), true
+		return e.complexity.Post.CreatedAt(childComplexity), true
+
+	case "Post.created_by":
+		if e.complexity.Post.CreatedBy == nil {
+			break
+		}
+
+		return e.complexity.Post.CreatedBy(childComplexity), true
 
 	case "Post.id":
 		if e.complexity.Post.ID == nil {
@@ -181,13 +230,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.ID(childComplexity), true
 
-	case "Post.timestamp":
-		if e.complexity.Post.Timestamp == nil {
-			break
-		}
-
-		return e.complexity.Post.Timestamp(childComplexity), true
-
 	case "Post.title":
 		if e.complexity.Post.Title == nil {
 			break
@@ -195,17 +237,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.Title(childComplexity), true
 
-	case "Query.timeline":
-		if e.complexity.Query.Timeline == nil {
+	case "Query.posts":
+		if e.complexity.Query.Posts == nil {
 			break
 		}
 
-		args, err := ec.field_Query_timeline_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_posts_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.Timeline(childComplexity, args["start"].(int), args["amount"].(int)), true
+		return e.complexity.Query.Posts(childComplexity, args["start"].(int), args["amount"].(int)), true
 
 	case "Query.user":
 		if e.complexity.Query.User == nil {
@@ -321,25 +363,30 @@ var sources = []*ast.Source{
     name: String!
     posts: [Post!]!
 }
+
 type Post {
     id: ID!
-    auther: User!
-    timestamp: Int!
-    body: String!
+    created_by: User!
+    created_at: Int!
+    content: String!
     title: String!
 }
+
 type Query {
-    timeline(start:Int!=0,amount:Int!=5):[Post!]!
+    posts(start:Int!=0,amount:Int!=5):[Post!]!
     users(start:Int!=0,amount:Int!=5): [User!]!
     user(name:String!):User
 }
+
 input TargetPost {
     title: String!
-    body: String!
+    content: String!
 }
+
 input RefreshTokenInput{
     token: String!
 }
+
 input TargetUser {
     username: String!
     password: String!
@@ -351,9 +398,9 @@ input Login {
 }
 
 type Mutation {
-#    createPost(input: TargetPost!): Post!
-#    deletePost(input: TargetPost!): Post!
-#    updatePost(input: TargetPost!): Post!
+    createPost(input: TargetPost!): Post!
+    deletePost(input: TargetPost!): Post!
+    updatePost(input: TargetPost!): Post!
 
     createUser(target: TargetUser!): User!
     deleteUser(name: String!): String!
@@ -371,6 +418,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Mutation_createPost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.TargetPost
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNTargetPost2yesᚑblogᚋgraphᚋmodelᚐTargetPost(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -383,6 +445,21 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 		}
 	}
 	args["target"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deletePost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.TargetPost
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNTargetPost2yesᚑblogᚋgraphᚋmodelᚐTargetPost(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -431,6 +508,21 @@ func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_updatePost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.TargetPost
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNTargetPost2yesᚑblogᚋgraphᚋmodelᚐTargetPost(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -461,7 +553,7 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_timeline_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_posts_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 int
@@ -561,6 +653,132 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Mutation_createPost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createPost_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreatePost(rctx, args["input"].(model.TargetPost))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Post)
+	fc.Result = res
+	return ec.marshalNPost2ᚖyesᚑblogᚋgraphᚋmodelᚐPost(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deletePost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deletePost_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeletePost(rctx, args["input"].(model.TargetPost))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Post)
+	fc.Result = res
+	return ec.marshalNPost2ᚖyesᚑblogᚋgraphᚋmodelᚐPost(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updatePost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updatePost_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdatePost(rctx, args["input"].(model.TargetPost))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Post)
+	fc.Result = res
+	return ec.marshalNPost2ᚖyesᚑblogᚋgraphᚋmodelᚐPost(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
@@ -807,7 +1025,7 @@ func (ec *executionContext) _Post_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Post_auther(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
+func (ec *executionContext) _Post_created_by(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -825,7 +1043,7 @@ func (ec *executionContext) _Post_auther(ctx context.Context, field graphql.Coll
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Auther, nil
+		return obj.CreatedBy, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -842,7 +1060,7 @@ func (ec *executionContext) _Post_auther(ctx context.Context, field graphql.Coll
 	return ec.marshalNUser2ᚖyesᚑblogᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Post_timestamp(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
+func (ec *executionContext) _Post_created_at(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -860,7 +1078,7 @@ func (ec *executionContext) _Post_timestamp(ctx context.Context, field graphql.C
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Timestamp, nil
+		return obj.CreatedAt, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -877,7 +1095,7 @@ func (ec *executionContext) _Post_timestamp(ctx context.Context, field graphql.C
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Post_body(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
+func (ec *executionContext) _Post_content(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -895,7 +1113,7 @@ func (ec *executionContext) _Post_body(ctx context.Context, field graphql.Collec
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Body, nil
+		return obj.Content, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -947,7 +1165,7 @@ func (ec *executionContext) _Post_title(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_timeline(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_posts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -964,7 +1182,7 @@ func (ec *executionContext) _Query_timeline(ctx context.Context, field graphql.C
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_timeline_args(ctx, rawArgs)
+	args, err := ec.field_Query_posts_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -972,7 +1190,7 @@ func (ec *executionContext) _Query_timeline(ctx context.Context, field graphql.C
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Timeline(rctx, args["start"].(int), args["amount"].(int))
+		return ec.resolvers.Query().Posts(rctx, args["start"].(int), args["amount"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2395,11 +2613,11 @@ func (ec *executionContext) unmarshalInputTargetPost(ctx context.Context, obj in
 			if err != nil {
 				return it, err
 			}
-		case "body":
+		case "content":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("body"))
-			it.Body, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("content"))
+			it.Content, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2460,6 +2678,21 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "createPost":
+			out.Values[i] = ec._Mutation_createPost(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deletePost":
+			out.Values[i] = ec._Mutation_deletePost(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updatePost":
+			out.Values[i] = ec._Mutation_updatePost(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createUser":
 			out.Values[i] = ec._Mutation_createUser(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -2512,18 +2745,18 @@ func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "auther":
-			out.Values[i] = ec._Post_auther(ctx, field, obj)
+		case "created_by":
+			out.Values[i] = ec._Post_created_by(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "timestamp":
-			out.Values[i] = ec._Post_timestamp(ctx, field, obj)
+		case "created_at":
+			out.Values[i] = ec._Post_created_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "body":
-			out.Values[i] = ec._Post_body(ctx, field, obj)
+		case "content":
+			out.Values[i] = ec._Post_content(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2558,7 +2791,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "timeline":
+		case "posts":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -2566,7 +2799,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_timeline(ctx, field)
+				res = ec._Query_posts(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -2944,6 +3177,10 @@ func (ec *executionContext) unmarshalNLogin2yesᚑblogᚋgraphᚋmodelᚐLogin(c
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNPost2yesᚑblogᚋgraphᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v model.Post) graphql.Marshaler {
+	return ec._Post(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNPost2ᚕᚖyesᚑblogᚋgraphᚋmodelᚐPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Post) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -3009,6 +3246,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNTargetPost2yesᚑblogᚋgraphᚋmodelᚐTargetPost(ctx context.Context, v interface{}) (model.TargetPost, error) {
+	res, err := ec.unmarshalInputTargetPost(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNTargetUser2yesᚑblogᚋgraphᚋmodelᚐTargetUser(ctx context.Context, v interface{}) (model.TargetUser, error) {

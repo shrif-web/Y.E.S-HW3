@@ -15,19 +15,6 @@ func reformatUsers(all []*user.User) []*model.User {
 	return result
 }
 
-func reformatPosts(blogUser *user.User, graphUser *model.User) []*model.Post {
-	var posts []*model.Post
-	for _, p := range blogUser.Posts {
-		posts = append(posts, &model.Post{
-			ID:        p.ID,
-			Auther:    graphUser,
-			Timestamp: int(p.TimeStamp),
-			Body:      p.Body,
-			Title:     p.Title,
-		})
-	}
-	return posts
-}
 func reformatUser(blogUser *user.User) *model.User {
 	var graphUser = &model.User{
 		ID:   blogUser.ID,
@@ -36,3 +23,19 @@ func reformatUser(blogUser *user.User) *model.User {
 	graphUser.Posts = reformatPosts(blogUser, graphUser)
 	return graphUser
 }
+
+func reformatPosts(blogUser *user.User, graphUser *model.User) []*model.Post {
+	var posts []*model.Post
+	for _, p := range blogUser.Posts {
+		posts = append(posts, &model.Post{
+			ID:        p.GetID(),
+			CreatedBy:    graphUser,
+			CreatedAt: int(p.GetTimeStamp()),
+			Content:      p.GetBody(),
+			Title:     p.GetTitle(),
+		})
+	}
+	return posts
+}
+
+//todo reformatPost
