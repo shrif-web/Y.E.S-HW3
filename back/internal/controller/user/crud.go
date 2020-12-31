@@ -39,7 +39,6 @@ func (c *userController) Delete(name *string) error {
 }
 
 func (c *userController) Update(target string, toBe model.ToBeUser) error {
-	//todo return error if target doesnt exist
 	var blogUser = user.User{}
 	if toBe.Username != nil {
 		blogUser.Name = *(toBe.Username)
@@ -48,6 +47,10 @@ func (c *userController) Update(target string, toBe model.ToBeUser) error {
 		blogUser.UpdatePassword(*(toBe.Password))
 	}
 	if stat := c.dbDriver.Update(target, &blogUser); stat == status.FAILED {
+		_, stat := c.dbDriver.Get(&target)
+		if stat == status.FAILED {
+			return errors.New("target Doesnt exist")
+		}
 		return errors.New("couldn't update the user")
 	} else {
 		return nil
