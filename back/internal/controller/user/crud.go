@@ -47,6 +47,10 @@ func (c *userController) Update(target string, toBe model.ToBeUser) error {
 		blogUser.UpdatePassword(*(toBe.Password))
 	}
 	if stat := c.dbDriver.Update(target, &blogUser); stat == status.FAILED {
+		_, stat := c.dbDriver.Get(&target)
+		if stat == status.FAILED {
+			return errors.New("target Doesnt exist")
+		}
 		return errors.New("couldn't update the user")
 	} else {
 		return nil
@@ -54,10 +58,16 @@ func (c *userController) Update(target string, toBe model.ToBeUser) error {
 }
 
 func (c *userController) Create(name, password string) (*user.User, error) {
-	newUser := user.NewUser(name, password)
-	//todo hash the password
+	hashedPass,err:=hashAndSalt([]byte(password))
+	if err!=nil{
+		return &user.User{},errors.New("internal server error: couldn't hash password")
+	}
+	newUser := user.NewUser(name, hashedPass)
+	if _,stat := c.dbDriver.Get(&name); stat == status.SUCCESSFUL {
+		return nil, errors.New("user with this name already exist")
+	}
 	if stat := c.dbDriver.Insert(newUser); stat == status.FAILED {
-		return nil, errors.New("couldn't update the user")
+		return nil, errors.New("couldn't create user")
 	} else {
 		return newUser, nil
 	}

@@ -24,8 +24,12 @@ func (r *mutationResolver) UpdatePost(ctx context.Context, input model.TargetPos
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUser) (*model.User, error) {
-	newUser, err := controller.GetUserController().Create(target.Username, target.Password)
-	return reformatUser(newUser), err
+	if newUser, err := controller.GetUserController().Create(target.Username, target.Password);
+	err!=nil{
+		return nil,err
+	}else {
+		return reformatUser(newUser), nil
+	}
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (string, error) {
