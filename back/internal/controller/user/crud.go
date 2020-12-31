@@ -39,6 +39,7 @@ func (c *userController) Delete(name *string) error {
 }
 
 func (c *userController) Update(target string, toBe model.ToBeUser) error {
+	//todo return error if target doesnt exist
 	var blogUser = user.User{}
 	if toBe.Username != nil {
 		blogUser.Name = *(toBe.Username)
@@ -54,8 +55,11 @@ func (c *userController) Update(target string, toBe model.ToBeUser) error {
 }
 
 func (c *userController) Create(name, password string) (*user.User, error) {
-	newUser := user.NewUser(name, password)
-	//todo hash the password
+	hashedPass,err:=hashAndSalt([]byte(password))
+	if err!=nil{
+		return &user.User{},errors.New("internal server error: couldn't hash password")
+	}
+	newUser := user.NewUser(name, hashedPass)
 	if _,stat := c.dbDriver.Get(&name); stat == status.SUCCESSFUL {
 		return nil, errors.New("user with this name already exist")
 	}
