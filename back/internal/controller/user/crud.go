@@ -38,22 +38,27 @@ func (c *userController) Delete(name *string) error {
 	}
 }
 
-func (c *userController) Update(target model.TargetUser) error {
-	blogUser := user.User{Name: target.Username}
-	blogUser.UpdatePassword(target.Password)
-	if stat := c.dbDriver.Update(&blogUser); stat == status.FAILED {
+func (c *userController) Update(target string, toBe model.ToBeUser) error {
+	var blogUser = user.User{}
+	if toBe.Username != nil {
+		blogUser.Name = *(toBe.Username)
+	}
+	if toBe.Password != nil {
+		blogUser.UpdatePassword(*(toBe.Password))
+	}
+	if stat := c.dbDriver.Update(target, &blogUser); stat == status.FAILED {
 		return errors.New("couldn't update the user")
 	} else {
 		return nil
 	}
 }
 
-func (c *userController) Create(name, password string) (*user.User,error) {
+func (c *userController) Create(name, password string) (*user.User, error) {
 	newUser := user.NewUser(name, password)
 	//todo hash the password
 	if stat := c.dbDriver.Insert(newUser); stat == status.FAILED {
-		return nil,errors.New("couldn't update the user")
+		return nil, errors.New("couldn't update the user")
 	} else {
-		return newUser,nil
+		return newUser, nil
 	}
 }
