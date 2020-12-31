@@ -17,10 +17,11 @@ func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUs
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (string, error) {
-	return "", controller.GetUserController().Delete(&name)
+	return name, controller.GetUserController().Delete(&name)
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, target model.TargetUser) (*model.User, error) {
+
 	panic(fmt.Errorf("not implemented"))
 }
 
