@@ -5,6 +5,7 @@ import (
 	"time"
 	"yes-blog/graph/model"
 	"yes-blog/internal/model/post"
+	"yes-blog/internal/model/user"
 	"yes-blog/pkg/database/DBException"
 )
 
@@ -17,18 +18,18 @@ import (
 */
 
 // create model.Post entry then add into DB
-func (p *postController) CreatePost(title, body, authorName string) (*post.Post, error) {
-	newPost, err := post.NewPost(title, body, authorName)
-	if err != nil {
-		message := err.Error()
-		return nil, &model.PostEmptyException{Message: &message}
+func (p *postController) CreatePost(title, body, authorName string) (*post.Post, *user.User, error) {
+	newPost, errr := post.NewPost(title, body, "")
+	if errr != nil {
+		message := errr.Error()
+		return nil, nil, &model.PostEmptyException{Message: &message}
 	}
-	err = p.dbDriver.Insert(newPost)
+	usr, err := p.dbDriver.Insert(newPost)
 	err = CastDBEToGQLE(err)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return newPost, nil
+	return newPost, usr, nil
 }
 
 // edit the post in DB
@@ -56,30 +57,30 @@ func (p *postController) DeletePost(postID string, authorName string) (string, e
 }
 
 // get the post specified with id from DB
-func (p *postController) GetPost(postID string) (*post.Post, error) {
-	pst, err := p.dbDriver.Get(postID)
+func (p *postController) GetPost(postID string) (*post.Post, *user.User, error) {
+	pst, usr, err := p.dbDriver.Get(postID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return pst, nil
+	return pst, usr, nil
 }
 
 // get all posts from DB with start id and size of amount
-func (p *postController) GetAllPosts(startID string, amount int) ([]*post.Post, error) {
-	psts, err := p.dbDriver.GetAll(startID, amount)
+func (p *postController) GetAllPosts(startIndex, amount int) ([]*post.Post, []*user.User, error) {
+	psts, usrs, err := p.dbDriver.GetAll(startIndex, amount)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return psts, nil
+	return psts, usrs, nil
 }
 
 // get all posts which is written by user from DB
-func (p *postController) GetPostByUser(userName string) ([]*post.Post, error) {
-	psts, err := p.dbDriver.GetByUser(userName)
+func (p *postController) GetPostByUser(userName string) ([]*post.Post, *user.User, error) {
+	psts, usr, err := p.dbDriver.GetByUser(userName)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return psts, nil
+	return psts, usr, nil
 }
 
 // casting database errors to model.graphQL exceptions

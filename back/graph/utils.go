@@ -43,13 +43,18 @@ func reformatPosts(blogPosts []*post.Post, graphUser *model.User) []*model.Post 
 	return posts
 }
 
-func reformatAllPosts(blogPosts []*post.Post) []*model.Post {
+func reformatAllPosts(blogPosts []*post.Post, graphUser *model.User) []*model.Post {
 	var posts []*model.Post
 	for _, p := range blogPosts {
-		posts = append(posts, reformatPost(p, &model.User{
-			ID:    "",
-			Name:  p.Author,
-		}))
+		posts = append(posts, reformatPost(p, graphUser))
+	}
+	return posts
+}
+
+func reformatAllSeparatePosts(blogPosts []*post.Post, graphUser []*model.User) []*model.Post {
+	var posts []*model.Post
+	for i, _ := range blogPosts {
+		posts = append(posts, reformatPost(blogPosts[i], graphUser[i]))
 	}
 	return posts
 }

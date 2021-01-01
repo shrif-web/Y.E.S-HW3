@@ -6,7 +6,6 @@ package graph
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"yes-blog/graph/generated"
 	"yes-blog/graph/model"
 	postController "yes-blog/internal/controller/post"
@@ -51,8 +50,8 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPost) (model.CreatePostPayload, error) {
-	newPost, err := postController.GetPostController().CreatePost(input.Title, input.Content, input.AuthorName)
+func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPost, authorName string) (model.CreatePostPayload, error) {
+	newPost, usr, err := postController.GetPostController().CreatePost(input.Title, input.Content, authorName)
 	if err != nil {
 		switch err.(type) {
 		case *model.PostEmptyException:
@@ -63,10 +62,7 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPos
 			return err.(*model.InternalServerException), nil
 		}
 	}
-	return reformatPost(newPost, &model.User{
-		ID:   "",
-		Name: input.AuthorName,
-	}), nil
+	return reformatPost(newPost, reformatUser(usr)), nil
 }
 
 func (r *mutationResolver) DeletePost(ctx context.Context, targetID string, authorName string) (model.DeletePostPayload, error) {
@@ -86,8 +82,8 @@ func (r *mutationResolver) DeletePost(ctx context.Context, targetID string, auth
 	return &model.PostOperationSuccessfull{Message: &message}, nil
 }
 
-func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, input model.TargetPost) (model.UpdatePostPayload, error) {
-	message, err := postController.GetPostController().UpdatePost(targetID, input.Title, input.Content, input.AuthorName)
+func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, input model.TargetPost, authorName string) (model.UpdatePostPayload, error) {
+	message, err := postController.GetPostController().UpdatePost(targetID, input.Title, input.Content, authorName)
 	if err != nil {
 		switch err.(type) {
 		case *model.UserNotAllowedException:
@@ -116,33 +112,27 @@ func (r *queryResolver) Users(ctx context.Context, start int, amount int) ([]*mo
 }
 
 func (r *queryResolver) Post(ctx context.Context, id string) (*model.Post, error) {
-	newPost, err := postController.GetPostController().GetPost(id)
+	newPost, usr, err := postController.GetPostController().GetPost(id)
 	if err != nil {
 		return nil, err
 	}
-	return reformatPost(newPost, &model.User{
-		ID:   "",
-		Name: newPost.Author,
-	}), nil
+	return reformatPost(newPost, reformatUser(usr)), nil
 }
 
 func (r *queryResolver) Posts(ctx context.Context, start int, amount int) ([]*model.Post, error) {
-	posts, err := postController.GetPostController().GetAllPosts(strconv.Itoa(start), amount)
+	posts, usrs, err := postController.GetPostController().GetAllPosts(start, amount)
 	if err != nil {
 		return nil, err
 	}
-	return reformatAllPosts(posts), nil
+	return reformatAllSeparatePosts(posts, reformatUsers(usrs)), nil
 }
 
 func (r *queryResolver) PostsOfUser(ctx context.Context, userName string) ([]*model.Post, error) {
-	posts, err := postController.GetPostController().GetPostByUser(userName)
+	posts, usr, err := postController.GetPostController().GetPostByUser(userName)
 	if err != nil {
 		return nil, err
 	}
-	return reformatPosts(posts, &model.User{
-		ID:   "",
-		Name: userName,
-	}), nil
+	return reformatAllPosts(posts, reformatUser(usr)), nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

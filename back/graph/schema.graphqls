@@ -24,7 +24,6 @@ type Query {
 input TargetPost {
     title: String!
     content: String!
-    authorName: String!
 }
 
 input RefreshTokenInput{
@@ -88,7 +87,7 @@ type Mutation {
     # we'll talk about this in authentication section
     refreshToken(input: RefreshTokenInput!): String!
 
-    createPost(input: TargetPost!): CreatePostPayload!
+    createPost(input: TargetPost!, authorName: String!): CreatePostPayload!
     deletePost(targetID: String!, authorName: String!): DeletePostPayload!
-    updatePost(targetID: String!, input: TargetPost!): UpdatePostPayload!
+    updatePost(targetID: String!, input: TargetPost!, authorName: String!): UpdatePostPayload!
 }

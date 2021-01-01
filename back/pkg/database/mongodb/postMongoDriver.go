@@ -4,6 +4,7 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"strconv"
 	"time"
 	"yes-blog/internal/model/post"
 	"yes-blog/internal/model/user"
@@ -20,17 +21,17 @@ const PostUpdateTimeOut = 50000
 const PostGetTimeOut = 50000
 const PostGetAllTimeOut = 50000
 
-func (p PostMongoDriver) Insert(pst *post.Post) error {
+func (p PostMongoDriver) Insert(pst *post.Post) (*user.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), PostInsertTimeOut*time.Millisecond)
 	defer cancel()
 
 	target := bson.M{
-		"name": pst.Author,
+		"name": pst.AuthorID,
 	}
-	var tempUser *user.User
-	findErr := p.collection.FindOne(ctx, target).Decode(&tempUser)
+	var usr user.User
+	findErr := p.collection.FindOne(ctx, target).Decode(&usr)
 	if findErr != nil {
-		return DBException.ThrowUserNotFoundException(pst.Author)
+		return nil, DBException.ThrowUserNotFoundException(pst.AuthorID)
 	}
 
 	change := bson.M{
@@ -40,9 +41,9 @@ func (p PostMongoDriver) Insert(pst *post.Post) error {
 	}
 	_, err := p.collection.UpdateOne(ctx, target, change)
 	if err != nil {
-		return DBException.ThrowInternalDBException(err.Error())
+		return nil, DBException.ThrowInternalDBException(err.Error())
 	}
-	return nil
+	return &usr, nil
 }
 
 func (p PostMongoDriver) Delete(postID string, authorName string) error {
@@ -52,13 +53,13 @@ func (p PostMongoDriver) Delete(postID string, authorName string) error {
 	target := bson.M{
 		"name": authorName,
 	}
-	var tempUser *user.User
-	findErr := p.collection.FindOne(ctx, target).Decode(&tempUser)
+	var usr user.User
+	findErr := p.collection.FindOne(ctx, target).Decode(&usr)
 	if findErr != nil {
 		return DBException.ThrowUserNotFoundException(authorName)
 	}
 
-	if _, _, fr := post.Find(tempUser.Posts, postID); !fr {
+	if _, _, fr := post.Find(usr.Posts, postID); !fr {
 		return DBException.ThrowUserNotAllowedException(authorName)
 	}
 
@@ -81,11 +82,11 @@ func (p PostMongoDriver) Update(pst *post.Post) error {
 	defer cancel()
 
 	target := bson.M{
-		"name":     pst.Author,
+		"name":     pst.AuthorID,
 		"posts.id": pst.ID,
 	}
-	var tempUser *user.User
-	findErr := p.collection.FindOne(ctx, target).Decode(&tempUser)
+	var usr user.User
+	findErr := p.collection.FindOne(ctx, target).Decode(&usr)
 	if findErr != nil {
 		return DBException.ThrowPostNotFoundException(pst.ID)
 	}
@@ -104,28 +105,28 @@ func (p PostMongoDriver) Update(pst *post.Post) error {
 	return nil
 }
 
-func (p PostMongoDriver) Get(postID string) (*post.Post, error) {
+func (p PostMongoDriver) Get(postID string) (*post.Post, *user.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), PostGetTimeOut*time.Millisecond)
 	defer cancel()
 
 	//todo Better implementation with mongoDB built in filters
 	curr, err := p.collection.Find(ctx, bson.D{})
 	if err != nil {
-		return nil, DBException.ThrowInternalDBException(err.Error())
+		return nil, nil, DBException.ThrowInternalDBException(err.Error())
 	}
 	defer curr.Close(ctx)
 	for curr.Next(context.Background()) {
-		var usrtmp user.User
-		_ = curr.Decode(&usrtmp)
-		p, _, rf := post.Find(usrtmp.Posts, postID)
+		var usr user.User
+		_ = curr.Decode(&usr)
+		p, _, rf := post.Find(usr.Posts, postID)
 		if rf {
-			return p, nil
+			return p, &usr, nil
 		}
 	}
-	return nil, DBException.ThrowPostNotFoundException(postID)
+	return nil, nil, DBException.ThrowPostNotFoundException(postID)
 }
 
-func (p PostMongoDriver) GetAll(startID string, amount int) ([]*post.Post, error) {
+func (p PostMongoDriver) GetAll(startIndex, amount int) ([]*post.Post, []*user.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), PostGetTimeOut*time.Millisecond)
 	defer cancel()
 
@@ -133,39 +134,50 @@ func (p PostMongoDriver) GetAll(startID string, amount int) ([]*post.Post, error
 	var allPosts []*post.Post
 	curr, err := p.collection.Find(ctx, bson.D{})
 	if err != nil {
-		return nil, DBException.ThrowInternalDBException(err.Error())
+		return nil, nil, DBException.ThrowInternalDBException(err.Error())
 	}
 	defer curr.Close(ctx)
+	usrs := make(map[*post.Post]*user.User)
 	for curr.Next(context.Background()) {
-		var usrtmp user.User
-		_ = curr.Decode(&usrtmp)
-		allPosts = append(allPosts, usrtmp.Posts...)
+		var usr user.User
+		_ = curr.Decode(&usr)
+		allPosts = append(allPosts, usr.Posts...)
+		for _, p := range allPosts {
+			usrs[p] = &usr
+		}
 	}
+
+	if startIndex >= len(allPosts) || startIndex < 0 {
+		return nil, nil, DBException.ThrowPostNotFoundException("(index of " + strconv.Itoa(startIndex) + ")")
+	}
+
 	post.Sort(allPosts)
-	_, i, fr := post.Find(allPosts, startID)
-	if !fr {
-		return nil, DBException.ThrowPostNotFoundException(startID)
+	resUs := make([]*user.User, amount)
+	sIn := startIndex
+	eIn := startIndex - amount + 1
+	if startIndex-amount+1 < 0 {
+		eIn = 0
 	}
-	if i-amount+1 < 0 {
-		return allPosts[:i+1], nil
+	for j := sIn; j >= eIn; j-- {
+		resUs = append(resUs, usrs[allPosts[j]])
 	}
-	return allPosts[i-amount+1 : i+1], nil
+	return allPosts[eIn : sIn+1], resUs, nil
 }
 
-func (p PostMongoDriver) GetByUser(userName string) ([]*post.Post, error) {
+func (p PostMongoDriver) GetByUser(userName string) ([]*post.Post, *user.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), PostGetAllTimeOut*time.Millisecond)
 	defer cancel()
 
 	target := bson.M{
 		"name": userName,
 	}
-	var res user.User
-	err := p.collection.FindOne(ctx, target).Decode(&res)
+	var usr user.User
+	err := p.collection.FindOne(ctx, target).Decode(&usr)
 	if err != nil {
-		return nil, DBException.ThrowUserNotFoundException(userName)
+		return nil, nil, DBException.ThrowUserNotFoundException(userName)
 	}
-	post.Sort(res.Posts)
-	return res.Posts, nil
+	post.Sort(usr.Posts)
+	return usr.Posts, &usr, nil
 }
 
 func NewPostMongoDriver(db, collection string) *PostMongoDriver {
