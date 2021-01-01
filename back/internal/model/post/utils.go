@@ -2,13 +2,13 @@ package post
 
 import "strings"
 
-func IsEmpty(str string) bool {
+func isEmpty(str string) bool {
 	return len(strings.ReplaceAll(str, " ", "")) <= 0
 }
 
-func IsAllEmpty(strs ...string) bool {
+func isAllEmpty(strs ...string) bool {
 	for _, str := range strs {
-		if !IsEmpty(str) {
+		if !isEmpty(str) {
 			return false
 		}
 	}
