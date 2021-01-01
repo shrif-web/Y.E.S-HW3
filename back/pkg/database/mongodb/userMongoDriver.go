@@ -75,7 +75,7 @@ func (u UserMongoDriver) Delete(name *string) status.QueryStatus {
 }
 
 func (u UserMongoDriver) Update(target string, user *user.User) status.QueryStatus {
-	ctx, cancel := context.WithTimeout(context.Background(), 500000*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
 	query:=bson.M{}
 	update:=bson.M{"$set":query}
