@@ -27,10 +27,15 @@ func main() {
 
 	// Setting up Gin
 	r := gin.Default()
-	r.Use(auth.Middleware())
 	r.Use(ggcontext.GinContextToContextMiddleware())
+	r.Use(auth.Middleware())
 
 	// routing
+	//gql := r.Group("/query")
+	//gql.POST("/",graphqlHandler())
+	////gql.Use(auth.Middleware())
+	////gql.Use(ggcontext.GinContextToContextMiddleware())
+
 	r.POST("/query", graphqlHandler())
 	r.GET("/", playgroundHandler())
 

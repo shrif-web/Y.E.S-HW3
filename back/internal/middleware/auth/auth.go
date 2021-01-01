@@ -2,6 +2,8 @@ package auth
 
 import (
 "github.com/gin-gonic/gin"
+	"net/http"
+	"yes-blog/pkg/jwt"
 )
 
 const authHeaderKey = "Authorization"
@@ -18,13 +20,13 @@ func Middleware() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		// Set username in the ggcontext
-		//username, err := jwt.ParseToken(header)
-		//if err!=nil {
-		//	c.Status(http.StatusUnauthorized)
-		//	return
-		//}
-		//c.Set("username", username)
+		//Set username in the context
+		username, err := jwt.ParseToken(header)
+		if err!=nil {
+			c.Status(http.StatusUnauthorized)
+			return
+		}
+		c.Set("username", username)
 		c.Set(usernameKey,header)
 		c.Next()
 	}
