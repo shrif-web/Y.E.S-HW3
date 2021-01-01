@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -10,6 +9,8 @@ import (
 	"yes-blog/graph/generated"
 	postController "yes-blog/internal/controller/post"
 	userController "yes-blog/internal/controller/user"
+	"yes-blog/internal/middleware/auth"
+	"yes-blog/internal/middleware/ggcontext"
 	"yes-blog/pkg/database/mongodb"
 )
 
@@ -25,9 +26,19 @@ func main() {
 
 	// Setting up Gin
 	r := gin.Default()
+	r.Use(ggcontext.GinContextToContextMiddleware())
+	r.Use(auth.Middleware())
+
+	// routing
+	//gql := r.Group("/query")
+	//gql.POST("/",graphqlHandler())
+	////gql.Use(auth.Middleware())
+	////gql.Use(ggcontext.GinContextToContextMiddleware())
+
 	r.POST("/query", graphqlHandler())
 	r.GET("/", playgroundHandler())
 
+	//let it begin
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", defaultPort)
 	r.Run(":"+defaultPort)
 
@@ -36,7 +47,7 @@ func main() {
 // Defining the Graphql handler
 func graphqlHandler() gin.HandlerFunc {
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
-	srv.Use(extension.FixedComplexityLimit(queryComplexity))
+	//srv.Use(extension.FixedComplexityLimit(queryComplexity))
 
 	return func(c *gin.Context) {
 		srv.ServeHTTP(c.Writer, c.Request)
@@ -51,4 +62,3 @@ func playgroundHandler() gin.HandlerFunc {
 		pg.ServeHTTP(c.Writer, c.Request)
 	}
 }
-

@@ -10,9 +10,11 @@ import (
 	"yes-blog/graph/model"
 	postController "yes-blog/internal/controller/post"
 	userController "yes-blog/internal/controller/user"
+	"yes-blog/pkg/jwt"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUser) (model.CreateUserPayload, error) {
+	println("user: "+extractUsernameFromContext(ctx))
 	newUser, err := userController.GetUserController().Create(target.Username, target.Password)
 	if err != nil {
 		switch err.(type) {
@@ -30,6 +32,7 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (string,
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, target string, toBe model.ToBeUser) (model.UpdateUserPayload, error) {
+	_ = extractUsernameFromContext(ctx)
 	update, err := userController.GetUserController().Update(target, toBe)
 	if err != nil {
 		switch err.(type) {
@@ -43,7 +46,27 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, target string, toBe m
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (model.LoginPayload, error) {
-	panic(fmt.Errorf("not implemented"))
+	//retrieve user from data base
+	blogUser, err := userController.GetUserController().Get(&input.Username)
+	if err != nil {
+		switch err.(type) {
+		case *model.PostEmptyException:
+			return err.(*model.InternalServerException), nil
+		}
+		return nil, err
+	}
+
+	// check if the username and password matches
+	if !blogUser.Verify(input.Password) {
+		return model.UserPassMissMatchException{}, nil
+	}
+
+	// generate new token
+	token, err2 := jwt.GenerateToken(blogUser.Name)
+	if err2 != nil {
+		return model.InternalServerException{}, nil
+	}
+	return model.Token{Token: token}, nil
 }
 
 func (r *mutationResolver) RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error) {

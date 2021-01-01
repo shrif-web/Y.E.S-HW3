@@ -3,6 +3,7 @@ package mongodb
 import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 	"yes-blog/internal/model/user"
@@ -45,7 +46,7 @@ func (u UserMongoDriver) GetAll(start,amount int64) ([]*user.User, status.QueryS
 func (u UserMongoDriver) Insert(user *user.User) status.QueryStatus {
 	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
-
+	user.ID=primitive.NewObjectID()
 	if _, err := u.collection.InsertOne(ctx, user); err != nil {
 		return status.FAILED
 	}
@@ -54,7 +55,7 @@ func (u UserMongoDriver) Insert(user *user.User) status.QueryStatus {
 }
 
 func (u UserMongoDriver) Get(name *string) (*user.User, status.QueryStatus) {
-	ctx, cancel := context.WithTimeout(context.Background(), 50000*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
 
 	var result user.User

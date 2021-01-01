@@ -45,6 +45,10 @@ input Login {
     password: String!
 }
 
+type Token{
+    token:String!
+}
+
 interface Exception{
     message:String
 }
@@ -72,19 +76,19 @@ type PostEmptyException implements Exception{
 type PostOperationSuccessfull{
     message:String
 }
-union CreateUserPayload = User | DuplicateUsernameException | InternalServerException
-union UpdateUserPayload = User | NoUserFoundException       | InternalServerException
-union LoginPayload =      User | UserPassMissMatchException | InternalServerException
-union CreatePostPayload = Post | NoUserFoundException | PostEmptyException | InternalServerException
+union CreateUserPayload = User  | DuplicateUsernameException | InternalServerException
+union UpdateUserPayload = User  | NoUserFoundException       | InternalServerException
+union LoginPayload      = Token | UserPassMissMatchException | InternalServerException
+union CreatePostPayload = Post  | NoUserFoundException | PostEmptyException  | InternalServerException
 union DeletePostPayload = PostOperationSuccessfull | UserNotAllowedException | NoUserFoundException | PostNotFoundException | InternalServerException
-union UpdatePostPayload = PostOperationSuccessfull | UserNotAllowedException | PostEmptyException | NoUserFoundException | PostNotFoundException | InternalServerException
+union UpdatePostPayload = PostOperationSuccessfull | UserNotAllowedException | PostEmptyException   | NoUserFoundException | PostNotFoundException | InternalServerException
+
 type Mutation {
     createUser(target: TargetUser!): CreateUserPayload!
     deleteUser(name: String!): String!
     updateUser(target: String!, toBe: ToBeUser!): UpdateUserPayload!
 
     login(input: Login!): LoginPayload!
-    # we'll talk about this in authentication section
     refreshToken(input: RefreshTokenInput!): String!
 
     createPost(input: TargetPost!, authorName: String!): CreatePostPayload!

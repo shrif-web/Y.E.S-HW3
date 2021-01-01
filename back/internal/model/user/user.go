@@ -77,3 +77,7 @@ func (u *User) Upgrade() {
 func (u *User) degrade() {
 	u.Admin = false
 }
+
+func (u *User) Verify(password string) bool{
+	return CheckPasswordHash(password,u.Password)
+}

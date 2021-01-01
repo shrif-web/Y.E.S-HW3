@@ -1,7 +1,10 @@
 package graph
 
 import (
+	"context"
 	"yes-blog/graph/model"
+	"yes-blog/internal/middleware/auth"
+	"yes-blog/internal/middleware/ggcontext"
 	"yes-blog/internal/model/post"
 	"yes-blog/internal/model/user"
 )
@@ -57,4 +60,10 @@ func reformatAllSeparatePosts(blogPosts []*post.Post, graphUser []*model.User) [
 		posts = append(posts, reformatPost(blogPosts[i], graphUser[i]))
 	}
 	return posts
+}
+
+
+func extractUsernameFromContext(ctx context.Context) string {
+	ginContext, _ := ggcontext.GinContextFromContext(ctx)
+	return auth.ForContext(ginContext)
 }
