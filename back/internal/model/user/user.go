@@ -1,11 +1,9 @@
 package user
 
 import (
-	"strconv"
 	"yes-blog/graph/model"
 	"yes-blog/internal/model/post"
 )
-var uuid=0
 type User struct {
 	id       string
 	Name     string
@@ -24,7 +22,6 @@ func NewAdmin(name, password string) (*User, error) {
 }
 
 func newUser(name, password string, admin bool) (*User,error) {
-	defer func(){uuid++}()
 	// hashing password
 	hashedPass,err:=hashAndSalt([]byte(password))
 	if err!=nil{
@@ -33,7 +30,6 @@ func newUser(name, password string, admin bool) (*User,error) {
 	}
 
 	return &User{
-		ID:       strconv.Itoa(uuid),
 		Name:     name,
 		Password: hashedPass,
 		Admin:    admin,
@@ -80,9 +76,9 @@ func (u *User) Upgrade() {
 func (u *User) degrade() {
 	u.Admin = false
 }
-func (u *User)getID() string {
+func (u *User)GetID() string {
 	return u.id
 }
-func (u *User)setID(newId string){
+func (u *User)SetID(newId string){
 	u.id=newId
 }
