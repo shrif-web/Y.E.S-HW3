@@ -53,10 +53,13 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		CreatePost   func(childComplexity int, input model.TargetPost) int
 		CreateUser   func(childComplexity int, target model.TargetUser) int
+		DeletePost   func(childComplexity int, targetID string, authorName string) int
 		DeleteUser   func(childComplexity int, name string) int
 		Login        func(childComplexity int, input model.Login) int
 		RefreshToken func(childComplexity int, input model.RefreshTokenInput) int
+		UpdatePost   func(childComplexity int, targetID string, input model.TargetPost) int
 		UpdateUser   func(childComplexity int, target string, toBe model.ToBeUser) int
 	}
 
@@ -65,17 +68,20 @@ type ComplexityRoot struct {
 	}
 
 	Post struct {
-		Auther    func(childComplexity int) int
-		Body      func(childComplexity int) int
+		Content   func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		CreatedBy func(childComplexity int) int
 		ID        func(childComplexity int) int
 		Timestamp func(childComplexity int) int
 		Title     func(childComplexity int) int
 	}
 
 	Query struct {
-		Timeline func(childComplexity int, start int, amount int) int
-		User     func(childComplexity int, name string) int
-		Users    func(childComplexity int, start int, amount int) int
+		Post        func(childComplexity int, id string) int
+		Posts       func(childComplexity int, start int, amount int) int
+		PostsOfUser func(childComplexity int, userName string) int
+		User        func(childComplexity int, name string) int
+		Users       func(childComplexity int, start int, amount int) int
 	}
 
 	User struct {
@@ -95,11 +101,16 @@ type MutationResolver interface {
 	UpdateUser(ctx context.Context, target string, toBe model.ToBeUser) (model.UpdateUserPayload, error)
 	Login(ctx context.Context, input model.Login) (model.LoginPayload, error)
 	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error)
+	CreatePost(ctx context.Context, input model.TargetPost) (*model.Post, error)
+	DeletePost(ctx context.Context, targetID string, authorName string) (string, error)
+	UpdatePost(ctx context.Context, targetID string, input model.TargetPost) (string, error)
 }
 type QueryResolver interface {
-	Timeline(ctx context.Context, start int, amount int) ([]*model.Post, error)
-	Users(ctx context.Context, start int, amount int) ([]*model.User, error)
 	User(ctx context.Context, name string) (*model.User, error)
+	Users(ctx context.Context, start int, amount int) ([]*model.User, error)
+	Post(ctx context.Context, id string) (*model.Post, error)
+	Posts(ctx context.Context, start int, amount int) ([]*model.Post, error)
+	PostsOfUser(ctx context.Context, userName string) ([]*model.Post, error)
 }
 
 type executableSchema struct {
@@ -131,6 +142,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.InternalServerException.Message(childComplexity), true
 
+	case "Mutation.createPost":
+		if e.complexity.Mutation.CreatePost == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createPost_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreatePost(childComplexity, args["input"].(model.TargetPost)), true
+
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
 			break
@@ -142,6 +165,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["target"].(model.TargetUser)), true
+
+	case "Mutation.deletePost":
+		if e.complexity.Mutation.DeletePost == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deletePost_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeletePost(childComplexity, args["targetID"].(string), args["authorName"].(string)), true
 
 	case "Mutation.deleteUser":
 		if e.complexity.Mutation.DeleteUser == nil {
@@ -179,6 +214,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.RefreshToken(childComplexity, args["input"].(model.RefreshTokenInput)), true
 
+	case "Mutation.updatePost":
+		if e.complexity.Mutation.UpdatePost == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePost_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdatePost(childComplexity, args["targetID"].(string), args["input"].(model.TargetPost)), true
+
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
 			break
@@ -200,17 +247,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 	case "Post.auther":
 		if e.complexity.Post.Auther == nil {
+	case "Post.content":
+		if e.complexity.Post.Content == nil {
 			break
 		}
 
-		return e.complexity.Post.Auther(childComplexity), true
+		return e.complexity.Post.Content(childComplexity), true
 
-	case "Post.body":
-		if e.complexity.Post.Body == nil {
+	case "Post.created_at":
+		if e.complexity.Post.CreatedAt == nil {
 			break
 		}
 
-		return e.complexity.Post.Body(childComplexity), true
+		return e.complexity.Post.CreatedAt(childComplexity), true
+
+	case "Post.created_by":
+		if e.complexity.Post.CreatedBy == nil {
+			break
+		}
+
+		return e.complexity.Post.CreatedBy(childComplexity), true
 
 	case "Post.id":
 		if e.complexity.Post.ID == nil {
@@ -219,13 +275,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.ID(childComplexity), true
 
-	case "Post.timestamp":
-		if e.complexity.Post.Timestamp == nil {
-			break
-		}
-
-		return e.complexity.Post.Timestamp(childComplexity), true
-
 	case "Post.title":
 		if e.complexity.Post.Title == nil {
 			break
@@ -233,17 +282,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.Title(childComplexity), true
 
-	case "Query.timeline":
-		if e.complexity.Query.Timeline == nil {
+	case "Query.post":
+		if e.complexity.Query.Post == nil {
 			break
 		}
 
-		args, err := ec.field_Query_timeline_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_post_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.Timeline(childComplexity, args["start"].(int), args["amount"].(int)), true
+		return e.complexity.Query.Post(childComplexity, args["id"].(string)), true
+
+	case "Query.posts":
+		if e.complexity.Query.Posts == nil {
+			break
+		}
+
+		args, err := ec.field_Query_posts_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Posts(childComplexity, args["start"].(int), args["amount"].(int)), true
+
+	case "Query.postsOfUser":
+		if e.complexity.Query.PostsOfUser == nil {
+			break
+		}
+
+		args, err := ec.field_Query_postsOfUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.PostsOfUser(childComplexity, args["userName"].(string)), true
 
 	case "Query.user":
 		if e.complexity.Query.User == nil {
@@ -366,25 +439,34 @@ var sources = []*ast.Source{
     name: String!
     posts: [Post!]!
 }
+
 type Post {
     id: ID!
-    auther: User!
-    timestamp: Int!
-    body: String!
+    created_by: User!
+    created_at: Int!
+    content: String!
     title: String!
 }
+
 type Query {
-    timeline(start:Int!=0,amount:Int!=5):[Post!]!
-    users(start:Int!=0,amount:Int!=5): [User!]!
     user(name:String!):User
+    users(start:Int!=0,amount:Int!=5): [User!]!
+
+    post(id:String!):Post!
+    posts(start:Int!=0,amount:Int!=5):[Post!]!
+    postsOfUser(userName:String!):[Post!]!
 }
+
 input TargetPost {
     title: String!
-    body: String!
+    content: String!
+    authorName: String!
 }
+
 input RefreshTokenInput{
     token: String!
 }
+
 input TargetUser {
     username: String!
     password: String!
@@ -420,17 +502,16 @@ union UpdateUserPayload = User | NoUserFoundException       | InternalServerExce
 union LoginPayload =      User | UserPassMissMatchException | InternalServerException
 
 type Mutation {
-    #    createPost(input: TargetPost!): Post!
-    #    deletePost(input: TargetPost!): Post!
-    #    updatePost(input: TargetPost!): Post!
-
-    createUser(target: TargetUser!): CreateUserPayload!
+    createUser(target: TargetUser!): User!
     deleteUser(name: String!): String!
-    updateUser(target: String!, toBe: ToBeUser!): UpdateUserPayload!
+    updateUser(target: String!, toBe: ToBeUser!): String!
 
-    login(input: Login!): LoginPayload!
-    # we'll talk about this in authentication section
+    login(input: Login!): String!
     refreshToken(input: RefreshTokenInput!): String!
+
+    createPost(input: TargetPost!): Post!
+    deletePost(targetID: String!, authorName: String!): String!
+    updatePost(targetID: String!, input: TargetPost!): String!
 }
 `, BuiltIn: false},
 }
@@ -640,70 +721,6 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _DuplicateUsernameException_message(ctx context.Context, field graphql.CollectedField, obj *model.DuplicateUsernameException) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "DuplicateUsernameException",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _InternalServerException_message(ctx context.Context, field graphql.CollectedField, obj *model.InternalServerException) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "InternalServerException",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -741,9 +758,9 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.CreateUserPayload)
+	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNCreateUserPayload2yesᚑblogᚋgraphᚋmodelᚐCreateUserPayload(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖyesᚑblogᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -825,9 +842,9 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.UpdateUserPayload)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNUpdateUserPayload2yesᚑblogᚋgraphᚋmodelᚐUpdateUserPayload(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -867,9 +884,9 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.LoginPayload)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNLoginPayload2yesᚑblogᚋgraphᚋmodelᚐLoginPayload(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_refreshToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -912,38 +929,6 @@ func (ec *executionContext) _Mutation_refreshToken(ctx context.Context, field gr
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _NoUserFoundException_message(ctx context.Context, field graphql.CollectedField, obj *model.NoUserFoundException) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "NoUserFoundException",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Post_id(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
@@ -1418,38 +1403,6 @@ func (ec *executionContext) _User_posts(ctx context.Context, field graphql.Colle
 	res := resTmp.([]*model.Post)
 	fc.Result = res
 	return ec.marshalNPost2ᚕᚖyesᚑblogᚋgraphᚋmodelᚐPostᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _UserPassMissMatchException_message(ctx context.Context, field graphql.CollectedField, obj *model.UserPassMissMatchException) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "UserPassMissMatchException",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -2675,184 +2628,9 @@ func (ec *executionContext) unmarshalInputToBeUser(ctx context.Context, obj inte
 
 // region    ************************** interface.gotpl ***************************
 
-func (ec *executionContext) _CreateUserPayload(ctx context.Context, sel ast.SelectionSet, obj model.CreateUserPayload) graphql.Marshaler {
-	switch obj := (obj).(type) {
-	case nil:
-		return graphql.Null
-	case model.User:
-		return ec._User(ctx, sel, &obj)
-	case *model.User:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._User(ctx, sel, obj)
-	case model.DuplicateUsernameException:
-		return ec._DuplicateUsernameException(ctx, sel, &obj)
-	case *model.DuplicateUsernameException:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._DuplicateUsernameException(ctx, sel, obj)
-	case model.InternalServerException:
-		return ec._InternalServerException(ctx, sel, &obj)
-	case *model.InternalServerException:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalServerException(ctx, sel, obj)
-	default:
-		panic(fmt.Errorf("unexpected type %T", obj))
-	}
-}
-
-func (ec *executionContext) _Exception(ctx context.Context, sel ast.SelectionSet, obj model.Exception) graphql.Marshaler {
-	switch obj := (obj).(type) {
-	case nil:
-		return graphql.Null
-	case model.DuplicateUsernameException:
-		return ec._DuplicateUsernameException(ctx, sel, &obj)
-	case *model.DuplicateUsernameException:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._DuplicateUsernameException(ctx, sel, obj)
-	case model.NoUserFoundException:
-		return ec._NoUserFoundException(ctx, sel, &obj)
-	case *model.NoUserFoundException:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._NoUserFoundException(ctx, sel, obj)
-	case model.UserPassMissMatchException:
-		return ec._UserPassMissMatchException(ctx, sel, &obj)
-	case *model.UserPassMissMatchException:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._UserPassMissMatchException(ctx, sel, obj)
-	case model.InternalServerException:
-		return ec._InternalServerException(ctx, sel, &obj)
-	case *model.InternalServerException:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalServerException(ctx, sel, obj)
-	default:
-		panic(fmt.Errorf("unexpected type %T", obj))
-	}
-}
-
-func (ec *executionContext) _LoginPayload(ctx context.Context, sel ast.SelectionSet, obj model.LoginPayload) graphql.Marshaler {
-	switch obj := (obj).(type) {
-	case nil:
-		return graphql.Null
-	case model.User:
-		return ec._User(ctx, sel, &obj)
-	case *model.User:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._User(ctx, sel, obj)
-	case model.UserPassMissMatchException:
-		return ec._UserPassMissMatchException(ctx, sel, &obj)
-	case *model.UserPassMissMatchException:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._UserPassMissMatchException(ctx, sel, obj)
-	case model.InternalServerException:
-		return ec._InternalServerException(ctx, sel, &obj)
-	case *model.InternalServerException:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalServerException(ctx, sel, obj)
-	default:
-		panic(fmt.Errorf("unexpected type %T", obj))
-	}
-}
-
-func (ec *executionContext) _UpdateUserPayload(ctx context.Context, sel ast.SelectionSet, obj model.UpdateUserPayload) graphql.Marshaler {
-	switch obj := (obj).(type) {
-	case nil:
-		return graphql.Null
-	case model.User:
-		return ec._User(ctx, sel, &obj)
-	case *model.User:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._User(ctx, sel, obj)
-	case model.NoUserFoundException:
-		return ec._NoUserFoundException(ctx, sel, &obj)
-	case *model.NoUserFoundException:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._NoUserFoundException(ctx, sel, obj)
-	case model.InternalServerException:
-		return ec._InternalServerException(ctx, sel, &obj)
-	case *model.InternalServerException:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._InternalServerException(ctx, sel, obj)
-	default:
-		panic(fmt.Errorf("unexpected type %T", obj))
-	}
-}
-
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
-
-var duplicateUsernameExceptionImplementors = []string{"DuplicateUsernameException", "Exception", "CreateUserPayload"}
-
-func (ec *executionContext) _DuplicateUsernameException(ctx context.Context, sel ast.SelectionSet, obj *model.DuplicateUsernameException) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, duplicateUsernameExceptionImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("DuplicateUsernameException")
-		case "message":
-			out.Values[i] = ec._DuplicateUsernameException_message(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var internalServerExceptionImplementors = []string{"InternalServerException", "Exception", "CreateUserPayload", "UpdateUserPayload", "LoginPayload"}
-
-func (ec *executionContext) _InternalServerException(ctx context.Context, sel ast.SelectionSet, obj *model.InternalServerException) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, internalServerExceptionImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("InternalServerException")
-		case "message":
-			out.Values[i] = ec._InternalServerException_message(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
 
 var mutationImplementors = []string{"Mutation"}
 
@@ -2894,30 +2672,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var noUserFoundExceptionImplementors = []string{"NoUserFoundException", "Exception", "UpdateUserPayload"}
-
-func (ec *executionContext) _NoUserFoundException(ctx context.Context, sel ast.SelectionSet, obj *model.NoUserFoundException) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, noUserFoundExceptionImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("NoUserFoundException")
-		case "message":
-			out.Values[i] = ec._NoUserFoundException_message(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3045,7 +2799,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
-var userImplementors = []string{"User", "CreateUserPayload", "UpdateUserPayload", "LoginPayload"}
+var userImplementors = []string{"User"}
 
 func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *model.User) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, userImplementors)
@@ -3071,30 +2825,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var userPassMissMatchExceptionImplementors = []string{"UserPassMissMatchException", "Exception", "LoginPayload"}
-
-func (ec *executionContext) _UserPassMissMatchException(ctx context.Context, sel ast.SelectionSet, obj *model.UserPassMissMatchException) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, userPassMissMatchExceptionImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("UserPassMissMatchException")
-		case "message":
-			out.Values[i] = ec._UserPassMissMatchException_message(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3366,16 +3096,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNCreateUserPayload2yesᚑblogᚋgraphᚋmodelᚐCreateUserPayload(ctx context.Context, sel ast.SelectionSet, v model.CreateUserPayload) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._CreateUserPayload(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3409,16 +3129,6 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 func (ec *executionContext) unmarshalNLogin2yesᚑblogᚋgraphᚋmodelᚐLogin(ctx context.Context, v interface{}) (model.Login, error) {
 	res, err := ec.unmarshalInputLogin(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNLoginPayload2yesᚑblogᚋgraphᚋmodelᚐLoginPayload(ctx context.Context, sel ast.SelectionSet, v model.LoginPayload) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._LoginPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNPost2ᚕᚖyesᚑblogᚋgraphᚋmodelᚐPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Post) graphql.Marshaler {
@@ -3498,14 +3208,8 @@ func (ec *executionContext) unmarshalNToBeUser2yesᚑblogᚋgraphᚋmodelᚐToBe
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNUpdateUserPayload2yesᚑblogᚋgraphᚋmodelᚐUpdateUserPayload(ctx context.Context, sel ast.SelectionSet, v model.UpdateUserPayload) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._UpdateUserPayload(ctx, sel, v)
+func (ec *executionContext) marshalNUser2yesᚑblogᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNUser2ᚕᚖyesᚑblogᚋgraphᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
