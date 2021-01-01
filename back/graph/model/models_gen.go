@@ -110,11 +110,13 @@ type TargetPost struct {
 type TargetUser struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Email    string `json:"email"`
 }
 
 type ToBeUser struct {
 	Username *string `json:"username"`
 	Password *string `json:"password"`
+	Email    *string `json:"email"`
 }
 
 type Token struct {
@@ -126,6 +128,7 @@ func (Token) IsLoginPayload() {}
 type User struct {
 	ID    string  `json:"id"`
 	Name  string  `json:"name"`
+	Email string  `json:"email"`
 	Posts []*Post `json:"posts"`
 }
 

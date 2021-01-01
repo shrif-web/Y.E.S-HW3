@@ -1,6 +1,7 @@
 type User {
     id: ID!
     name: String!
+    email: String!
     posts(start:Int=0,amount:Int=5): [Post!]!
 }
 
@@ -34,11 +35,13 @@ input RefreshTokenInput{
 input TargetUser {
     username: String!
     password: String!
+    email   : String!
 }
 
 input ToBeUser {
     username: String
     password: String
+    email:    String
 }
 
 input Login {

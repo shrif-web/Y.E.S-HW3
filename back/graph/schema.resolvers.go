@@ -16,7 +16,7 @@ import (
 
 func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUser) (model.CreateUserPayload, error) {
 	println("user: " + extractUsernameFromContext(ctx))
-	newUser, err := userController.GetUserController().Create(target.Username, target.Password)
+	newUser, err := userController.GetUserController().Create(target.Username, target.Password, target.Email)
 	if err != nil {
 		switch err.(type) {
 		case model.DuplicateUsernameException:

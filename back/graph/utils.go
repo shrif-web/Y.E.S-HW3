@@ -23,6 +23,7 @@ func reformatUser(blogUser *user.User) *model.User {
 	var graphUser = &model.User{
 		ID:   blogUser.ID.Hex(),
 		Name: blogUser.Name,
+		Email: blogUser.Email,
 	}
 	graphUser.Posts = reformatPosts(blogUser.Posts, graphUser)
 	return graphUser

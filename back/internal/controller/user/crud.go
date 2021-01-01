@@ -64,7 +64,7 @@ func (c *userController) Update(target string, toBe model.ToBeUser) (*user.User,
 	}
 }
 
-func (c *userController) Create(name, password string) (*user.User, error) {
+func (c *userController) Create(name, password,email string) (*user.User, error) {
 
 	// checking for duplicate username
 	if _,stat := c.dbDriver.Get(&name); stat == status.SUCCESSFUL {
@@ -72,7 +72,7 @@ func (c *userController) Create(name, password string) (*user.User, error) {
 	}
 
 	// creating new user Object to insert in to the data base
-	newUser,err := user.NewUser(name, password)
+	newUser,err := user.NewUser(name, password,email)
 	if err!=nil{
 		return nil, err
 	}
