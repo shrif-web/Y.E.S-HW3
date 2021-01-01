@@ -73,8 +73,8 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPost, authorName string) (model.CreatePostPayload, error) {
-	newPost, usr, err := postController.GetPostController().CreatePost(input.Title, input.Content, authorName)
+func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPost) (model.CreatePostPayload, error) {
+	newPost, usr, err := postController.GetPostController().CreatePost(input.Title, input.Content, extractUsernameFromContext(ctx))
 	if err != nil {
 		switch err.(type) {
 		case *model.PostEmptyException:
@@ -88,8 +88,8 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPos
 	return reformatPost(newPost, reformatUser(usr)), nil
 }
 
-func (r *mutationResolver) DeletePost(ctx context.Context, targetID string, authorName string) (model.DeletePostPayload, error) {
-	message, err := postController.GetPostController().DeletePost(targetID, authorName)
+func (r *mutationResolver) DeletePost(ctx context.Context, targetID string) (model.DeletePostPayload, error) {
+	message, err := postController.GetPostController().DeletePost(targetID, extractUsernameFromContext(ctx))
 	if err != nil {
 		switch err.(type) {
 		case *model.UserNotAllowedException:
@@ -105,8 +105,8 @@ func (r *mutationResolver) DeletePost(ctx context.Context, targetID string, auth
 	return &model.PostOperationSuccessfull{Message: &message}, nil
 }
 
-func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, input model.TargetPost, authorName string) (model.UpdatePostPayload, error) {
-	message, err := postController.GetPostController().UpdatePost(targetID, input.Title, input.Content, authorName)
+func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, input model.TargetPost) (model.UpdatePostPayload, error) {
+	message, err := postController.GetPostController().UpdatePost(targetID, input.Title, input.Content, extractUsernameFromContext(ctx))
 	if err != nil {
 		switch err.(type) {
 		case *model.UserNotAllowedException:
