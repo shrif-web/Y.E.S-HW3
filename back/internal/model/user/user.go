@@ -1,11 +1,12 @@
 package user
 
 import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"yes-blog/graph/model"
 	"yes-blog/internal/model/post"
 )
 type User struct {
-	id       string
+	ID       primitive.ObjectID `bson:"_id" json:"id,omitempty"`
 	Name     string
 	Password string
 	Admin    bool
@@ -75,10 +76,4 @@ func (u *User) Upgrade() {
 
 func (u *User) degrade() {
 	u.Admin = false
-}
-func (u *User)GetID() string {
-	return u.id
-}
-func (u *User)SetID(newId string){
-	u.id=newId
 }
