@@ -57,9 +57,8 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPos
 		return nil, err
 	}
 	return reformatPost(newPost, &model.User{
-		ID:    "",
-		Name:  input.AuthorName,
-		Posts: nil,
+		ID:   "",
+		Name: input.AuthorName,
 	}), nil
 }
 
@@ -95,9 +94,8 @@ func (r *queryResolver) Post(ctx context.Context, id string) (*model.Post, error
 		return nil, err
 	}
 	return reformatPost(newPost, &model.User{
-		ID:    "",
-		Name:  newPost.Author,
-		Posts: nil,
+		ID:   "",
+		Name: newPost.Author,
 	}), nil
 }
 
@@ -115,9 +113,8 @@ func (r *queryResolver) PostsOfUser(ctx context.Context, userName string) ([]*mo
 		return nil, err
 	}
 	return reformatPosts(posts, &model.User{
-		ID:    "",
-		Name:  userName,
-		Posts: nil,
+		ID:   "",
+		Name: userName,
 	}), nil
 }
 

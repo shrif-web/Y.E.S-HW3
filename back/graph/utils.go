@@ -49,7 +49,6 @@ func reformatAllPosts(blogPosts []*post.Post) []*model.Post {
 		posts = append(posts, reformatPost(p, &model.User{
 			ID:    "",
 			Name:  p.Author,
-			Posts: nil,
 		}))
 	}
 	return posts
