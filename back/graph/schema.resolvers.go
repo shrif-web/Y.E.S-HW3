@@ -11,17 +11,16 @@ import (
 	"yes-blog/graph/model"
 	postController "yes-blog/internal/controller/post"
 	userController "yes-blog/internal/controller/user"
-	controller "yes-blog/internal/controller/user"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUser) (model.CreateUserPayload, error) {
-	newUser, err := controller.GetUserController().Create(target.Username, target.Password)
+	newUser, err := userController.GetUserController().Create(target.Username, target.Password)
 	if err != nil {
 		switch err.(type) {
 		case model.DuplicateUsernameException:
-			return err.(model.DuplicateUsernameException),nil
+			return err.(model.DuplicateUsernameException), nil
 		case model.InternalServerException:
-			return err.(model.InternalServerException),nil
+			return err.(model.InternalServerException), nil
 		}
 	}
 	return reformatUser(newUser), err
@@ -32,13 +31,13 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (string,
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, target string, toBe model.ToBeUser) (model.UpdateUserPayload, error) {
-	update, err := controller.GetUserController().Update(target, toBe)
-	if err!=nil{
+	update, err := userController.GetUserController().Update(target, toBe)
+	if err != nil {
 		switch err.(type) {
 		case model.NoUserFoundException:
-			return err.(model.NoUserFoundException),nil
+			return err.(model.NoUserFoundException), nil
 		case model.InternalServerException:
-			return err.(model.InternalServerException),nil
+			return err.(model.InternalServerException), nil
 		}
 	}
 	return reformatUser(update), err

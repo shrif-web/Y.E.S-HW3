@@ -66,11 +66,10 @@ union UpdateUserPayload = User | NoUserFoundException       | InternalServerExce
 union LoginPayload =      User | UserPassMissMatchException | InternalServerException
 
 type Mutation {
-    createUser(target: TargetUser!): User!
+    createUser(target: TargetUser!): CreateUserPayload!
     deleteUser(name: String!): String!
     updateUser(target: String!, toBe: ToBeUser!): UpdateUserPayload!
 
-    login(input: Login!): String!
     login(input: Login!): LoginPayload!
     # we'll talk about this in authentication section
     refreshToken(input: RefreshTokenInput!): String!
