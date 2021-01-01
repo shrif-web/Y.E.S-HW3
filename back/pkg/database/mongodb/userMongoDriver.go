@@ -54,7 +54,7 @@ func (u UserMongoDriver) Insert(user *user.User) status.QueryStatus {
 }
 
 func (u UserMongoDriver) Get(name *string) (*user.User, status.QueryStatus) {
-	ctx, cancel := context.WithTimeout(context.Background(), 50000*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
 
 	var result user.User
