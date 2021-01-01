@@ -3,6 +3,7 @@ package mongodb
 import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"strconv"
 	"time"
@@ -21,32 +22,27 @@ const PostUpdateTimeOut = 50000
 const PostGetTimeOut = 50000
 const PostGetAllTimeOut = 50000
 
-func (p PostMongoDriver) Insert(pst *post.Post) (*user.User, error) {
+func (p PostMongoDriver) Insert(pst *post.Post, authorName string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), PostInsertTimeOut*time.Millisecond)
 	defer cancel()
 
 	target := bson.M{
-		"name": pst.AuthorID,
+		"name": authorName,
 	}
-	var usr user.User
-	findErr := p.collection.FindOne(ctx, target).Decode(&usr)
-	if findErr != nil {
-		return nil, DBException.ThrowUserNotFoundException(pst.AuthorID)
-	}
-
 	change := bson.M{
 		"$push": bson.M{
 			"posts": pst,
 		},
 	}
+	pst.ID = primitive.NewObjectID()
 	_, err := p.collection.UpdateOne(ctx, target, change)
 	if err != nil {
-		return nil, DBException.ThrowInternalDBException(err.Error())
+		return DBException.ThrowInternalDBException(err.Error())
 	}
-	return &usr, nil
+	return nil
 }
 
-func (p PostMongoDriver) Delete(postID string, authorName string) error {
+func (p PostMongoDriver) Delete(postID primitive.ObjectID, authorName string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), PostDeleteTimeOut*time.Millisecond)
 	defer cancel()
 
@@ -59,14 +55,14 @@ func (p PostMongoDriver) Delete(postID string, authorName string) error {
 		return DBException.ThrowUserNotFoundException(authorName)
 	}
 
-	if _, _, fr := post.Find(usr.Posts, postID); !fr {
-		return DBException.ThrowUserNotAllowedException(authorName)
+	if _, _, fr := post.Find(usr.Posts, postID.Hex()); !fr {
+		return DBException.ThrowPostNotFoundException(postID.Hex())
 	}
 
 	change := bson.M{
 		"$pull": bson.M{
 			"posts": bson.M{
-				"id": postID,
+				"_id": postID,
 			},
 		},
 	}
@@ -82,13 +78,13 @@ func (p PostMongoDriver) Update(pst *post.Post) error {
 	defer cancel()
 
 	target := bson.M{
-		"name":     pst.AuthorID,
-		"posts.id": pst.ID,
+		"name":      pst.AuthorID,
+		"posts._id": pst.ID,
 	}
 	var usr user.User
 	findErr := p.collection.FindOne(ctx, target).Decode(&usr)
 	if findErr != nil {
-		return DBException.ThrowPostNotFoundException(pst.ID)
+		return DBException.ThrowPostNotFoundException(pst.ID.Hex())
 	}
 
 	change := bson.M{
@@ -105,7 +101,7 @@ func (p PostMongoDriver) Update(pst *post.Post) error {
 	return nil
 }
 
-func (p PostMongoDriver) Get(postID string) (*post.Post, *user.User, error) {
+func (p PostMongoDriver) Get(postID primitive.ObjectID) (*post.Post, *user.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), PostGetTimeOut*time.Millisecond)
 	defer cancel()
 
@@ -118,12 +114,12 @@ func (p PostMongoDriver) Get(postID string) (*post.Post, *user.User, error) {
 	for curr.Next(context.Background()) {
 		var usr user.User
 		_ = curr.Decode(&usr)
-		p, _, rf := post.Find(usr.Posts, postID)
+		p, _, rf := post.Find(usr.Posts, postID.Hex())
 		if rf {
 			return p, &usr, nil
 		}
 	}
-	return nil, nil, DBException.ThrowPostNotFoundException(postID)
+	return nil, nil, DBException.ThrowPostNotFoundException(postID.Hex())
 }
 
 func (p PostMongoDriver) GetAll(startIndex, amount int) ([]*post.Post, []*user.User, error) {
@@ -137,13 +133,13 @@ func (p PostMongoDriver) GetAll(startIndex, amount int) ([]*post.Post, []*user.U
 		return nil, nil, DBException.ThrowInternalDBException(err.Error())
 	}
 	defer curr.Close(ctx)
-	usrs := make(map[*post.Post]*user.User)
+	var usrs []*user.User
 	for curr.Next(context.Background()) {
 		var usr user.User
 		_ = curr.Decode(&usr)
 		allPosts = append(allPosts, usr.Posts...)
-		for _, p := range allPosts {
-			usrs[p] = &usr
+		for i := 0; i < len(usr.Posts); i++ {
+			usrs = append(usrs, &usr)
 		}
 	}
 
@@ -151,17 +147,21 @@ func (p PostMongoDriver) GetAll(startIndex, amount int) ([]*post.Post, []*user.U
 		return nil, nil, DBException.ThrowPostNotFoundException("(index of " + strconv.Itoa(startIndex) + ")")
 	}
 
+	pumap := make(map[*post.Post]int)
+	for i, p := range allPosts {
+		pumap[p] = i
+	}
 	post.Sort(allPosts)
-	resUs := make([]*user.User, amount)
+	var resUs []*user.User
 	sIn := startIndex
-	eIn := startIndex - amount + 1
-	if startIndex-amount+1 < 0 {
-		eIn = 0
+	eIn := startIndex + amount - 1
+	if startIndex+amount-1 >= len(allPosts) {
+		eIn = len(allPosts) - 1
 	}
-	for j := sIn; j >= eIn; j-- {
-		resUs = append(resUs, usrs[allPosts[j]])
+	for j := sIn; j <= eIn; j++ {
+		resUs = append(resUs, usrs[pumap[allPosts[j]]])
 	}
-	return allPosts[eIn : sIn+1], resUs, nil
+	return allPosts[sIn : eIn+1], resUs, nil
 }
 
 func (p PostMongoDriver) GetByUser(userName string) ([]*post.Post, *user.User, error) {

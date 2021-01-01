@@ -24,8 +24,7 @@ func (c *userController) GetAll(start, amount int64) ([]*user.User, error) {
 
 func (c *userController) Get(name *string) (*user.User, error) {
 	if blogUser, stat := c.dbDriver.Get(name); stat == status.FAILED {
-		message:="couldn't find the requested user"
-		return nil, model.NoUserFoundException{Message: &message}
+		return nil, model.NoUserFoundException{Message: "couldn't find the requested user"}
 	} else {
 		return blogUser, nil
 	}
@@ -33,8 +32,7 @@ func (c *userController) Get(name *string) (*user.User, error) {
 
 func (c *userController) Delete(name *string) error {
 	if stat := c.dbDriver.Delete(name); stat == status.FAILED {
-		message :="couldn't delete the user"
-		return model.InternalServerException{Message: &message}
+		return model.InternalServerException{Message: "couldn't delete the user"}
 	} else {
 		return nil
 	}
@@ -57,18 +55,16 @@ func (c *userController) Update(target string, toBe model.ToBeUser) (*user.User,
 		// checking if the target user exists
 		_, stat2 := c.dbDriver.Get(&target)
 		if stat2 == status.FAILED {
-			message:="target Doesnt exist"
-			return nil, model.NoUserFoundException{Message: &message}
+			return nil, model.NoUserFoundException{Message: "target Doesnt exist"}
 		}
 		// no clue why query failed
-		message:="couldn't update the user"
-		return nil,model.InternalServerException{Message: &message}
+		return nil,model.InternalServerException{Message:"couldn't update the user"}
 	} else {
 		return &blogUser,nil
 	}
 }
 
-func (c *userController) Create(name, password string) (*user.User, error) {
+func (c *userController) Create(name, password,email string) (*user.User, error) {
 
 	// checking for duplicate username
 	if _,stat := c.dbDriver.Get(&name); stat == status.SUCCESSFUL {
@@ -76,14 +72,13 @@ func (c *userController) Create(name, password string) (*user.User, error) {
 	}
 
 	// creating new user Object to insert in to the data base
-	newUser,err := user.NewUser(name, password)
+	newUser,err := user.NewUser(name, password,email)
 	if err!=nil{
 		return nil, err
 	}
 	// inserting into the database
 	if stat := c.dbDriver.Insert(newUser); stat == status.FAILED {
-		message:="couldn't create user"
-		return &user.User{},model.InternalServerException{Message: &message}
+		return &user.User{},model.InternalServerException{Message: "couldn't create user"}
 	} else {
 		return newUser, nil
 	}

@@ -2,8 +2,10 @@ package controller
 
 import (
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 	"yes-blog/graph/model"
+	userController "yes-blog/internal/controller/user"
 	"yes-blog/internal/model/post"
 	"yes-blog/internal/model/user"
 	"yes-blog/pkg/database/DBException"
@@ -19,12 +21,19 @@ import (
 
 // create model.Post entry then add into DB
 func (p *postController) CreatePost(title, body, authorName string) (*post.Post, *user.User, error) {
-	newPost, errr := post.NewPost(title, body, "")
+
+	usr, err := userController.GetUserController().Get(&authorName)
+	if err != nil {
+		return nil, nil, &model.NoUserFoundException{Message: err.Error()}
+	}
+
+	newPost, errr := post.NewPost(title, body, usr.ID.Hex())
 	if errr != nil {
 		message := errr.Error()
-		return nil, nil, &model.PostEmptyException{Message: &message}
+		return nil, nil, &model.PostEmptyException{Message: message}
 	}
-	usr, err := p.dbDriver.Insert(newPost)
+
+	err = p.dbDriver.Insert(newPost, authorName)
 	err = CastDBEToGQLE(err)
 	if err != nil {
 		return nil, nil, err
@@ -34,9 +43,13 @@ func (p *postController) CreatePost(title, body, authorName string) (*post.Post,
 
 // edit the post in DB
 func (p *postController) UpdatePost(postID, title, body, authorName string) (string, error) {
-	upPost, err := post.NewRawPost(postID, title, body, authorName, time.Now().Unix())
+	id, errr := primitive.ObjectIDFromHex(postID)
+	if errr != nil {
+		return errr.Error(), &model.InternalServerException{Message: errr.Error()}
+	}
+	upPost, err := post.NewRawPost(id, title, body, authorName, time.Now().Unix())
 	if err != nil {
-		return fmt.Sprint(err), err
+		return errr.Error(), &model.InternalServerException{Message: errr.Error()}
 	}
 	err = p.dbDriver.Update(upPost)
 	err = CastDBEToGQLE(err)
@@ -48,7 +61,11 @@ func (p *postController) UpdatePost(postID, title, body, authorName string) (str
 
 // delete the post from DB
 func (p *postController) DeletePost(postID string, authorName string) (string, error) {
-	err := p.dbDriver.Delete(postID, authorName)
+	id, errr := primitive.ObjectIDFromHex(postID)
+	if errr != nil {
+		return fmt.Sprint(errr), errr
+	}
+	err := p.dbDriver.Delete(id, authorName)
 	err = CastDBEToGQLE(err)
 	if err != nil {
 		return "the post couldn't delete", err
@@ -58,7 +75,11 @@ func (p *postController) DeletePost(postID string, authorName string) (string, e
 
 // get the post specified with id from DB
 func (p *postController) GetPost(postID string) (*post.Post, *user.User, error) {
-	pst, usr, err := p.dbDriver.Get(postID)
+	id, errr := primitive.ObjectIDFromHex(postID)
+	if errr != nil {
+		return nil, nil, errr
+	}
+	pst, usr, err := p.dbDriver.Get(id)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -86,16 +107,15 @@ func (p *postController) GetPostByUser(userName string) ([]*post.Post, *user.Use
 // casting database errors to model.graphQL exceptions
 func CastDBEToGQLE(err error) error {
 	if err != nil {
-		message := err.Error()
 		switch err.(type) {
 		case *DBException.UserNotFound:
-			return &model.NoUserFoundException{Message: &message}
+			return &model.NoUserFoundException{Message: err.Error()}
 		case *DBException.PostNotFound:
-			return &model.PostNotFoundException{Message: &message}
+			return &model.PostNotFoundException{Message: err.Error()}
 		case *DBException.UserNotAllowed:
-			return &model.UserNotAllowedException{Message: &message}
+			return &model.UserNotAllowedException{Message: err.Error()}
 		case *DBException.InternalDBError:
-			return &model.InternalServerException{Message: &message}
+			return &model.InternalServerException{Message: err.Error()}
 		}
 	}
 	return nil

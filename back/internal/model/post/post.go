@@ -3,6 +3,7 @@ package post
 import (
 	"crypto/sha1"
 	"errors"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"sort"
 	"strconv"
 	"time"
@@ -12,7 +13,7 @@ const ConstructorErrMsg string = "both title & content fields are empty"
 const ArgErrMsg string = "POST empty exception"
 
 type Post struct {
-	ID        string `json:"id" bson:"id"`
+	ID        primitive.ObjectID `bson:"_id" json:"id,omitempty"`
 	Title     string `json:"title" bson:"title"`
 	Body      string `json:"body" bson:"body"`
 	AuthorID  string `json:"author" bson:"author"`
@@ -24,17 +25,15 @@ func NewPost(title, body, authorID string) (*Post, error) {
 		return nil, errors.New(ConstructorErrMsg)
 	}
 	pst := &Post{
-		ID:        "",
 		Title:     title,
 		Body:      body,
 		AuthorID:  authorID,
 		TimeStamp: time.Now().Unix(),
 	}
-	pst.ID = pst.GetHash()
 	return pst, nil
 }
 
-func NewRawPost(id, title, body, authorID string, timeStamp int64) (*Post, error) {
+func NewRawPost(id primitive.ObjectID, title, body, authorID string, timeStamp int64) (*Post, error) {
 	if isAllEmpty(title, body) {
 		return nil, errors.New(ConstructorErrMsg)
 	}
@@ -55,7 +54,7 @@ func Sort(arr []*Post) {
 
 func Find(arr []*Post, id string) (*Post, int, bool) {
 	for i, p := range arr {
-		if p.ID == id {
+		if p.ID.Hex() == id {
 			return p, i, true
 		}
 	}

@@ -100,6 +100,7 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
+		Email func(childComplexity int) int
 		ID    func(childComplexity int) int
 		Name  func(childComplexity int) int
 		Posts func(childComplexity int, start *int, amount *int) int
@@ -387,6 +388,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Token.Token(childComplexity), true
 
+	case "User.email":
+		if e.complexity.User.Email == nil {
+			break
+		}
+
+		return e.complexity.User.Email(childComplexity), true
+
 	case "User.id":
 		if e.complexity.User.ID == nil {
 			break
@@ -494,6 +502,7 @@ var sources = []*ast.Source{
 	{Name: "graph/schema.graphqls", Input: `type User {
     id: ID!
     name: String!
+    email: String!
     posts(start:Int=0,amount:Int=5): [Post!]!
 }
 
@@ -526,11 +535,13 @@ input RefreshTokenInput{
 input TargetUser {
     username: String!
     password: String!
+    email   : String!
 }
 
 input ToBeUser {
     username: String
     password: String
+    email:    String
 }
 
 input Login {
@@ -543,28 +554,28 @@ type Token{
 }
 
 interface Exception{
-    message:String
+    message:String!
 }
 type DuplicateUsernameException implements Exception{
-    message:String
+    message:String!
 }
 type NoUserFoundException implements Exception{
-    message:String
+    message:String!
 }
 type UserPassMissMatchException implements Exception{
-    message:String
+    message:String!
 }
 type InternalServerException implements Exception{
-    message:String
+    message:String!
 }
 type UserNotAllowedException implements Exception{
-    message:String
+    message:String!
 }
 type PostNotFoundException implements Exception{
-    message:String
+    message:String!
 }
 type PostEmptyException implements Exception{
-    message:String
+    message:String!
 }
 type PostOperationSuccessfull{
     message:String
@@ -582,7 +593,6 @@ type Mutation {
     updateUser(target: String!, toBe: ToBeUser!): UpdateUserPayload!
 
     login(input: Login!): LoginPayload!
-    # we'll talk about this in authentication section
     refreshToken(input: RefreshTokenInput!): String!
 
     createPost(input: TargetPost!, authorName: String!): CreatePostPayload!
@@ -957,11 +967,14 @@ func (ec *executionContext) _DuplicateUsernameException_message(ctx context.Cont
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _InternalServerException_message(ctx context.Context, field graphql.CollectedField, obj *model.InternalServerException) (ret graphql.Marshaler) {
@@ -989,11 +1002,14 @@ func (ec *executionContext) _InternalServerException_message(ctx context.Context
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1357,11 +1373,14 @@ func (ec *executionContext) _NoUserFoundException_message(ctx context.Context, f
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Post_id(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
@@ -1564,11 +1583,14 @@ func (ec *executionContext) _PostEmptyException_message(ctx context.Context, fie
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PostNotFoundException_message(ctx context.Context, field graphql.CollectedField, obj *model.PostNotFoundException) (ret graphql.Marshaler) {
@@ -1596,11 +1618,14 @@ func (ec *executionContext) _PostNotFoundException_message(ctx context.Context, 
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PostOperationSuccessfull_message(ctx context.Context, field graphql.CollectedField, obj *model.PostOperationSuccessfull) (ret graphql.Marshaler) {
@@ -2018,6 +2043,41 @@ func (ec *executionContext) _User_name(ctx context.Context, field graphql.Collec
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _User_email(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Email, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _User_posts(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2085,11 +2145,14 @@ func (ec *executionContext) _UserNotAllowedException_message(ctx context.Context
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _UserPassMissMatchException_message(ctx context.Context, field graphql.CollectedField, obj *model.UserPassMissMatchException) (ret graphql.Marshaler) {
@@ -2117,11 +2180,14 @@ func (ec *executionContext) _UserPassMissMatchException_message(ctx context.Cont
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -3309,6 +3375,14 @@ func (ec *executionContext) unmarshalInputTargetUser(ctx context.Context, obj in
 			if err != nil {
 				return it, err
 			}
+		case "email":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -3334,6 +3408,14 @@ func (ec *executionContext) unmarshalInputToBeUser(ctx context.Context, obj inte
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
 			it.Password, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "email":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			it.Email, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3644,6 +3726,9 @@ func (ec *executionContext) _DuplicateUsernameException(ctx context.Context, sel
 			out.Values[i] = graphql.MarshalString("DuplicateUsernameException")
 		case "message":
 			out.Values[i] = ec._DuplicateUsernameException_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3668,6 +3753,9 @@ func (ec *executionContext) _InternalServerException(ctx context.Context, sel as
 			out.Values[i] = graphql.MarshalString("InternalServerException")
 		case "message":
 			out.Values[i] = ec._InternalServerException_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3758,6 +3846,9 @@ func (ec *executionContext) _NoUserFoundException(ctx context.Context, sel ast.S
 			out.Values[i] = graphql.MarshalString("NoUserFoundException")
 		case "message":
 			out.Values[i] = ec._NoUserFoundException_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3829,6 +3920,9 @@ func (ec *executionContext) _PostEmptyException(ctx context.Context, sel ast.Sel
 			out.Values[i] = graphql.MarshalString("PostEmptyException")
 		case "message":
 			out.Values[i] = ec._PostEmptyException_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3853,6 +3947,9 @@ func (ec *executionContext) _PostNotFoundException(ctx context.Context, sel ast.
 			out.Values[i] = graphql.MarshalString("PostNotFoundException")
 		case "message":
 			out.Values[i] = ec._PostNotFoundException_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4033,6 +4130,11 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "email":
+			out.Values[i] = ec._User_email(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "posts":
 			out.Values[i] = ec._User_posts(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -4062,6 +4164,9 @@ func (ec *executionContext) _UserNotAllowedException(ctx context.Context, sel as
 			out.Values[i] = graphql.MarshalString("UserNotAllowedException")
 		case "message":
 			out.Values[i] = ec._UserNotAllowedException_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4086,6 +4191,9 @@ func (ec *executionContext) _UserPassMissMatchException(ctx context.Context, sel
 			out.Values[i] = graphql.MarshalString("UserPassMissMatchException")
 		case "message":
 			out.Values[i] = ec._UserPassMissMatchException_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
