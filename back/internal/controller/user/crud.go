@@ -47,8 +47,8 @@ func (c *userController) Update(target string, toBe model.ToBeUser) error {
 		blogUser.UpdatePassword(*(toBe.Password))
 	}
 	if stat := c.dbDriver.Update(target, &blogUser); stat == status.FAILED {
-		_, stat := c.dbDriver.Get(&target)
-		if stat == status.FAILED {
+		_, stat2 := c.dbDriver.Get(&target)
+		if stat2 == status.FAILED {
 			return errors.New("target Doesnt exist")
 		}
 		return errors.New("couldn't update the user")
