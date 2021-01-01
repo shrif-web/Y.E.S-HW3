@@ -24,8 +24,7 @@ func GenerateToken(username string) (string, error) {
 	// producing the token string
 	tokenString, err := token.SignedString(SecretKey)
 	if err != nil {
-		message:="couldn't create the token"
-		return "", model.InternalServerException{Message: &message}
+		return "", model.InternalServerException{Message: "couldn't create the token"}
 	}
 	return tokenString, nil
 }
@@ -38,8 +37,7 @@ func ParseToken(tokenStr string) (string, error) {
 		return SecretKey, nil
 	})
 	if err!=nil{
-		message:="couldn't read the token"
-		return "", model.InternalServerException{Message: &message}
+		return "", model.InternalServerException{Message: "couldn't read the token"}
 	}
 
 	// extracting username

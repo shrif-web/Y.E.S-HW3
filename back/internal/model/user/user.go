@@ -26,8 +26,7 @@ func newUser(name, password string, admin bool) (*User,error) {
 	// hashing password
 	hashedPass,err:=hashAndSalt([]byte(password))
 	if err!=nil{
-		message:="internal server error: couldn't hash password"
-		return nil,model.InternalServerException{Message: &message}
+		return nil,model.InternalServerException{Message: "internal server error: couldn't hash password"}
 	}
 
 	return &User{
@@ -58,8 +57,7 @@ func (u *User) UpdatePassword(password string) error {
 	hashedPass,err:=hashAndSalt([]byte(password))
 
 	if err!=nil{
-		message:="internal server error: couldn't hash password"
-		return model.InternalServerException{Message: &message}
+		return model.InternalServerException{Message: "internal server error: couldn't hash password"}
 	}
 
 	u.Password=hashedPass

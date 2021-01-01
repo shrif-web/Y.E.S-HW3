@@ -15,7 +15,7 @@ import (
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUser) (model.CreateUserPayload, error) {
-	println("user: "+extractUsernameFromContext(ctx))
+	println("user: " + extractUsernameFromContext(ctx))
 	newUser, err := userController.GetUserController().Create(target.Username, target.Password)
 	if err != nil {
 		switch err.(type) {

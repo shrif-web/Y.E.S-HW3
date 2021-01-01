@@ -51,28 +51,28 @@ type Token{
 }
 
 interface Exception{
-    message:String
+    message:String!
 }
 type DuplicateUsernameException implements Exception{
-    message:String
+    message:String!
 }
 type NoUserFoundException implements Exception{
-    message:String
+    message:String!
 }
 type UserPassMissMatchException implements Exception{
-    message:String
+    message:String!
 }
 type InternalServerException implements Exception{
-    message:String
+    message:String!
 }
 type UserNotAllowedException implements Exception{
-    message:String
+    message:String!
 }
 type PostNotFoundException implements Exception{
-    message:String
+    message:String!
 }
 type PostEmptyException implements Exception{
-    message:String
+    message:String!
 }
 type PostOperationSuccessfull{
     message:String

@@ -31,14 +31,14 @@ type UpdateUserPayload interface {
 }
 
 type DuplicateUsernameException struct {
-	Message *string `json:"message"`
+	Message string `json:"message"`
 }
 
 func (DuplicateUsernameException) IsException()         {}
 func (DuplicateUsernameException) IsCreateUserPayload() {}
 
 type InternalServerException struct {
-	Message *string `json:"message"`
+	Message string `json:"message"`
 }
 
 func (InternalServerException) IsException()         {}
@@ -55,7 +55,7 @@ type Login struct {
 }
 
 type NoUserFoundException struct {
-	Message *string `json:"message"`
+	Message string `json:"message"`
 }
 
 func (NoUserFoundException) IsException()         {}
@@ -75,7 +75,7 @@ type Post struct {
 func (Post) IsCreatePostPayload() {}
 
 type PostEmptyException struct {
-	Message *string `json:"message"`
+	Message string `json:"message"`
 }
 
 func (PostEmptyException) IsException()         {}
@@ -83,7 +83,7 @@ func (PostEmptyException) IsCreatePostPayload() {}
 func (PostEmptyException) IsUpdatePostPayload() {}
 
 type PostNotFoundException struct {
-	Message *string `json:"message"`
+	Message string `json:"message"`
 }
 
 func (PostNotFoundException) IsException()         {}
@@ -133,7 +133,7 @@ func (User) IsCreateUserPayload() {}
 func (User) IsUpdateUserPayload() {}
 
 type UserNotAllowedException struct {
-	Message *string `json:"message"`
+	Message string `json:"message"`
 }
 
 func (UserNotAllowedException) IsException()         {}
@@ -141,7 +141,7 @@ func (UserNotAllowedException) IsDeletePostPayload() {}
 func (UserNotAllowedException) IsUpdatePostPayload() {}
 
 type UserPassMissMatchException struct {
-	Message *string `json:"message"`
+	Message string `json:"message"`
 }
 
 func (UserPassMissMatchException) IsException()    {}

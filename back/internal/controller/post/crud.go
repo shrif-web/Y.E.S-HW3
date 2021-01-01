@@ -20,8 +20,7 @@ import (
 func (p *postController) CreatePost(title, body, authorName string) (*post.Post, error) {
 	newPost, err := post.NewPost(title, body, authorName)
 	if err != nil {
-		message := err.Error()
-		return nil, &model.PostEmptyException{Message: &message}
+		return nil, &model.PostEmptyException{Message: err.Error()}
 	}
 	err = p.dbDriver.Insert(newPost)
 	err = CastDBEToGQLE(err)
@@ -85,16 +84,15 @@ func (p *postController) GetPostByUser(userName string) ([]*post.Post, error) {
 // casting database errors to model.graphQL exceptions
 func CastDBEToGQLE(err error) error {
 	if err != nil {
-		message := err.Error()
 		switch err.(type) {
 		case *DBException.UserNotFound:
-			return &model.NoUserFoundException{Message: &message}
+			return &model.NoUserFoundException{Message: err.Error()}
 		case *DBException.PostNotFound:
-			return &model.PostNotFoundException{Message: &message}
+			return &model.PostNotFoundException{Message: err.Error()}
 		case *DBException.UserNotAllowed:
-			return &model.UserNotAllowedException{Message: &message}
+			return &model.UserNotAllowedException{Message: err.Error()}
 		case *DBException.InternalDBError:
-			return &model.InternalServerException{Message: &message}
+			return &model.InternalServerException{Message: err.Error()}
 		}
 	}
 	return nil
