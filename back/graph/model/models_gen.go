@@ -117,6 +117,12 @@ type ToBeUser struct {
 	Password *string `json:"password"`
 }
 
+type Token struct {
+	Token string `json:"token"`
+}
+
+func (Token) IsLoginPayload() {}
+
 type User struct {
 	ID    string  `json:"id"`
 	Name  string  `json:"name"`
@@ -125,7 +131,6 @@ type User struct {
 
 func (User) IsCreateUserPayload() {}
 func (User) IsUpdateUserPayload() {}
-func (User) IsLoginPayload()      {}
 
 type UserNotAllowedException struct {
 	Message *string `json:"message"`
