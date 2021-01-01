@@ -15,19 +15,19 @@ type contextKey struct {
 
 func Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		header := c.GetHeader(authHeaderKey)
-		if header==""{
+		token := c.GetHeader(authHeaderKey)
+		if token==""{
 			c.Next()
 			return
 		}
 		//Set username in the context
-		username, err := jwt.ParseToken(header)
+		username, err := jwt.ParseToken(token)
 		if err!=nil {
 			c.Status(http.StatusUnauthorized)
 			return
 		}
 		c.Set("username", username)
-		c.Set(usernameKey,header)
+		c.Set(usernameKey,username)
 		c.Next()
 	}
 }
