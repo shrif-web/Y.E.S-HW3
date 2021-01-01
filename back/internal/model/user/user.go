@@ -7,7 +7,7 @@ import (
 )
 var uuid=0
 type User struct {
-	ID       string
+	id       string
 	Name     string
 	Password string
 	Admin    bool
@@ -79,4 +79,10 @@ func (u *User) Upgrade() {
 
 func (u *User) degrade() {
 	u.Admin = false
+}
+func (u *User)getID() string {
+	return u.id
+}
+func (u *User)setID(newId string){
+	u.id=newId
 }
