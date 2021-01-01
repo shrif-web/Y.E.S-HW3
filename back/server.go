@@ -8,6 +8,7 @@ import (
 	"log"
 	"yes-blog/graph"
 	"yes-blog/graph/generated"
+	"yes-blog/internal/auth"
 	postController "yes-blog/internal/controller/post"
 	userController "yes-blog/internal/controller/user"
 	"yes-blog/pkg/database/mongodb"
@@ -25,9 +26,13 @@ func main() {
 
 	// Setting up Gin
 	r := gin.Default()
+	r.Use(auth.Middleware())
+
+	// routing
 	r.POST("/query", graphqlHandler())
 	r.GET("/", playgroundHandler())
 
+	//let it begin
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", defaultPort)
 	r.Run(":"+defaultPort)
 
@@ -51,4 +56,3 @@ func playgroundHandler() gin.HandlerFunc {
 		pg.ServeHTTP(c.Writer, c.Request)
 	}
 }
-
