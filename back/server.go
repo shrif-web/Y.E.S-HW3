@@ -24,7 +24,7 @@ func main() {
 		port = defaultPort
 	}
 
-	//setting a mongodb.UserMongoDriver for UserDBDriver filed of our controller.GetUserController instance
+	//setting a mongodb driver for DBDriver filed of our controllers instance
 	userController.GetUserController().SetDBDriver(mongodb.NewUserMongoDriver("yes-blog", "users"))
 	postController.GetPostController().SetDBDriver(mongodb.NewPostMongoDriver("yes-blog", "users"))
 
