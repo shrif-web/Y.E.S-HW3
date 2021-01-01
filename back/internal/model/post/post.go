@@ -5,7 +5,6 @@ import (
 	"sort"
 	"strconv"
 	"time"
-	"yes-blog/internal"
 )
 
 const ConstructorErrMsg string = "both title & content fields are empty"
@@ -22,7 +21,7 @@ type Post struct {
 }
 
 func NewPost(title, body, authorID string) (*Post, error) {
-	if internal.IsAllEmpty(title, body) || internal.IsEmpty(authorID) {
+	if IsAllEmpty(title, body) || IsEmpty(authorID) {
 		return nil, errors.New(ConstructorErrMsg)
 	}
 	defer func() { upid++ }()
@@ -36,7 +35,7 @@ func NewPost(title, body, authorID string) (*Post, error) {
 }
 
 func NewRawPost(id, title, body, authorID string, timeStamp int64) (*Post, error) {
-	if internal.IsAllEmpty(title, body) {
+	if IsAllEmpty(title, body) {
 		return nil, errors.New(ConstructorErrMsg)
 	}
 	return &Post{
@@ -64,7 +63,7 @@ func Find(arr []*Post, id string) (*Post, int,  bool) {
 }
 
 func (p *Post) setTitle(title string) error {
-	if internal.IsAllEmpty(p.Body, title) {
+	if IsAllEmpty(p.Body, title) {
 		return errors.New(ArgErrMsg)
 	}
 	p.Title = title
@@ -72,7 +71,7 @@ func (p *Post) setTitle(title string) error {
 }
 
 func (p *Post) SetBody(body string) error {
-	if internal.IsAllEmpty(body, p.Title) {
+	if IsAllEmpty(body, p.Title) {
 		return errors.New(ArgErrMsg)
 	}
 	p.Body = body
