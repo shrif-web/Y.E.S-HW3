@@ -37,16 +37,35 @@ input Login {
     password: String!
 }
 
+interface Exception{
+    message:String
+}
+type DuplicateUsernameException implements Exception{
+    message:String
+}
+type NoUserFoundException implements Exception{
+    message:String
+}
+type UserPassMissMatchException implements Exception{
+    message:String
+}
+type InternalServerException implements Exception{
+    message:String
+}
+union CreateUserPayload = User | DuplicateUsernameException | InternalServerException
+union UpdateUserPayload = User | NoUserFoundException       | InternalServerException
+union LoginPayload =      User | UserPassMissMatchException | InternalServerException
+
 type Mutation {
-#    createPost(input: TargetPost!): Post!
-#    deletePost(input: TargetPost!): Post!
-#    updatePost(input: TargetPost!): Post!
+    #    createPost(input: TargetPost!): Post!
+    #    deletePost(input: TargetPost!): Post!
+    #    updatePost(input: TargetPost!): Post!
 
-    createUser(target: TargetUser!): User!
+    createUser(target: TargetUser!): CreateUserPayload!
     deleteUser(name: String!): String!
-    updateUser(target: String!, toBe: ToBeUser!): String!
+    updateUser(target: String!, toBe: ToBeUser!): UpdateUserPayload!
 
-    login(input: Login!): String!
+    login(input: Login!): LoginPayload!
     # we'll talk about this in authentication section
     refreshToken(input: RefreshTokenInput!): String!
 }

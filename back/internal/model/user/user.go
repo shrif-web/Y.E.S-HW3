@@ -2,6 +2,7 @@ package user
 
 import (
 	"strconv"
+	"yes-blog/graph/model"
 	"yes-blog/internal/model/post"
 )
 var uuid=0
@@ -13,22 +14,30 @@ type User struct {
 	Posts    []*post.Post
 }
 
-func NewUser(name, password string) *User {
+func NewUser(name, password string) (*User,error) {
+
 	return newUser(name, password, false)
 }
 
-func NewAdmin(name, password string) *User {
+func NewAdmin(name, password string) (*User, error) {
 	return newUser(name, password, true)
 }
 
-func newUser(name, password string, admin bool) *User {
+func newUser(name, password string, admin bool) (*User,error) {
 	defer func(){uuid++}()
+	// hashing password
+	hashedPass,err:=hashAndSalt([]byte(password))
+	if err!=nil{
+		message:="internal server error: couldn't hash password"
+		return nil,model.InternalServerException{Message: &message}
+	}
+
 	return &User{
 		ID:       strconv.Itoa(uuid),
 		Name:     name,
-		Password: password,
+		Password: hashedPass,
 		Admin:    admin,
-	}
+	},nil
 }
 
 func (u *User) AddPost(p *post.Post) *User {
@@ -46,9 +55,17 @@ func (u *User) DeletePost(id string) *User{
 	return u
 }
 
-func (u *User) UpdatePassword(password string) *User {
-	u.Password = password
-	return u
+func (u *User) UpdatePassword(password string) error {
+	// hashing password
+	hashedPass,err:=hashAndSalt([]byte(password))
+
+	if err!=nil{
+		message:="internal server error: couldn't hash password"
+		return model.InternalServerException{Message: &message}
+	}
+
+	u.Password=hashedPass
+	return nil
 }
 
 func (u *User) UpdateName(name string) {

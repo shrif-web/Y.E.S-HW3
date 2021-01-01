@@ -8,31 +8,40 @@ import (
 	"fmt"
 	"yes-blog/graph/generated"
 	"yes-blog/graph/model"
-	"yes-blog/internal/controller/user"
+	controller "yes-blog/internal/controller/user"
 )
 
-func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUser) (*model.User, error) {
-	if newUser, err := controller.GetUserController().Create(target.Username, target.Password);
-	err!=nil{
-		return nil,err
-	}else {
-		return reformatUser(newUser), nil
+func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUser) (model.CreateUserPayload, error) {
+	newUser, err := controller.GetUserController().Create(target.Username, target.Password)
+	if err != nil {
+		switch err.(type) {
+		case model.DuplicateUsernameException:
+			return err.(model.DuplicateUsernameException),nil
+		case model.InternalServerException:
+			return err.(model.InternalServerException),nil
+		}
 	}
+	return reformatUser(newUser), err
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (string, error) {
 	return name, controller.GetUserController().Delete(&name)
 }
 
-func (r *mutationResolver) UpdateUser(ctx context.Context, target string, toBe model.ToBeUser) (string, error) {
-	res:=target
-	if toBe.Username!=nil{
-		res=*toBe.Username
+func (r *mutationResolver) UpdateUser(ctx context.Context, target string, toBe model.ToBeUser) (model.UpdateUserPayload, error) {
+	update, err := controller.GetUserController().Update(target, toBe)
+	if err!=nil{
+		switch err.(type) {
+		case model.NoUserFoundException:
+			return err.(model.NoUserFoundException),nil
+		case model.InternalServerException:
+			return err.(model.InternalServerException),nil
+		}
 	}
-	return res, controller.GetUserController().Update(target, toBe)
+	return reformatUser(update), err
 }
 
-func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
+func (r *mutationResolver) Login(ctx context.Context, input model.Login) (model.LoginPayload, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

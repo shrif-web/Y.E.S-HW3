@@ -2,10 +2,49 @@
 
 package model
 
+type CreateUserPayload interface {
+	IsCreateUserPayload()
+}
+
+type Exception interface {
+	IsException()
+}
+
+type LoginPayload interface {
+	IsLoginPayload()
+}
+
+type UpdateUserPayload interface {
+	IsUpdateUserPayload()
+}
+
+type DuplicateUsernameException struct {
+	Message *string `json:"message"`
+}
+
+func (DuplicateUsernameException) IsException()         {}
+func (DuplicateUsernameException) IsCreateUserPayload() {}
+
+type InternalServerException struct {
+	Message *string `json:"message"`
+}
+
+func (InternalServerException) IsException()         {}
+func (InternalServerException) IsCreateUserPayload() {}
+func (InternalServerException) IsUpdateUserPayload() {}
+func (InternalServerException) IsLoginPayload()      {}
+
 type Login struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+
+type NoUserFoundException struct {
+	Message *string `json:"message"`
+}
+
+func (NoUserFoundException) IsException()         {}
+func (NoUserFoundException) IsUpdateUserPayload() {}
 
 type Post struct {
 	ID        string `json:"id"`
@@ -39,3 +78,14 @@ type User struct {
 	Name  string  `json:"name"`
 	Posts []*Post `json:"posts"`
 }
+
+func (User) IsCreateUserPayload() {}
+func (User) IsUpdateUserPayload() {}
+func (User) IsLoginPayload()      {}
+
+type UserPassMissMatchException struct {
+	Message *string `json:"message"`
+}
+
+func (UserPassMissMatchException) IsException()    {}
+func (UserPassMissMatchException) IsLoginPayload() {}

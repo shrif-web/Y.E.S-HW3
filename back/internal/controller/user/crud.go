@@ -24,7 +24,8 @@ func (c *userController) GetAll(start, amount int64) ([]*user.User, error) {
 
 func (c *userController) Get(name *string) (*user.User, error) {
 	if blogUser, stat := c.dbDriver.Get(name); stat == status.FAILED {
-		return nil, errors.New("couldn't find the requested user")
+		message:="couldn't find the requested user"
+		return nil, model.NoUserFoundException{Message: &message}
 	} else {
 		return blogUser, nil
 	}
@@ -32,13 +33,16 @@ func (c *userController) Get(name *string) (*user.User, error) {
 
 func (c *userController) Delete(name *string) error {
 	if stat := c.dbDriver.Delete(name); stat == status.FAILED {
-		return errors.New("couldn't delete the user")
+		message :="couldn't delete the user"
+		return model.InternalServerException{Message: &message}
 	} else {
 		return nil
 	}
 }
 
-func (c *userController) Update(target string, toBe model.ToBeUser) error {
+func (c *userController) Update(target string, toBe model.ToBeUser) (*user.User,error) {
+
+	// filling the update fields of the user
 	var blogUser = user.User{}
 	if toBe.Username != nil {
 		blogUser.Name = *(toBe.Username)
@@ -46,28 +50,40 @@ func (c *userController) Update(target string, toBe model.ToBeUser) error {
 	if toBe.Password != nil {
 		blogUser.UpdatePassword(*(toBe.Password))
 	}
+
+	// updating the database
 	if stat := c.dbDriver.Update(target, &blogUser); stat == status.FAILED {
+
+		// checking if the target user exists
 		_, stat2 := c.dbDriver.Get(&target)
 		if stat2 == status.FAILED {
-			return errors.New("target Doesnt exist")
+			message:="target Doesnt exist"
+			return nil, model.NoUserFoundException{Message: &message}
 		}
-		return errors.New("couldn't update the user")
+		// no clue why query failed
+		message:="couldn't update the user"
+		return nil,model.InternalServerException{Message: &message}
 	} else {
-		return nil
+		return &blogUser,nil
 	}
 }
 
 func (c *userController) Create(name, password string) (*user.User, error) {
-	hashedPass,err:=hashAndSalt([]byte(password))
-	if err!=nil{
-		return &user.User{},errors.New("internal server error: couldn't hash password")
-	}
-	newUser := user.NewUser(name, hashedPass)
+
+	// checking for duplicate username
 	if _,stat := c.dbDriver.Get(&name); stat == status.SUCCESSFUL {
-		return nil, errors.New("user with this name already exist")
+		return nil, model.DuplicateUsernameException{}
 	}
+
+	// creating new user Object to insert in to the data base
+	newUser,err := user.NewUser(name, password)
+	if err!=nil{
+		return nil, err
+	}
+	// inserting into the database
 	if stat := c.dbDriver.Insert(newUser); stat == status.FAILED {
-		return nil, errors.New("couldn't create user")
+		message:="couldn't create user"
+		return &user.User{},model.InternalServerException{Message: &message}
 	} else {
 		return newUser, nil
 	}
