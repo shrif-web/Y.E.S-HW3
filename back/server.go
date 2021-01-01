@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -48,7 +47,7 @@ func main() {
 // Defining the Graphql handler
 func graphqlHandler() gin.HandlerFunc {
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
-	srv.Use(extension.FixedComplexityLimit(queryComplexity))
+	//srv.Use(extension.FixedComplexityLimit(queryComplexity))
 
 	return func(c *gin.Context) {
 		srv.ServeHTTP(c.Writer, c.Request)
