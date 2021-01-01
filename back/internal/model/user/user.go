@@ -1,13 +1,12 @@
 package user
 
 import (
-	"strconv"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"yes-blog/graph/model"
 	"yes-blog/internal/model/post"
 )
-var uuid=0
 type User struct {
-	ID       string
+	ID       primitive.ObjectID `bson:"_id" json:"id,omitempty"`
 	Name     string
 	Password string
 	Admin    bool
@@ -24,7 +23,6 @@ func NewAdmin(name, password string) (*User, error) {
 }
 
 func newUser(name, password string, admin bool) (*User,error) {
-	defer func(){uuid++}()
 	// hashing password
 	hashedPass,err:=hashAndSalt([]byte(password))
 	if err!=nil{
@@ -33,7 +31,6 @@ func newUser(name, password string, admin bool) (*User,error) {
 	}
 
 	return &User{
-		ID:       strconv.Itoa(uuid),
 		Name:     name,
 		Password: hashedPass,
 		Admin:    admin,
