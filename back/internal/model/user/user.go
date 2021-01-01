@@ -37,6 +37,7 @@ func newUser(name, password string, admin bool) (*User,error) {
 		Name:     name,
 		Password: hashedPass,
 		Admin:    admin,
+		Posts: []*post.Post{},
 	},nil
 }
 

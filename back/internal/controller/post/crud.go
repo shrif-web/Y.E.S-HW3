@@ -15,7 +15,7 @@ import (
 */
 
 // create model.Post entry then add into DB
-func (p *postController) WritePost(title, body, authorName string) (*post.Post, error) {
+func (p *postController) CreatePost(title, body, authorName string) (*post.Post, error) {
 	newPost, err := post.NewPost(title, body, authorName)
 	if err != nil {
 		return nil, err
@@ -25,7 +25,7 @@ func (p *postController) WritePost(title, body, authorName string) (*post.Post, 
 }
 
 // edit the post in DB
-func (p *postController) EditPost(postID, title, body, authorName string) (string, error) {
+func (p *postController) UpdatePost(postID, title, body, authorName string) (string, error) {
 	upPost, err := post.NewRawPost(postID, title, body, authorName, time.Now().Unix())
 	if err != nil {
 		return fmt.Sprint(err), err

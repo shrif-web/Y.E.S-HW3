@@ -52,7 +52,7 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 }
 
 func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPost) (*model.Post, error) {
-	newPost, err := postController.GetPostController().WritePost(input.Title, input.Content, input.AuthorName)
+	newPost, err := postController.GetPostController().CreatePost(input.Title, input.Content, input.AuthorName)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (r *mutationResolver) DeletePost(ctx context.Context, targetID string, auth
 }
 
 func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, input model.TargetPost) (string, error) {
-	message, err := postController.GetPostController().EditPost(targetID, input.Title, input.Content, input.AuthorName)
+	message, err := postController.GetPostController().UpdatePost(targetID, input.Title, input.Content, input.AuthorName)
 	if err != nil {
 		return fmt.Sprint(err), err
 	}
