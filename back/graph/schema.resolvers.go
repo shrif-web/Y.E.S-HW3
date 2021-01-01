@@ -51,10 +51,17 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPost) (*model.Post, error) {
+func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPost) (model.CreatePostPayload, error) {
 	newPost, err := postController.GetPostController().CreatePost(input.Title, input.Content, input.AuthorName)
 	if err != nil {
-		return nil, err
+		switch err.(type) {
+		case *model.PostEmptyException:
+			return err.(*model.PostEmptyException), nil
+		case *model.NoUserFoundException:
+			return err.(*model.NoUserFoundException), nil
+		case *model.InternalServerException:
+			return err.(*model.InternalServerException), nil
+		}
 	}
 	return reformatPost(newPost, &model.User{
 		ID:    "",
@@ -63,20 +70,40 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPos
 	}), nil
 }
 
-func (r *mutationResolver) DeletePost(ctx context.Context, targetID string, authorName string) (string, error) {
+func (r *mutationResolver) DeletePost(ctx context.Context, targetID string, authorName string) (model.DeletePostPayload, error) {
 	message, err := postController.GetPostController().DeletePost(targetID, authorName)
 	if err != nil {
-		return fmt.Sprint(err), err
+		switch err.(type) {
+		case *model.UserNotAllowedException:
+			return err.(*model.UserNotAllowedException), nil
+		case *model.NoUserFoundException:
+			return err.(*model.NoUserFoundException), nil
+		case *model.PostNotFoundException:
+			return err.(*model.PostNotFoundException), nil
+		case *model.InternalServerException:
+			return err.(*model.InternalServerException), nil
+		}
 	}
-	return message, nil
+	return &model.PostOperationSuccessfull{Message: &message}, nil
 }
 
-func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, input model.TargetPost) (string, error) {
+func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, input model.TargetPost) (model.UpdatePostPayload, error) {
 	message, err := postController.GetPostController().UpdatePost(targetID, input.Title, input.Content, input.AuthorName)
 	if err != nil {
-		return fmt.Sprint(err), err
+		switch err.(type) {
+		case *model.UserNotAllowedException:
+			return err.(*model.UserNotAllowedException), nil
+		case *model.NoUserFoundException:
+			return err.(*model.NoUserFoundException), nil
+		case *model.PostNotFoundException:
+			return err.(*model.PostNotFoundException), nil
+		case *model.PostEmptyException:
+			return err.(*model.PostEmptyException), nil
+		case *model.InternalServerException:
+			return err.(*model.InternalServerException), nil
+		}
 	}
-	return message, nil
+	return &model.PostOperationSuccessfull{Message: &message}, nil
 }
 
 func (r *queryResolver) User(ctx context.Context, name string) (*model.User, error) {

@@ -2,12 +2,12 @@ package mongodb
 
 import (
 	"context"
-	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 	"yes-blog/internal/model/post"
 	"yes-blog/internal/model/user"
+	"yes-blog/pkg/database/DBException"
 )
 
 type PostMongoDriver struct {
@@ -20,10 +20,6 @@ const PostUpdateTimeOut = 50000
 const PostGetTimeOut = 50000
 const PostGetAllTimeOut = 50000
 
-const UserNotFound = "there is no User "
-const PostNotFound = "there is no post @"
-const UserNotAllowed = "permission denied"
-
 func (p PostMongoDriver) Insert(pst *post.Post) error {
 	ctx, cancel := context.WithTimeout(context.Background(), PostInsertTimeOut*time.Millisecond)
 	defer cancel()
@@ -34,7 +30,7 @@ func (p PostMongoDriver) Insert(pst *post.Post) error {
 	var tempUser *user.User
 	findErr := p.collection.FindOne(ctx, target).Decode(&tempUser)
 	if findErr != nil {
-		return errors.New(UserNotFound + pst.Author)
+		return DBException.ThrowUserNotFoundException(pst.Author)
 	}
 
 	change := bson.M{
@@ -44,7 +40,7 @@ func (p PostMongoDriver) Insert(pst *post.Post) error {
 	}
 	_, err := p.collection.UpdateOne(ctx, target, change)
 	if err != nil {
-		return errors.New(PostNotFound + pst.ID)
+		return DBException.ThrowInternalDBException(err.Error())
 	}
 	return nil
 }
@@ -59,11 +55,11 @@ func (p PostMongoDriver) Delete(postID string, authorName string) error {
 	var tempUser *user.User
 	findErr := p.collection.FindOne(ctx, target).Decode(&tempUser)
 	if findErr != nil {
-		return errors.New(UserNotFound + authorName)
+		return DBException.ThrowUserNotFoundException(authorName)
 	}
 
 	if _, _, fr := post.Find(tempUser.Posts, postID); !fr {
-		return errors.New(UserNotAllowed)
+		return DBException.ThrowUserNotAllowedException(authorName)
 	}
 
 	change := bson.M{
@@ -74,7 +70,10 @@ func (p PostMongoDriver) Delete(postID string, authorName string) error {
 		},
 	}
 	_, err := p.collection.UpdateOne(ctx, target, change)
-	return err
+	if err != nil {
+		return DBException.ThrowInternalDBException(err.Error())
+	}
+	return nil
 }
 
 func (p PostMongoDriver) Update(pst *post.Post) error {
@@ -88,7 +87,7 @@ func (p PostMongoDriver) Update(pst *post.Post) error {
 	var tempUser *user.User
 	findErr := p.collection.FindOne(ctx, target).Decode(&tempUser)
 	if findErr != nil {
-		return errors.New(PostNotFound + pst.ID)
+		return DBException.ThrowPostNotFoundException(pst.ID)
 	}
 
 	change := bson.M{
@@ -99,7 +98,10 @@ func (p PostMongoDriver) Update(pst *post.Post) error {
 		},
 	}
 	_, err := p.collection.UpdateOne(ctx, target, change)
-	return err
+	if err != nil {
+		return DBException.ThrowInternalDBException(err.Error())
+	}
+	return nil
 }
 
 func (p PostMongoDriver) Get(postID string) (*post.Post, error) {
@@ -109,7 +111,7 @@ func (p PostMongoDriver) Get(postID string) (*post.Post, error) {
 	//todo Better implementation with mongoDB built in filters
 	curr, err := p.collection.Find(ctx, bson.D{})
 	if err != nil {
-		return nil, err
+		return nil, DBException.ThrowInternalDBException(err.Error())
 	}
 	defer curr.Close(ctx)
 	for curr.Next(context.Background()) {
@@ -120,7 +122,7 @@ func (p PostMongoDriver) Get(postID string) (*post.Post, error) {
 			return p, nil
 		}
 	}
-	return nil, errors.New(PostNotFound + postID)
+	return nil, DBException.ThrowPostNotFoundException(postID)
 }
 
 func (p PostMongoDriver) GetAll(startID string, amount int) ([]*post.Post, error) {
@@ -131,7 +133,7 @@ func (p PostMongoDriver) GetAll(startID string, amount int) ([]*post.Post, error
 	var allPosts []*post.Post
 	curr, err := p.collection.Find(ctx, bson.D{})
 	if err != nil {
-		return nil, err
+		return nil, DBException.ThrowInternalDBException(err.Error())
 	}
 	defer curr.Close(ctx)
 	for curr.Next(context.Background()) {
@@ -142,7 +144,7 @@ func (p PostMongoDriver) GetAll(startID string, amount int) ([]*post.Post, error
 	post.Sort(allPosts)
 	_, i, fr := post.Find(allPosts, startID)
 	if !fr {
-		return nil, errors.New(PostNotFound + startID)
+		return nil, DBException.ThrowPostNotFoundException(startID)
 	}
 	if i-amount+1 < 0 {
 		return allPosts[:i+1], nil
@@ -160,7 +162,7 @@ func (p PostMongoDriver) GetByUser(userName string) ([]*post.Post, error) {
 	var res user.User
 	err := p.collection.FindOne(ctx, target).Decode(&res)
 	if err != nil {
-		return nil, errors.New(UserNotFound + userName)
+		return nil, DBException.ThrowUserNotFoundException(userName)
 	}
 	post.Sort(res.Posts)
 	return res.Posts, nil
