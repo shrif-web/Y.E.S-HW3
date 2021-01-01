@@ -2,8 +2,16 @@
 
 package model
 
+type CreatePostPayload interface {
+	IsCreatePostPayload()
+}
+
 type CreateUserPayload interface {
 	IsCreateUserPayload()
+}
+
+type DeletePostPayload interface {
+	IsDeletePostPayload()
 }
 
 type Exception interface {
@@ -12,6 +20,10 @@ type Exception interface {
 
 type LoginPayload interface {
 	IsLoginPayload()
+}
+
+type UpdatePostPayload interface {
+	IsUpdatePostPayload()
 }
 
 type UpdateUserPayload interface {
@@ -33,6 +45,9 @@ func (InternalServerException) IsException()         {}
 func (InternalServerException) IsCreateUserPayload() {}
 func (InternalServerException) IsUpdateUserPayload() {}
 func (InternalServerException) IsLoginPayload()      {}
+func (InternalServerException) IsCreatePostPayload() {}
+func (InternalServerException) IsDeletePostPayload() {}
+func (InternalServerException) IsUpdatePostPayload() {}
 
 type Login struct {
 	Username string `json:"username"`
@@ -45,6 +60,9 @@ type NoUserFoundException struct {
 
 func (NoUserFoundException) IsException()         {}
 func (NoUserFoundException) IsUpdateUserPayload() {}
+func (NoUserFoundException) IsCreatePostPayload() {}
+func (NoUserFoundException) IsDeletePostPayload() {}
+func (NoUserFoundException) IsUpdatePostPayload() {}
 
 type Post struct {
 	ID        string `json:"id"`
@@ -53,6 +71,31 @@ type Post struct {
 	Content   string `json:"content"`
 	Title     string `json:"title"`
 }
+
+func (Post) IsCreatePostPayload() {}
+
+type PostEmptyException struct {
+	Message *string `json:"message"`
+}
+
+func (PostEmptyException) IsException()         {}
+func (PostEmptyException) IsCreatePostPayload() {}
+func (PostEmptyException) IsUpdatePostPayload() {}
+
+type PostNotFoundException struct {
+	Message *string `json:"message"`
+}
+
+func (PostNotFoundException) IsException()         {}
+func (PostNotFoundException) IsDeletePostPayload() {}
+func (PostNotFoundException) IsUpdatePostPayload() {}
+
+type PostOperationSuccessfull struct {
+	Message *string `json:"message"`
+}
+
+func (PostOperationSuccessfull) IsDeletePostPayload() {}
+func (PostOperationSuccessfull) IsUpdatePostPayload() {}
 
 type RefreshTokenInput struct {
 	Token string `json:"token"`
@@ -83,6 +126,14 @@ type User struct {
 func (User) IsCreateUserPayload() {}
 func (User) IsUpdateUserPayload() {}
 func (User) IsLoginPayload()      {}
+
+type UserNotAllowedException struct {
+	Message *string `json:"message"`
+}
+
+func (UserNotAllowedException) IsException()         {}
+func (UserNotAllowedException) IsDeletePostPayload() {}
+func (UserNotAllowedException) IsUpdatePostPayload() {}
 
 type UserPassMissMatchException struct {
 	Message *string `json:"message"`

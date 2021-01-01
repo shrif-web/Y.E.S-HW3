@@ -13,12 +13,12 @@ type Post {
 }
 
 type Query {
-    user(name:String!):User
+    user(name:String!): User
     users(start:Int!=0,amount:Int!=5): [User!]!
 
-    post(id:String!):Post!
-    posts(start:Int!=0,amount:Int!=5):[Post!]!
-    postsOfUser(userName:String!):[Post!]!
+    post(id:String!): Post!
+    posts(start:Int!=0,amount:Int!=5): [Post!]!
+    postsOfUser(userName:String!): [Post!]!
 }
 
 input TargetPost {
@@ -61,10 +61,24 @@ type UserPassMissMatchException implements Exception{
 type InternalServerException implements Exception{
     message:String
 }
+type UserNotAllowedException implements Exception{
+    message:String
+}
+type PostNotFoundException implements Exception{
+    message:String
+}
+type PostEmptyException implements Exception{
+    message:String
+}
+type PostOperationSuccessfull{
+    message:String
+}
 union CreateUserPayload = User | DuplicateUsernameException | InternalServerException
 union UpdateUserPayload = User | NoUserFoundException       | InternalServerException
 union LoginPayload =      User | UserPassMissMatchException | InternalServerException
-
+union CreatePostPayload = Post | NoUserFoundException | PostEmptyException | InternalServerException
+union DeletePostPayload = PostOperationSuccessfull | UserNotAllowedException | NoUserFoundException | PostNotFoundException | InternalServerException
+union UpdatePostPayload = PostOperationSuccessfull | UserNotAllowedException | PostEmptyException | NoUserFoundException | PostNotFoundException | InternalServerException
 type Mutation {
     createUser(target: TargetUser!): CreateUserPayload!
     deleteUser(name: String!): String!
@@ -74,7 +88,7 @@ type Mutation {
     # we'll talk about this in authentication section
     refreshToken(input: RefreshTokenInput!): String!
 
-    createPost(input: TargetPost!): Post!
-    deletePost(targetID: String!, authorName: String!): String!
-    updatePost(targetID: String!, input: TargetPost!): String!
+    createPost(input: TargetPost!): CreatePostPayload!
+    deletePost(targetID: String!, authorName: String!): DeletePostPayload!
+    updatePost(targetID: String!, input: TargetPost!): UpdatePostPayload!
 }

@@ -8,9 +8,10 @@ import (
 	"log"
 	"yes-blog/graph"
 	"yes-blog/graph/generated"
-	"yes-blog/internal/auth"
 	postController "yes-blog/internal/controller/post"
 	userController "yes-blog/internal/controller/user"
+	"yes-blog/internal/middleware/auth"
+	"yes-blog/internal/middleware/ggcontext"
 	"yes-blog/pkg/database/mongodb"
 )
 
@@ -27,6 +28,7 @@ func main() {
 	// Setting up Gin
 	r := gin.Default()
 	r.Use(auth.Middleware())
+	r.Use(ggcontext.GinContextToContextMiddleware())
 
 	// routing
 	r.POST("/query", graphqlHandler())

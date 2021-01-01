@@ -75,6 +75,18 @@ type ComplexityRoot struct {
 		Title     func(childComplexity int) int
 	}
 
+	PostEmptyException struct {
+		Message func(childComplexity int) int
+	}
+
+	PostNotFoundException struct {
+		Message func(childComplexity int) int
+	}
+
+	PostOperationSuccessfull struct {
+		Message func(childComplexity int) int
+	}
+
 	Query struct {
 		Post        func(childComplexity int, id string) int
 		Posts       func(childComplexity int, start int, amount int) int
@@ -89,6 +101,10 @@ type ComplexityRoot struct {
 		Posts func(childComplexity int, start *int, amount *int) int
 	}
 
+	UserNotAllowedException struct {
+		Message func(childComplexity int) int
+	}
+
 	UserPassMissMatchException struct {
 		Message func(childComplexity int) int
 	}
@@ -100,9 +116,9 @@ type MutationResolver interface {
 	UpdateUser(ctx context.Context, target string, toBe model.ToBeUser) (model.UpdateUserPayload, error)
 	Login(ctx context.Context, input model.Login) (model.LoginPayload, error)
 	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error)
-	CreatePost(ctx context.Context, input model.TargetPost) (*model.Post, error)
-	DeletePost(ctx context.Context, targetID string, authorName string) (string, error)
-	UpdatePost(ctx context.Context, targetID string, input model.TargetPost) (string, error)
+	CreatePost(ctx context.Context, input model.TargetPost) (model.CreatePostPayload, error)
+	DeletePost(ctx context.Context, targetID string, authorName string) (model.DeletePostPayload, error)
+	UpdatePost(ctx context.Context, targetID string, input model.TargetPost) (model.UpdatePostPayload, error)
 }
 type QueryResolver interface {
 	User(ctx context.Context, name string) (*model.User, error)
@@ -279,6 +295,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.Title(childComplexity), true
 
+	case "PostEmptyException.message":
+		if e.complexity.PostEmptyException.Message == nil {
+			break
+		}
+
+		return e.complexity.PostEmptyException.Message(childComplexity), true
+
+	case "PostNotFoundException.message":
+		if e.complexity.PostNotFoundException.Message == nil {
+			break
+		}
+
+		return e.complexity.PostNotFoundException.Message(childComplexity), true
+
+	case "PostOperationSuccessfull.message":
+		if e.complexity.PostOperationSuccessfull.Message == nil {
+			break
+		}
+
+		return e.complexity.PostOperationSuccessfull.Message(childComplexity), true
+
 	case "Query.post":
 		if e.complexity.Query.Post == nil {
 			break
@@ -364,6 +401,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Posts(childComplexity, args["start"].(*int), args["amount"].(*int)), true
+
+	case "UserNotAllowedException.message":
+		if e.complexity.UserNotAllowedException.Message == nil {
+			break
+		}
+
+		return e.complexity.UserNotAllowedException.Message(childComplexity), true
 
 	case "UserPassMissMatchException.message":
 		if e.complexity.UserPassMissMatchException.Message == nil {
@@ -451,12 +495,12 @@ type Post {
 }
 
 type Query {
-    user(name:String!):User
+    user(name:String!): User
     users(start:Int!=0,amount:Int!=5): [User!]!
 
-    post(id:String!):Post!
-    posts(start:Int!=0,amount:Int!=5):[Post!]!
-    postsOfUser(userName:String!):[Post!]!
+    post(id:String!): Post!
+    posts(start:Int!=0,amount:Int!=5): [Post!]!
+    postsOfUser(userName:String!): [Post!]!
 }
 
 input TargetPost {
@@ -499,10 +543,24 @@ type UserPassMissMatchException implements Exception{
 type InternalServerException implements Exception{
     message:String
 }
+type UserNotAllowedException implements Exception{
+    message:String
+}
+type PostNotFoundException implements Exception{
+    message:String
+}
+type PostEmptyException implements Exception{
+    message:String
+}
+type PostOperationSuccessfull{
+    message:String
+}
 union CreateUserPayload = User | DuplicateUsernameException | InternalServerException
 union UpdateUserPayload = User | NoUserFoundException       | InternalServerException
 union LoginPayload =      User | UserPassMissMatchException | InternalServerException
-
+union CreatePostPayload = Post | NoUserFoundException | PostEmptyException | InternalServerException
+union DeletePostPayload = PostOperationSuccessfull | UserNotAllowedException | NoUserFoundException | PostNotFoundException | InternalServerException
+union UpdatePostPayload = PostOperationSuccessfull | UserNotAllowedException | PostEmptyException | NoUserFoundException | PostNotFoundException | InternalServerException
 type Mutation {
     createUser(target: TargetUser!): CreateUserPayload!
     deleteUser(name: String!): String!
@@ -512,9 +570,9 @@ type Mutation {
     # we'll talk about this in authentication section
     refreshToken(input: RefreshTokenInput!): String!
 
-    createPost(input: TargetPost!): Post!
-    deletePost(targetID: String!, authorName: String!): String!
-    updatePost(targetID: String!, input: TargetPost!): String!
+    createPost(input: TargetPost!): CreatePostPayload!
+    deletePost(targetID: String!, authorName: String!): DeletePostPayload!
+    updatePost(targetID: String!, input: TargetPost!): UpdatePostPayload!
 }
 `, BuiltIn: false},
 }
@@ -1152,9 +1210,9 @@ func (ec *executionContext) _Mutation_createPost(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Post)
+	res := resTmp.(model.CreatePostPayload)
 	fc.Result = res
-	return ec.marshalNPost2ᚖyesᚑblogᚋgraphᚋmodelᚐPost(ctx, field.Selections, res)
+	return ec.marshalNCreatePostPayload2yesᚑblogᚋgraphᚋmodelᚐCreatePostPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deletePost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1194,9 +1252,9 @@ func (ec *executionContext) _Mutation_deletePost(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(model.DeletePostPayload)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNDeletePostPayload2yesᚑblogᚋgraphᚋmodelᚐDeletePostPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_updatePost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1236,9 +1294,9 @@ func (ec *executionContext) _Mutation_updatePost(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(model.UpdatePostPayload)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNUpdatePostPayload2yesᚑblogᚋgraphᚋmodelᚐUpdatePostPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _NoUserFoundException_message(ctx context.Context, field graphql.CollectedField, obj *model.NoUserFoundException) (ret graphql.Marshaler) {
@@ -1446,6 +1504,102 @@ func (ec *executionContext) _Post_title(ctx context.Context, field graphql.Colle
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PostEmptyException_message(ctx context.Context, field graphql.CollectedField, obj *model.PostEmptyException) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PostEmptyException",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PostNotFoundException_message(ctx context.Context, field graphql.CollectedField, obj *model.PostNotFoundException) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PostNotFoundException",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PostOperationSuccessfull_message(ctx context.Context, field graphql.CollectedField, obj *model.PostOperationSuccessfull) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PostOperationSuccessfull",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_user(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1836,6 +1990,38 @@ func (ec *executionContext) _User_posts(ctx context.Context, field graphql.Colle
 	res := resTmp.([]*model.Post)
 	fc.Result = res
 	return ec.marshalNPost2ᚕᚖyesᚑblogᚋgraphᚋmodelᚐPostᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserNotAllowedException_message(ctx context.Context, field graphql.CollectedField, obj *model.UserNotAllowedException) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserNotAllowedException",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _UserPassMissMatchException_message(ctx context.Context, field graphql.CollectedField, obj *model.UserPassMissMatchException) (ret graphql.Marshaler) {
@@ -3101,6 +3287,43 @@ func (ec *executionContext) unmarshalInputToBeUser(ctx context.Context, obj inte
 
 // region    ************************** interface.gotpl ***************************
 
+func (ec *executionContext) _CreatePostPayload(ctx context.Context, sel ast.SelectionSet, obj model.CreatePostPayload) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.Post:
+		return ec._Post(ctx, sel, &obj)
+	case *model.Post:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Post(ctx, sel, obj)
+	case model.NoUserFoundException:
+		return ec._NoUserFoundException(ctx, sel, &obj)
+	case *model.NoUserFoundException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._NoUserFoundException(ctx, sel, obj)
+	case model.PostEmptyException:
+		return ec._PostEmptyException(ctx, sel, &obj)
+	case *model.PostEmptyException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._PostEmptyException(ctx, sel, obj)
+	case model.InternalServerException:
+		return ec._InternalServerException(ctx, sel, &obj)
+	case *model.InternalServerException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalServerException(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _CreateUserPayload(ctx context.Context, sel ast.SelectionSet, obj model.CreateUserPayload) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
@@ -3119,6 +3342,50 @@ func (ec *executionContext) _CreateUserPayload(ctx context.Context, sel ast.Sele
 			return graphql.Null
 		}
 		return ec._DuplicateUsernameException(ctx, sel, obj)
+	case model.InternalServerException:
+		return ec._InternalServerException(ctx, sel, &obj)
+	case *model.InternalServerException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalServerException(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
+func (ec *executionContext) _DeletePostPayload(ctx context.Context, sel ast.SelectionSet, obj model.DeletePostPayload) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.PostOperationSuccessfull:
+		return ec._PostOperationSuccessfull(ctx, sel, &obj)
+	case *model.PostOperationSuccessfull:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._PostOperationSuccessfull(ctx, sel, obj)
+	case model.UserNotAllowedException:
+		return ec._UserNotAllowedException(ctx, sel, &obj)
+	case *model.UserNotAllowedException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._UserNotAllowedException(ctx, sel, obj)
+	case model.NoUserFoundException:
+		return ec._NoUserFoundException(ctx, sel, &obj)
+	case *model.NoUserFoundException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._NoUserFoundException(ctx, sel, obj)
+	case model.PostNotFoundException:
+		return ec._PostNotFoundException(ctx, sel, &obj)
+	case *model.PostNotFoundException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._PostNotFoundException(ctx, sel, obj)
 	case model.InternalServerException:
 		return ec._InternalServerException(ctx, sel, &obj)
 	case *model.InternalServerException:
@@ -3163,6 +3430,27 @@ func (ec *executionContext) _Exception(ctx context.Context, sel ast.SelectionSet
 			return graphql.Null
 		}
 		return ec._InternalServerException(ctx, sel, obj)
+	case model.UserNotAllowedException:
+		return ec._UserNotAllowedException(ctx, sel, &obj)
+	case *model.UserNotAllowedException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._UserNotAllowedException(ctx, sel, obj)
+	case model.PostNotFoundException:
+		return ec._PostNotFoundException(ctx, sel, &obj)
+	case *model.PostNotFoundException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._PostNotFoundException(ctx, sel, obj)
+	case model.PostEmptyException:
+		return ec._PostEmptyException(ctx, sel, &obj)
+	case *model.PostEmptyException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._PostEmptyException(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -3186,6 +3474,57 @@ func (ec *executionContext) _LoginPayload(ctx context.Context, sel ast.Selection
 			return graphql.Null
 		}
 		return ec._UserPassMissMatchException(ctx, sel, obj)
+	case model.InternalServerException:
+		return ec._InternalServerException(ctx, sel, &obj)
+	case *model.InternalServerException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalServerException(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
+func (ec *executionContext) _UpdatePostPayload(ctx context.Context, sel ast.SelectionSet, obj model.UpdatePostPayload) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.PostOperationSuccessfull:
+		return ec._PostOperationSuccessfull(ctx, sel, &obj)
+	case *model.PostOperationSuccessfull:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._PostOperationSuccessfull(ctx, sel, obj)
+	case model.UserNotAllowedException:
+		return ec._UserNotAllowedException(ctx, sel, &obj)
+	case *model.UserNotAllowedException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._UserNotAllowedException(ctx, sel, obj)
+	case model.PostEmptyException:
+		return ec._PostEmptyException(ctx, sel, &obj)
+	case *model.PostEmptyException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._PostEmptyException(ctx, sel, obj)
+	case model.NoUserFoundException:
+		return ec._NoUserFoundException(ctx, sel, &obj)
+	case *model.NoUserFoundException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._NoUserFoundException(ctx, sel, obj)
+	case model.PostNotFoundException:
+		return ec._PostNotFoundException(ctx, sel, &obj)
+	case *model.PostNotFoundException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._PostNotFoundException(ctx, sel, obj)
 	case model.InternalServerException:
 		return ec._InternalServerException(ctx, sel, &obj)
 	case *model.InternalServerException:
@@ -3256,7 +3595,7 @@ func (ec *executionContext) _DuplicateUsernameException(ctx context.Context, sel
 	return out
 }
 
-var internalServerExceptionImplementors = []string{"InternalServerException", "Exception", "CreateUserPayload", "UpdateUserPayload", "LoginPayload"}
+var internalServerExceptionImplementors = []string{"InternalServerException", "Exception", "CreateUserPayload", "UpdateUserPayload", "LoginPayload", "CreatePostPayload", "DeletePostPayload", "UpdatePostPayload"}
 
 func (ec *executionContext) _InternalServerException(ctx context.Context, sel ast.SelectionSet, obj *model.InternalServerException) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, internalServerExceptionImplementors)
@@ -3346,7 +3685,7 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
-var noUserFoundExceptionImplementors = []string{"NoUserFoundException", "Exception", "UpdateUserPayload"}
+var noUserFoundExceptionImplementors = []string{"NoUserFoundException", "Exception", "UpdateUserPayload", "CreatePostPayload", "DeletePostPayload", "UpdatePostPayload"}
 
 func (ec *executionContext) _NoUserFoundException(ctx context.Context, sel ast.SelectionSet, obj *model.NoUserFoundException) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, noUserFoundExceptionImplementors)
@@ -3370,7 +3709,7 @@ func (ec *executionContext) _NoUserFoundException(ctx context.Context, sel ast.S
 	return out
 }
 
-var postImplementors = []string{"Post"}
+var postImplementors = []string{"Post", "CreatePostPayload"}
 
 func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj *model.Post) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, postImplementors)
@@ -3406,6 +3745,78 @@ func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var postEmptyExceptionImplementors = []string{"PostEmptyException", "Exception", "CreatePostPayload", "UpdatePostPayload"}
+
+func (ec *executionContext) _PostEmptyException(ctx context.Context, sel ast.SelectionSet, obj *model.PostEmptyException) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, postEmptyExceptionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PostEmptyException")
+		case "message":
+			out.Values[i] = ec._PostEmptyException_message(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var postNotFoundExceptionImplementors = []string{"PostNotFoundException", "Exception", "DeletePostPayload", "UpdatePostPayload"}
+
+func (ec *executionContext) _PostNotFoundException(ctx context.Context, sel ast.SelectionSet, obj *model.PostNotFoundException) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, postNotFoundExceptionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PostNotFoundException")
+		case "message":
+			out.Values[i] = ec._PostNotFoundException_message(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var postOperationSuccessfullImplementors = []string{"PostOperationSuccessfull", "DeletePostPayload", "UpdatePostPayload"}
+
+func (ec *executionContext) _PostOperationSuccessfull(ctx context.Context, sel ast.SelectionSet, obj *model.PostOperationSuccessfull) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, postOperationSuccessfullImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PostOperationSuccessfull")
+		case "message":
+			out.Values[i] = ec._PostOperationSuccessfull_message(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3540,6 +3951,30 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var userNotAllowedExceptionImplementors = []string{"UserNotAllowedException", "Exception", "DeletePostPayload", "UpdatePostPayload"}
+
+func (ec *executionContext) _UserNotAllowedException(ctx context.Context, sel ast.SelectionSet, obj *model.UserNotAllowedException) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, userNotAllowedExceptionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UserNotAllowedException")
+		case "message":
+			out.Values[i] = ec._UserNotAllowedException_message(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3835,6 +4270,16 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNCreatePostPayload2yesᚑblogᚋgraphᚋmodelᚐCreatePostPayload(ctx context.Context, sel ast.SelectionSet, v model.CreatePostPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._CreatePostPayload(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNCreateUserPayload2yesᚑblogᚋgraphᚋmodelᚐCreateUserPayload(ctx context.Context, sel ast.SelectionSet, v model.CreateUserPayload) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -3843,6 +4288,16 @@ func (ec *executionContext) marshalNCreateUserPayload2yesᚑblogᚋgraphᚋmodel
 		return graphql.Null
 	}
 	return ec._CreateUserPayload(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNDeletePostPayload2yesᚑblogᚋgraphᚋmodelᚐDeletePostPayload(ctx context.Context, sel ast.SelectionSet, v model.DeletePostPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._DeletePostPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
@@ -3974,6 +4429,16 @@ func (ec *executionContext) unmarshalNTargetUser2yesᚑblogᚋgraphᚋmodelᚐTa
 func (ec *executionContext) unmarshalNToBeUser2yesᚑblogᚋgraphᚋmodelᚐToBeUser(ctx context.Context, v interface{}) (model.ToBeUser, error) {
 	res, err := ec.unmarshalInputToBeUser(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUpdatePostPayload2yesᚑblogᚋgraphᚋmodelᚐUpdatePostPayload(ctx context.Context, sel ast.SelectionSet, v model.UpdatePostPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._UpdatePostPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNUpdateUserPayload2yesᚑblogᚋgraphᚋmodelᚐUpdateUserPayload(ctx context.Context, sel ast.SelectionSet, v model.UpdateUserPayload) graphql.Marshaler {
