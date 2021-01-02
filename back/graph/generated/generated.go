@@ -58,7 +58,7 @@ type ComplexityRoot struct {
 		DeletePost   func(childComplexity int, targetID string) int
 		DeleteUser   func(childComplexity int, name string) int
 		Login        func(childComplexity int, input model.Login) int
-		RefreshToken func(childComplexity int, input model.RefreshTokenInput) int
+		RefreshToken func(childComplexity int) int
 		UpdatePost   func(childComplexity int, targetID string, input model.TargetPost) int
 		UpdateUser   func(childComplexity int, target string, toBe model.ToBeUser) int
 	}
@@ -120,7 +120,7 @@ type MutationResolver interface {
 	DeleteUser(ctx context.Context, name string) (string, error)
 	UpdateUser(ctx context.Context, target string, toBe model.ToBeUser) (model.UpdateUserPayload, error)
 	Login(ctx context.Context, input model.Login) (model.LoginPayload, error)
-	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error)
+	RefreshToken(ctx context.Context) (model.LoginPayload, error)
 	CreatePost(ctx context.Context, input model.TargetPost) (model.CreatePostPayload, error)
 	DeletePost(ctx context.Context, targetID string) (model.DeletePostPayload, error)
 	UpdatePost(ctx context.Context, targetID string, input model.TargetPost) (model.UpdatePostPayload, error)
@@ -227,12 +227,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_Mutation_refreshToken_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.RefreshToken(childComplexity, args["input"].(model.RefreshTokenInput)), true
+		return e.complexity.Mutation.RefreshToken(childComplexity), true
 
 	case "Mutation.updatePost":
 		if e.complexity.Mutation.UpdatePost == nil {
@@ -592,8 +587,9 @@ type Mutation {
     deleteUser(name: String!): String!
     updateUser(target: String!, toBe: ToBeUser!): UpdateUserPayload!
 
+
     login(input: Login!): LoginPayload!
-    refreshToken(input: RefreshTokenInput!): String!
+    refreshToken: LoginPayload!
 
     createPost(input: TargetPost!): CreatePostPayload!
     deletePost(targetID: String!): DeletePostPayload!
@@ -674,21 +670,6 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNLogin2yesᚑblogᚋgraphᚋmodelᚐLogin(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 model.RefreshTokenInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNRefreshTokenInput2yesᚑblogᚋgraphᚋmodelᚐRefreshTokenInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1169,16 +1150,9 @@ func (ec *executionContext) _Mutation_refreshToken(ctx context.Context, field gr
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_refreshToken_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RefreshToken(rctx, args["input"].(model.RefreshTokenInput))
+		return ec.resolvers.Mutation().RefreshToken(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1190,9 +1164,9 @@ func (ec *executionContext) _Mutation_refreshToken(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(model.LoginPayload)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNLoginPayload2yesᚑblogᚋgraphᚋmodelᚐLoginPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createPost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -4562,11 +4536,6 @@ func (ec *executionContext) marshalNPost2ᚖyesᚑblogᚋgraphᚋmodelᚐPost(ct
 		return graphql.Null
 	}
 	return ec._Post(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNRefreshTokenInput2yesᚑblogᚋgraphᚋmodelᚐRefreshTokenInput(ctx context.Context, v interface{}) (model.RefreshTokenInput, error) {
-	res, err := ec.unmarshalInputRefreshTokenInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

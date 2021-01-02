@@ -93,7 +93,7 @@ type Mutation {
 
 
     login(input: Login!): LoginPayload!
-    refreshToken(input: RefreshTokenInput!): String!
+    refreshToken: LoginPayload!
 
     createPost(input: TargetPost!): CreatePostPayload!
     deletePost(targetID: String!): DeletePostPayload!

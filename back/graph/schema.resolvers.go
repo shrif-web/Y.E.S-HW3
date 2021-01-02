@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"yes-blog/graph/generated"
 	"yes-blog/graph/model"
 	postController "yes-blog/internal/controller/post"
@@ -69,8 +68,17 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (model.
 	return model.Token{Token: token}, nil
 }
 
-func (r *mutationResolver) RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) RefreshToken(ctx context.Context) (model.LoginPayload, error) {
+	username := extractUsernameFromContext(ctx)
+	if username == "" {
+		return model.InternalServerException{Message: "user not found!"}, nil
+	}
+	// generate new token
+	token, err := jwt.GenerateToken(username)
+	if err != nil {
+		return model.InternalServerException{}, nil
+	}
+	return model.Token{Token: token}, nil
 }
 
 func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPost) (model.CreatePostPayload, error) {
