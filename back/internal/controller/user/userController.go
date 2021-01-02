@@ -64,20 +64,28 @@ func (c *userController) Demote(admin, target string)error {
 }
 
 func (c *userController) setLevel(admin, target string,level bool) error {
-	adminUser, err := c.Get(&admin)
-	if err!=nil{
-		return model.NoUserFoundException{Message: "couldn't fetch admin"}
+	isAdmin, err := c.isAdmin(admin)
+	if err != nil {
+		return err
 	}
-	if ! adminUser.IsAdmin() {
+	if !isAdmin {
 		return model.UserNotAllowedException{Message: "user is not admin!"}
 	}
-	targetUser,err2 :=c.Get(&target)
-	if err2!=nil{
+	targetUser, err2 := c.Get(&target)
+	if err2 != nil {
 		return model.NoUserFoundException{Message: "couldn't fetch target"}
 	}
 	targetUser.SetAdmin(level)
-	if stat := c.dbDriver.Replace(&target, targetUser);stat == status.FAILED{
+	if stat := c.dbDriver.Replace(&target, targetUser); stat == status.FAILED {
 		return model.InternalServerException{Message: "couldn't do the task"}
 	}
 	return nil
+}
+
+func (c *userController) isAdmin(admin string) (bool, error) {
+	adminUser, err := c.Get(&admin)
+	if err != nil {
+		return false, model.NoUserFoundException{Message: "couldn't fetch admin"}
+	}
+	return adminUser.IsAdmin(), nil
 }

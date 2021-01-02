@@ -19,15 +19,26 @@ func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUs
 		switch err.(type) {
 		case model.DuplicateUsernameException:
 			return err.(model.DuplicateUsernameException), nil
-		case model.InternalServerException:
+		default:
 			return err.(model.InternalServerException), nil
 		}
 	}
 	return reformatUser(newUser), err
 }
 
-func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (string, error) {
-	return name, userController.GetUserController().Delete(&name)
+func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (model.DeletePostPayload, error) {
+	err := userController.GetUserController().Delete(extractUsernameFromContext(ctx), name)
+	if err != nil {
+		switch err.(type) {
+		case model.UserNotAllowedException:
+			return err.(model.UserNotAllowedException), nil
+		case model.NoUserFoundException:
+			return err.(model.NoUserFoundException),nil
+		default:
+			return err.(model.InternalServerException), nil
+		}
+	}
+	return model.OperationSuccessfull{},nil
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, toBe model.ToBeUser) (model.UpdateUserPayload, error) {
@@ -49,12 +60,12 @@ func (r *mutationResolver) Promote(ctx context.Context, target string) (model.Ad
 		case model.NoUserFoundException:
 			return err.(model.NoUserFoundException), nil
 		case model.UserNotAllowedException:
-			return err.(model.UserNotAllowedException),nil
+			return err.(model.UserNotAllowedException), nil
 		default:
 			return err.(model.InternalServerException), nil
 		}
 	}
-	return model.OperationSuccessfull{},nil
+	return model.OperationSuccessfull{}, nil
 }
 
 func (r *mutationResolver) Demote(ctx context.Context, target string) (model.AdminPayload, error) {
@@ -63,12 +74,12 @@ func (r *mutationResolver) Demote(ctx context.Context, target string) (model.Adm
 		case model.NoUserFoundException:
 			return err.(model.NoUserFoundException), nil
 		case model.UserNotAllowedException:
-			return err.(model.UserNotAllowedException),nil
+			return err.(model.UserNotAllowedException), nil
 		default:
 			return err.(model.InternalServerException), nil
 		}
 	}
-	return model.OperationSuccessfull{},nil
+	return model.OperationSuccessfull{}, nil
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (model.LoginPayload, error) {

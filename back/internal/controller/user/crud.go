@@ -30,8 +30,16 @@ func (c *userController) Get(name *string) (*user.User, error) {
 	}
 }
 
-func (c *userController) Delete(name *string) error {
-	if stat := c.dbDriver.Delete(name); stat == status.FAILED {
+func (c *userController) Delete(operator,name string) error {
+	isAdmin, err := c.isAdmin(operator)
+	if err!=nil{
+		return err
+	}
+	if ! isAdmin && operator!=name{
+		return model.UserNotAllowedException{}
+	}
+
+	if stat := c.dbDriver.Delete(&name); stat == status.FAILED {
 		return model.InternalServerException{Message: "couldn't delete the user"}
 	} else {
 		return nil

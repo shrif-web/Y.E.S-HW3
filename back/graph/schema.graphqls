@@ -84,12 +84,14 @@ union AdminPayload    = OperationSuccessfull | UserNotAllowedException | NoUserF
 union CreateUserPayload = User  | DuplicateUsernameException | InternalServerException
 union UpdateUserPayload = User  | NoUserFoundException       | InternalServerException
 union LoginPayload      = Token | UserPassMissMatchException | InternalServerException
+union DeleteUserPayload = OperationSuccessfull | UserNotAllowedException | NoUserFoundException | InternalServerException
+
 union CreatePostPayload = Post  | NoUserFoundException | PostEmptyException  | InternalServerException
 union DeletePostPayload = OperationSuccessfull | UserNotAllowedException | NoUserFoundException | PostNotFoundException | InternalServerException
 union UpdatePostPayload = OperationSuccessfull | UserNotAllowedException | PostEmptyException   | NoUserFoundException | PostNotFoundException | InternalServerException
 type Mutation {
     createUser(target: TargetUser!): CreateUserPayload!
-    deleteUser(name: String!): String!
+    deleteUser(name: String!): DeletePostPayload!
 
     updateUser(toBe: ToBeUser!): UpdateUserPayload!
     promote(target:String!):AdminPayload!

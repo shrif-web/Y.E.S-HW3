@@ -18,6 +18,10 @@ type DeletePostPayload interface {
 	IsDeletePostPayload()
 }
 
+type DeleteUserPayload interface {
+	IsDeleteUserPayload()
+}
+
 type Exception interface {
 	IsException()
 }
@@ -50,6 +54,7 @@ func (InternalServerException) IsAdminPayload()      {}
 func (InternalServerException) IsCreateUserPayload() {}
 func (InternalServerException) IsUpdateUserPayload() {}
 func (InternalServerException) IsLoginPayload()      {}
+func (InternalServerException) IsDeleteUserPayload() {}
 func (InternalServerException) IsCreatePostPayload() {}
 func (InternalServerException) IsDeletePostPayload() {}
 func (InternalServerException) IsUpdatePostPayload() {}
@@ -66,6 +71,7 @@ type NoUserFoundException struct {
 func (NoUserFoundException) IsException()         {}
 func (NoUserFoundException) IsAdminPayload()      {}
 func (NoUserFoundException) IsUpdateUserPayload() {}
+func (NoUserFoundException) IsDeleteUserPayload() {}
 func (NoUserFoundException) IsCreatePostPayload() {}
 func (NoUserFoundException) IsDeletePostPayload() {}
 func (NoUserFoundException) IsUpdatePostPayload() {}
@@ -75,6 +81,7 @@ type OperationSuccessfull struct {
 }
 
 func (OperationSuccessfull) IsAdminPayload()      {}
+func (OperationSuccessfull) IsDeleteUserPayload() {}
 func (OperationSuccessfull) IsDeletePostPayload() {}
 func (OperationSuccessfull) IsUpdatePostPayload() {}
 
@@ -148,6 +155,7 @@ type UserNotAllowedException struct {
 
 func (UserNotAllowedException) IsException()         {}
 func (UserNotAllowedException) IsAdminPayload()      {}
+func (UserNotAllowedException) IsDeleteUserPayload() {}
 func (UserNotAllowedException) IsDeletePostPayload() {}
 func (UserNotAllowedException) IsUpdatePostPayload() {}
 
