@@ -2,6 +2,10 @@
 
 package model
 
+type AdminPayload interface {
+	IsAdminPayload()
+}
+
 type CreatePostPayload interface {
 	IsCreatePostPayload()
 }
@@ -64,6 +68,14 @@ func (NoUserFoundException) IsCreatePostPayload() {}
 func (NoUserFoundException) IsDeletePostPayload() {}
 func (NoUserFoundException) IsUpdatePostPayload() {}
 
+type OperationSuccessfull struct {
+	Message string `json:"message"`
+}
+
+func (OperationSuccessfull) IsAdminPayload()      {}
+func (OperationSuccessfull) IsDeletePostPayload() {}
+func (OperationSuccessfull) IsUpdatePostPayload() {}
+
 type Post struct {
 	ID        string `json:"id"`
 	CreatedBy *User  `json:"created_by"`
@@ -89,13 +101,6 @@ type PostNotFoundException struct {
 func (PostNotFoundException) IsException()         {}
 func (PostNotFoundException) IsDeletePostPayload() {}
 func (PostNotFoundException) IsUpdatePostPayload() {}
-
-type PostOperationSuccessfull struct {
-	Message *string `json:"message"`
-}
-
-func (PostOperationSuccessfull) IsDeletePostPayload() {}
-func (PostOperationSuccessfull) IsUpdatePostPayload() {}
 
 type RefreshTokenInput struct {
 	Token string `json:"token"`
@@ -140,6 +145,7 @@ type UserNotAllowedException struct {
 }
 
 func (UserNotAllowedException) IsException()         {}
+func (UserNotAllowedException) IsAdminPayload()      {}
 func (UserNotAllowedException) IsDeletePostPayload() {}
 func (UserNotAllowedException) IsUpdatePostPayload() {}
 

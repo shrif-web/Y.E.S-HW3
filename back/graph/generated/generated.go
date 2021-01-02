@@ -57,13 +57,19 @@ type ComplexityRoot struct {
 		CreateUser   func(childComplexity int, target model.TargetUser) int
 		DeletePost   func(childComplexity int, targetID string) int
 		DeleteUser   func(childComplexity int, name string) int
+		Demote       func(childComplexity int, username string) int
 		Login        func(childComplexity int, input model.Login) int
+		Promote      func(childComplexity int, username string) int
 		RefreshToken func(childComplexity int) int
 		UpdatePost   func(childComplexity int, targetID string, input model.TargetPost) int
-		UpdateUser   func(childComplexity int, target string, toBe model.ToBeUser) int
+		UpdateUser   func(childComplexity int, toBe model.ToBeUser) int
 	}
 
 	NoUserFoundException struct {
+		Message func(childComplexity int) int
+	}
+
+	OperationSuccessfull struct {
 		Message func(childComplexity int) int
 	}
 
@@ -80,10 +86,6 @@ type ComplexityRoot struct {
 	}
 
 	PostNotFoundException struct {
-		Message func(childComplexity int) int
-	}
-
-	PostOperationSuccessfull struct {
 		Message func(childComplexity int) int
 	}
 
@@ -119,7 +121,9 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateUser(ctx context.Context, target model.TargetUser) (model.CreateUserPayload, error)
 	DeleteUser(ctx context.Context, name string) (string, error)
-	UpdateUser(ctx context.Context, target string, toBe model.ToBeUser) (model.UpdateUserPayload, error)
+	UpdateUser(ctx context.Context, toBe model.ToBeUser) (model.UpdateUserPayload, error)
+	Promote(ctx context.Context, username string) (model.AdminPayload, error)
+	Demote(ctx context.Context, username string) (model.AdminPayload, error)
 	Login(ctx context.Context, input model.Login) (model.LoginPayload, error)
 	RefreshToken(ctx context.Context) (model.LoginPayload, error)
 	CreatePost(ctx context.Context, input model.TargetPost) (model.CreatePostPayload, error)
@@ -211,6 +215,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteUser(childComplexity, args["name"].(string)), true
 
+	case "Mutation.demote":
+		if e.complexity.Mutation.Demote == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_demote_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Demote(childComplexity, args["username"].(string)), true
+
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
 			break
@@ -222,6 +238,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Login(childComplexity, args["input"].(model.Login)), true
+
+	case "Mutation.promote":
+		if e.complexity.Mutation.Promote == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_promote_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Promote(childComplexity, args["username"].(string)), true
 
 	case "Mutation.refreshToken":
 		if e.complexity.Mutation.RefreshToken == nil {
@@ -252,7 +280,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateUser(childComplexity, args["target"].(string), args["toBe"].(model.ToBeUser)), true
+		return e.complexity.Mutation.UpdateUser(childComplexity, args["toBe"].(model.ToBeUser)), true
 
 	case "NoUserFoundException.message":
 		if e.complexity.NoUserFoundException.Message == nil {
@@ -260,6 +288,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.NoUserFoundException.Message(childComplexity), true
+
+	case "OperationSuccessfull.message":
+		if e.complexity.OperationSuccessfull.Message == nil {
+			break
+		}
+
+		return e.complexity.OperationSuccessfull.Message(childComplexity), true
 
 	case "Post.content":
 		if e.complexity.Post.Content == nil {
@@ -309,13 +344,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PostNotFoundException.Message(childComplexity), true
-
-	case "PostOperationSuccessfull.message":
-		if e.complexity.PostOperationSuccessfull.Message == nil {
-			break
-		}
-
-		return e.complexity.PostOperationSuccessfull.Message(childComplexity), true
 
 	case "Query.post":
 		if e.complexity.Query.Post == nil {
@@ -581,20 +609,24 @@ type PostNotFoundException implements Exception{
 type PostEmptyException implements Exception{
     message:String!
 }
-type PostOperationSuccessfull{
-    message:String
+type OperationSuccessfull{
+    message:String!
 }
+union AdminPayload    = OperationSuccessfull | UserNotAllowedException
 union CreateUserPayload = User  | DuplicateUsernameException | InternalServerException
 union UpdateUserPayload = User  | NoUserFoundException       | InternalServerException
 union LoginPayload      = Token | UserPassMissMatchException | InternalServerException
 union CreatePostPayload = Post  | NoUserFoundException | PostEmptyException  | InternalServerException
-union DeletePostPayload = PostOperationSuccessfull | UserNotAllowedException | NoUserFoundException | PostNotFoundException | InternalServerException
-union UpdatePostPayload = PostOperationSuccessfull | UserNotAllowedException | PostEmptyException   | NoUserFoundException | PostNotFoundException | InternalServerException
-
+union DeletePostPayload = OperationSuccessfull | UserNotAllowedException | NoUserFoundException | PostNotFoundException | InternalServerException
+union UpdatePostPayload = OperationSuccessfull | UserNotAllowedException | PostEmptyException   | NoUserFoundException | PostNotFoundException | InternalServerException
 type Mutation {
     createUser(target: TargetUser!): CreateUserPayload!
     deleteUser(name: String!): String!
-    updateUser(target: String!, toBe: ToBeUser!): UpdateUserPayload!
+
+    updateUser(toBe: ToBeUser!): UpdateUserPayload!
+    promote(username:String!):AdminPayload!
+    demote(username:String!):AdminPayload!
+
 
     login(input: Login!): LoginPayload!
     refreshToken: LoginPayload!
@@ -671,6 +703,21 @@ func (ec *executionContext) field_Mutation_deleteUser_args(ctx context.Context, 
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_demote_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["username"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["username"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -683,6 +730,21 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_promote_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["username"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["username"] = arg0
 	return args, nil
 }
 
@@ -713,24 +775,15 @@ func (ec *executionContext) field_Mutation_updatePost_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["target"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("target"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["target"] = arg0
-	var arg1 model.ToBeUser
+	var arg0 model.ToBeUser
 	if tmp, ok := rawArgs["toBe"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("toBe"))
-		arg1, err = ec.unmarshalNToBeUser2yesᚑblogᚋgraphᚋmodelᚐToBeUser(ctx, tmp)
+		arg0, err = ec.unmarshalNToBeUser2yesᚑblogᚋgraphᚋmodelᚐToBeUser(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["toBe"] = arg1
+	args["toBe"] = arg0
 	return args, nil
 }
 
@@ -1083,7 +1136,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateUser(rctx, args["target"].(string), args["toBe"].(model.ToBeUser))
+		return ec.resolvers.Mutation().UpdateUser(rctx, args["toBe"].(model.ToBeUser))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1098,6 +1151,90 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	res := resTmp.(model.UpdateUserPayload)
 	fc.Result = res
 	return ec.marshalNUpdateUserPayload2yesᚑblogᚋgraphᚋmodelᚐUpdateUserPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_promote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_promote_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Promote(rctx, args["username"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.AdminPayload)
+	fc.Result = res
+	return ec.marshalNAdminPayload2yesᚑblogᚋgraphᚋmodelᚐAdminPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_demote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_demote_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Demote(rctx, args["username"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.AdminPayload)
+	fc.Result = res
+	return ec.marshalNAdminPayload2yesᚑblogᚋgraphᚋmodelᚐAdminPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1312,6 +1449,41 @@ func (ec *executionContext) _NoUserFoundException_message(ctx context.Context, f
 	}()
 	fc := &graphql.FieldContext{
 		Object:     "NoUserFoundException",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _OperationSuccessfull_message(ctx context.Context, field graphql.CollectedField, obj *model.OperationSuccessfull) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "OperationSuccessfull",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -1581,38 +1753,6 @@ func (ec *executionContext) _PostNotFoundException_message(ctx context.Context, 
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _PostOperationSuccessfull_message(ctx context.Context, field graphql.CollectedField, obj *model.PostOperationSuccessfull) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "PostOperationSuccessfull",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_user(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3419,6 +3559,29 @@ func (ec *executionContext) unmarshalInputToBeUser(ctx context.Context, obj inte
 
 // region    ************************** interface.gotpl ***************************
 
+func (ec *executionContext) _AdminPayload(ctx context.Context, sel ast.SelectionSet, obj model.AdminPayload) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.OperationSuccessfull:
+		return ec._OperationSuccessfull(ctx, sel, &obj)
+	case *model.OperationSuccessfull:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._OperationSuccessfull(ctx, sel, obj)
+	case model.UserNotAllowedException:
+		return ec._UserNotAllowedException(ctx, sel, &obj)
+	case *model.UserNotAllowedException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._UserNotAllowedException(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _CreatePostPayload(ctx context.Context, sel ast.SelectionSet, obj model.CreatePostPayload) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
@@ -3490,13 +3653,13 @@ func (ec *executionContext) _DeletePostPayload(ctx context.Context, sel ast.Sele
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.PostOperationSuccessfull:
-		return ec._PostOperationSuccessfull(ctx, sel, &obj)
-	case *model.PostOperationSuccessfull:
+	case model.OperationSuccessfull:
+		return ec._OperationSuccessfull(ctx, sel, &obj)
+	case *model.OperationSuccessfull:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._PostOperationSuccessfull(ctx, sel, obj)
+		return ec._OperationSuccessfull(ctx, sel, obj)
 	case model.UserNotAllowedException:
 		return ec._UserNotAllowedException(ctx, sel, &obj)
 	case *model.UserNotAllowedException:
@@ -3622,13 +3785,13 @@ func (ec *executionContext) _UpdatePostPayload(ctx context.Context, sel ast.Sele
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.PostOperationSuccessfull:
-		return ec._PostOperationSuccessfull(ctx, sel, &obj)
-	case *model.PostOperationSuccessfull:
+	case model.OperationSuccessfull:
+		return ec._OperationSuccessfull(ctx, sel, &obj)
+	case *model.OperationSuccessfull:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._PostOperationSuccessfull(ctx, sel, obj)
+		return ec._OperationSuccessfull(ctx, sel, obj)
 	case model.UserNotAllowedException:
 		return ec._UserNotAllowedException(ctx, sel, &obj)
 	case *model.UserNotAllowedException:
@@ -3787,6 +3950,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "promote":
+			out.Values[i] = ec._Mutation_promote(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "demote":
+			out.Values[i] = ec._Mutation_demote(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "login":
 			out.Values[i] = ec._Mutation_login(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -3836,6 +4009,33 @@ func (ec *executionContext) _NoUserFoundException(ctx context.Context, sel ast.S
 			out.Values[i] = graphql.MarshalString("NoUserFoundException")
 		case "message":
 			out.Values[i] = ec._NoUserFoundException_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var operationSuccessfullImplementors = []string{"OperationSuccessfull", "AdminPayload", "DeletePostPayload", "UpdatePostPayload"}
+
+func (ec *executionContext) _OperationSuccessfull(ctx context.Context, sel ast.SelectionSet, obj *model.OperationSuccessfull) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, operationSuccessfullImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("OperationSuccessfull")
+		case "message":
+			out.Values[i] = ec._OperationSuccessfull_message(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -3940,30 +4140,6 @@ func (ec *executionContext) _PostNotFoundException(ctx context.Context, sel ast.
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var postOperationSuccessfullImplementors = []string{"PostOperationSuccessfull", "DeletePostPayload", "UpdatePostPayload"}
-
-func (ec *executionContext) _PostOperationSuccessfull(ctx context.Context, sel ast.SelectionSet, obj *model.PostOperationSuccessfull) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, postOperationSuccessfullImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("PostOperationSuccessfull")
-		case "message":
-			out.Values[i] = ec._PostOperationSuccessfull_message(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4146,7 +4322,7 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
-var userNotAllowedExceptionImplementors = []string{"UserNotAllowedException", "Exception", "DeletePostPayload", "UpdatePostPayload"}
+var userNotAllowedExceptionImplementors = []string{"UserNotAllowedException", "Exception", "AdminPayload", "DeletePostPayload", "UpdatePostPayload"}
 
 func (ec *executionContext) _UserNotAllowedException(ctx context.Context, sel ast.SelectionSet, obj *model.UserNotAllowedException) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, userNotAllowedExceptionImplementors)
@@ -4444,6 +4620,16 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) marshalNAdminPayload2yesᚑblogᚋgraphᚋmodelᚐAdminPayload(ctx context.Context, sel ast.SelectionSet, v model.AdminPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._AdminPayload(ctx, sel, v)
+}
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)

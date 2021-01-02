@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"yes-blog/graph/model"
 	"yes-blog/pkg/database"
+	"yes-blog/pkg/jwt"
 )
 
 /* 	singleton object for userController
@@ -26,4 +28,29 @@ func init() {
 
 func GetUserController() *userController {
 	return userC
+}
+
+func (c *userController) Login(username,password string)(string,error){
+
+	//retrieve user from data base
+	blogUser, err := c.Get(&username)
+	if err != nil {
+		switch err.(type) {
+		case *model.PostEmptyException:
+			return "",err.(*model.InternalServerException)
+		}
+		return "",err
+	}
+
+	// check if the username and password matches
+	if !blogUser.Verify(password) {
+		return "",model.UserPassMissMatchException{}
+	}
+
+	// generate new token
+	token, err2 := jwt.GenerateToken(blogUser.Name)
+	if err2 != nil {
+		return "",model.InternalServerException{}
+	}
+	return token, nil
 }

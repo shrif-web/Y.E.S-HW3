@@ -77,20 +77,24 @@ type PostNotFoundException implements Exception{
 type PostEmptyException implements Exception{
     message:String!
 }
-type PostOperationSuccessfull{
-    message:String
+type OperationSuccessfull{
+    message:String!
 }
+union AdminPayload    = OperationSuccessfull | UserNotAllowedException
 union CreateUserPayload = User  | DuplicateUsernameException | InternalServerException
 union UpdateUserPayload = User  | NoUserFoundException       | InternalServerException
 union LoginPayload      = Token | UserPassMissMatchException | InternalServerException
 union CreatePostPayload = Post  | NoUserFoundException | PostEmptyException  | InternalServerException
-union DeletePostPayload = PostOperationSuccessfull | UserNotAllowedException | NoUserFoundException | PostNotFoundException | InternalServerException
-union UpdatePostPayload = PostOperationSuccessfull | UserNotAllowedException | PostEmptyException   | NoUserFoundException | PostNotFoundException | InternalServerException
-
+union DeletePostPayload = OperationSuccessfull | UserNotAllowedException | NoUserFoundException | PostNotFoundException | InternalServerException
+union UpdatePostPayload = OperationSuccessfull | UserNotAllowedException | PostEmptyException   | NoUserFoundException | PostNotFoundException | InternalServerException
 type Mutation {
     createUser(target: TargetUser!): CreateUserPayload!
     deleteUser(name: String!): String!
-    updateUser(target: String!, toBe: ToBeUser!): UpdateUserPayload!
+
+    updateUser(toBe: ToBeUser!): UpdateUserPayload!
+    promote(username:String!):AdminPayload!
+    demote(username:String!):AdminPayload!
+
 
     login(input: Login!): LoginPayload!
     refreshToken: LoginPayload!

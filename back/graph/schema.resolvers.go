@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"yes-blog/graph/generated"
 	"yes-blog/graph/model"
 	postController "yes-blog/internal/controller/post"
@@ -30,9 +31,8 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (string,
 	return name, userController.GetUserController().Delete(&name)
 }
 
-func (r *mutationResolver) UpdateUser(ctx context.Context, target string, toBe model.ToBeUser) (model.UpdateUserPayload, error) {
-	_ = extractUsernameFromContext(ctx)
-	update, err := userController.GetUserController().Update(target, toBe)
+func (r *mutationResolver) UpdateUser(ctx context.Context, toBe model.ToBeUser) (model.UpdateUserPayload, error) {
+	update, err := userController.GetUserController().Update(extractUsernameFromContext(ctx), toBe)
 	if err != nil {
 		switch err.(type) {
 		case model.NoUserFoundException:
@@ -44,28 +44,25 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, target string, toBe m
 	return reformatUser(update), err
 }
 
+func (r *mutationResolver) Promote(ctx context.Context, username string) (model.AdminPayload, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) Demote(ctx context.Context, username string) (model.AdminPayload, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (model.LoginPayload, error) {
-	//retrieve user from data base
-	blogUser, err := userController.GetUserController().Get(&input.Username)
-	if err != nil {
+	token, err := userController.GetUserController().Login(input.Username, input.Password)
+	if err!=nil{
 		switch err.(type) {
-		case *model.PostEmptyException:
-			return err.(*model.InternalServerException), nil
+		case model.UserPassMissMatchException:
+			return err.(model.UserPassMissMatchException), nil
+		default:
+			return err.(model.InternalServerException), nil
 		}
-		return nil, err
 	}
-
-	// check if the username and password matches
-	if !blogUser.Verify(input.Password) {
-		return model.UserPassMissMatchException{}, nil
-	}
-
-	// generate new token
-	token, err2 := jwt.GenerateToken(blogUser.Name)
-	if err2 != nil {
-		return model.InternalServerException{}, nil
-	}
-	return model.Token{Token: token}, nil
+	return model.Token{Token: token},nil
 }
 
 func (r *mutationResolver) RefreshToken(ctx context.Context) (model.LoginPayload, error) {
@@ -89,7 +86,7 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPos
 			return err.(*model.PostEmptyException), nil
 		case *model.NoUserFoundException:
 			return err.(*model.NoUserFoundException), nil
-		case *model.InternalServerException:
+		default:
 			return err.(*model.InternalServerException), nil
 		}
 	}
@@ -106,11 +103,11 @@ func (r *mutationResolver) DeletePost(ctx context.Context, targetID string) (mod
 			return err.(*model.NoUserFoundException), nil
 		case *model.PostNotFoundException:
 			return err.(*model.PostNotFoundException), nil
-		case *model.InternalServerException:
+		default:
 			return err.(*model.InternalServerException), nil
 		}
 	}
-	return &model.PostOperationSuccessfull{Message: &message}, nil
+	return &model.OperationSuccessfull{Message: message}, nil
 }
 
 func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, input model.TargetPost) (model.UpdatePostPayload, error) {
@@ -125,11 +122,11 @@ func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, inpu
 			return err.(*model.PostNotFoundException), nil
 		case *model.PostEmptyException:
 			return err.(*model.PostEmptyException), nil
-		case *model.InternalServerException:
+		default:
 			return err.(*model.InternalServerException), nil
 		}
 	}
-	return &model.PostOperationSuccessfull{Message: &message}, nil
+	return &model.OperationSuccessfull{Message: message}, nil
 }
 
 func (r *queryResolver) User(ctx context.Context, name string) (*model.User, error) {
