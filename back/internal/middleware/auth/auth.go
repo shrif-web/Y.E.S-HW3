@@ -24,14 +24,13 @@ func Middleware() gin.HandlerFunc {
 			c.Status(http.StatusUnauthorized)
 			return
 		}
-		c.Set("username", username)
 		c.Set(usernameKey,username)
 		c.Next()
 	}
 }
 
 
-// ForContext finds the user from the ggcontext. REQUIRES Middleware to have run.
+// ForContext finds the user from the context. REQUIRES Middleware to have run.
 func ForContext(ctx *gin.Context) string {
 	return ctx.GetString(usernameKey)
 }
