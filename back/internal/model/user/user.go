@@ -71,14 +71,23 @@ func (u *User) UpdateName(name string) {
 	u.Name = name
 }
 
-func (u *User) promote() {
-	u.Admin = true
+func (u *User) Promote() {
+	u.SetAdmin(true)
 }
 
-func (u *User) demote() {
-	u.Admin = false
+func (u *User) Demote() {
+	u.SetAdmin(false)
+}
+
+func (u *User)SetAdmin(state bool){
+	u.Admin=state
 }
 
 func (u *User) Verify(password string) bool {
 	return CheckPasswordHash(password, u.Password)
 }
+
+func (u *User) IsAdmin() bool {
+	return u.Admin
+}
+

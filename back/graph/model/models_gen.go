@@ -46,6 +46,7 @@ type InternalServerException struct {
 }
 
 func (InternalServerException) IsException()         {}
+func (InternalServerException) IsAdminPayload()      {}
 func (InternalServerException) IsCreateUserPayload() {}
 func (InternalServerException) IsUpdateUserPayload() {}
 func (InternalServerException) IsLoginPayload()      {}
@@ -63,6 +64,7 @@ type NoUserFoundException struct {
 }
 
 func (NoUserFoundException) IsException()         {}
+func (NoUserFoundException) IsAdminPayload()      {}
 func (NoUserFoundException) IsUpdateUserPayload() {}
 func (NoUserFoundException) IsCreatePostPayload() {}
 func (NoUserFoundException) IsDeletePostPayload() {}

@@ -80,7 +80,7 @@ type PostEmptyException implements Exception{
 type OperationSuccessfull{
     message:String!
 }
-union AdminPayload    = OperationSuccessfull | UserNotAllowedException
+union AdminPayload    = OperationSuccessfull | UserNotAllowedException | NoUserFoundException | InternalServerException
 union CreateUserPayload = User  | DuplicateUsernameException | InternalServerException
 union UpdateUserPayload = User  | NoUserFoundException       | InternalServerException
 union LoginPayload      = Token | UserPassMissMatchException | InternalServerException
@@ -92,8 +92,8 @@ type Mutation {
     deleteUser(name: String!): String!
 
     updateUser(toBe: ToBeUser!): UpdateUserPayload!
-    promote(username:String!):AdminPayload!
-    demote(username:String!):AdminPayload!
+    promote(target:String!):AdminPayload!
+    demote(target:String!):AdminPayload!
 
 
     login(input: Login!): LoginPayload!

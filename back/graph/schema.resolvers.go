@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"yes-blog/graph/generated"
 	"yes-blog/graph/model"
 	postController "yes-blog/internal/controller/post"
@@ -37,24 +36,44 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, toBe model.ToBeUser) 
 		switch err.(type) {
 		case model.NoUserFoundException:
 			return err.(model.NoUserFoundException), nil
-		case model.InternalServerException:
+		default:
 			return err.(model.InternalServerException), nil
 		}
 	}
 	return reformatUser(update), err
 }
 
-func (r *mutationResolver) Promote(ctx context.Context, username string) (model.AdminPayload, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) Promote(ctx context.Context, target string) (model.AdminPayload, error) {
+	if err := userController.GetUserController().Promote(extractUsernameFromContext(ctx), target); err != nil {
+		switch err.(type) {
+		case model.NoUserFoundException:
+			return err.(model.NoUserFoundException), nil
+		case model.UserNotAllowedException:
+			return err.(model.UserNotAllowedException),nil
+		default:
+			return err.(model.InternalServerException), nil
+		}
+	}
+	return model.OperationSuccessfull{},nil
 }
 
-func (r *mutationResolver) Demote(ctx context.Context, username string) (model.AdminPayload, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) Demote(ctx context.Context, target string) (model.AdminPayload, error) {
+	if err := userController.GetUserController().Demote(extractUsernameFromContext(ctx), target); err != nil {
+		switch err.(type) {
+		case model.NoUserFoundException:
+			return err.(model.NoUserFoundException), nil
+		case model.UserNotAllowedException:
+			return err.(model.UserNotAllowedException),nil
+		default:
+			return err.(model.InternalServerException), nil
+		}
+	}
+	return model.OperationSuccessfull{},nil
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (model.LoginPayload, error) {
 	token, err := userController.GetUserController().Login(input.Username, input.Password)
-	if err!=nil{
+	if err != nil {
 		switch err.(type) {
 		case model.UserPassMissMatchException:
 			return err.(model.UserPassMissMatchException), nil
@@ -62,7 +81,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (model.
 			return err.(model.InternalServerException), nil
 		}
 	}
-	return model.Token{Token: token},nil
+	return model.Token{Token: token}, nil
 }
 
 func (r *mutationResolver) RefreshToken(ctx context.Context) (model.LoginPayload, error) {

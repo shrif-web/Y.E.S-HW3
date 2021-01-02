@@ -6,9 +6,10 @@ import (
 )
 
 type UserDBDriver interface {
+	Delete(name *string) status.QueryStatus
 	Insert(user *user.User) status.QueryStatus
 	Get(name *string) (*user.User, status.QueryStatus)
-	Delete(name *string) status.QueryStatus
 	Update(target string, user *user.User) status.QueryStatus
 	GetAll(start, amount int64) ([]*user.User, status.QueryStatus)
+	Replace(target *string,toBe *user.User) status.QueryStatus
 }

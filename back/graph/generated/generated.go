@@ -57,9 +57,9 @@ type ComplexityRoot struct {
 		CreateUser   func(childComplexity int, target model.TargetUser) int
 		DeletePost   func(childComplexity int, targetID string) int
 		DeleteUser   func(childComplexity int, name string) int
-		Demote       func(childComplexity int, username string) int
+		Demote       func(childComplexity int, target string) int
 		Login        func(childComplexity int, input model.Login) int
-		Promote      func(childComplexity int, username string) int
+		Promote      func(childComplexity int, target string) int
 		RefreshToken func(childComplexity int) int
 		UpdatePost   func(childComplexity int, targetID string, input model.TargetPost) int
 		UpdateUser   func(childComplexity int, toBe model.ToBeUser) int
@@ -122,8 +122,8 @@ type MutationResolver interface {
 	CreateUser(ctx context.Context, target model.TargetUser) (model.CreateUserPayload, error)
 	DeleteUser(ctx context.Context, name string) (string, error)
 	UpdateUser(ctx context.Context, toBe model.ToBeUser) (model.UpdateUserPayload, error)
-	Promote(ctx context.Context, username string) (model.AdminPayload, error)
-	Demote(ctx context.Context, username string) (model.AdminPayload, error)
+	Promote(ctx context.Context, target string) (model.AdminPayload, error)
+	Demote(ctx context.Context, target string) (model.AdminPayload, error)
 	Login(ctx context.Context, input model.Login) (model.LoginPayload, error)
 	RefreshToken(ctx context.Context) (model.LoginPayload, error)
 	CreatePost(ctx context.Context, input model.TargetPost) (model.CreatePostPayload, error)
@@ -225,7 +225,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Demote(childComplexity, args["username"].(string)), true
+		return e.complexity.Mutation.Demote(childComplexity, args["target"].(string)), true
 
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
@@ -249,7 +249,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Promote(childComplexity, args["username"].(string)), true
+		return e.complexity.Mutation.Promote(childComplexity, args["target"].(string)), true
 
 	case "Mutation.refreshToken":
 		if e.complexity.Mutation.RefreshToken == nil {
@@ -612,7 +612,7 @@ type PostEmptyException implements Exception{
 type OperationSuccessfull{
     message:String!
 }
-union AdminPayload    = OperationSuccessfull | UserNotAllowedException
+union AdminPayload    = OperationSuccessfull | UserNotAllowedException | NoUserFoundException | InternalServerException
 union CreateUserPayload = User  | DuplicateUsernameException | InternalServerException
 union UpdateUserPayload = User  | NoUserFoundException       | InternalServerException
 union LoginPayload      = Token | UserPassMissMatchException | InternalServerException
@@ -624,8 +624,8 @@ type Mutation {
     deleteUser(name: String!): String!
 
     updateUser(toBe: ToBeUser!): UpdateUserPayload!
-    promote(username:String!):AdminPayload!
-    demote(username:String!):AdminPayload!
+    promote(target:String!):AdminPayload!
+    demote(target:String!):AdminPayload!
 
 
     login(input: Login!): LoginPayload!
@@ -707,14 +707,14 @@ func (ec *executionContext) field_Mutation_demote_args(ctx context.Context, rawA
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["username"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+	if tmp, ok := rawArgs["target"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("target"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["username"] = arg0
+	args["target"] = arg0
 	return args, nil
 }
 
@@ -737,14 +737,14 @@ func (ec *executionContext) field_Mutation_promote_args(ctx context.Context, raw
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["username"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+	if tmp, ok := rawArgs["target"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("target"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["username"] = arg0
+	args["target"] = arg0
 	return args, nil
 }
 
@@ -1178,7 +1178,7 @@ func (ec *executionContext) _Mutation_promote(ctx context.Context, field graphql
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Promote(rctx, args["username"].(string))
+		return ec.resolvers.Mutation().Promote(rctx, args["target"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1220,7 +1220,7 @@ func (ec *executionContext) _Mutation_demote(ctx context.Context, field graphql.
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Demote(rctx, args["username"].(string))
+		return ec.resolvers.Mutation().Demote(rctx, args["target"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3577,6 +3577,20 @@ func (ec *executionContext) _AdminPayload(ctx context.Context, sel ast.Selection
 			return graphql.Null
 		}
 		return ec._UserNotAllowedException(ctx, sel, obj)
+	case model.NoUserFoundException:
+		return ec._NoUserFoundException(ctx, sel, &obj)
+	case *model.NoUserFoundException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._NoUserFoundException(ctx, sel, obj)
+	case model.InternalServerException:
+		return ec._InternalServerException(ctx, sel, &obj)
+	case *model.InternalServerException:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._InternalServerException(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -3893,7 +3907,7 @@ func (ec *executionContext) _DuplicateUsernameException(ctx context.Context, sel
 	return out
 }
 
-var internalServerExceptionImplementors = []string{"InternalServerException", "Exception", "CreateUserPayload", "UpdateUserPayload", "LoginPayload", "CreatePostPayload", "DeletePostPayload", "UpdatePostPayload"}
+var internalServerExceptionImplementors = []string{"InternalServerException", "Exception", "AdminPayload", "CreateUserPayload", "UpdateUserPayload", "LoginPayload", "CreatePostPayload", "DeletePostPayload", "UpdatePostPayload"}
 
 func (ec *executionContext) _InternalServerException(ctx context.Context, sel ast.SelectionSet, obj *model.InternalServerException) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, internalServerExceptionImplementors)
@@ -3996,7 +4010,7 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
-var noUserFoundExceptionImplementors = []string{"NoUserFoundException", "Exception", "UpdateUserPayload", "CreatePostPayload", "DeletePostPayload", "UpdatePostPayload"}
+var noUserFoundExceptionImplementors = []string{"NoUserFoundException", "Exception", "AdminPayload", "UpdateUserPayload", "CreatePostPayload", "DeletePostPayload", "UpdatePostPayload"}
 
 func (ec *executionContext) _NoUserFoundException(ctx context.Context, sel ast.SelectionSet, obj *model.NoUserFoundException) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, noUserFoundExceptionImplementors)

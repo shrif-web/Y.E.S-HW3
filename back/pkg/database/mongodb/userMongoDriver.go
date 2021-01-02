@@ -13,6 +13,8 @@ import (
 type UserMongoDriver struct {
 	collection *mongo.Collection
 }
+
+
 /*	mongoDB implementation of the UserDBDriver interface
 	here we have a UserMongoDriver which can be initialized with a collaborating collection
 	to perform the CRUD for user.User model on mongo
@@ -102,4 +104,15 @@ func NewUserMongoDriver(db, collection string) *UserMongoDriver {
 	return &UserMongoDriver{
 		collection: client.Database(db).Collection(collection),
 	}
+}
+
+func (u UserMongoDriver) Replace(target *string, toBe *user.User) status.QueryStatus {
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+	defer cancel()
+
+	if _, err := u.collection.ReplaceOne(ctx,bson.M{"name":target},toBe); err != nil {
+		return status.FAILED
+	}
+	return status.SUCCESSFUL
+
 }
