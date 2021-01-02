@@ -21,9 +21,9 @@ func reformatUsers(all []*user.User) []*model.User {
 
 func reformatUser(blogUser *user.User) *model.User {
 	var graphUser = &model.User{
-		ID:   blogUser.ID.Hex(),
-		Name: blogUser.Name,
-		Email: blogUser.Email,
+		ID:      blogUser.ID.Hex(),
+		Name:    blogUser.Name,
+		Email:   blogUser.Email,
 		IsAdmin: blogUser.Admin,
 	}
 	graphUser.Posts = reformatPosts(blogUser.Posts, graphUser)
@@ -58,12 +58,11 @@ func reformatAllPosts(blogPosts []*post.Post, graphUser *model.User) []*model.Po
 
 func reformatAllSeparatePosts(blogPosts []*post.Post, graphUser []*model.User) []*model.Post {
 	var posts []*model.Post
-	for i, _ := range blogPosts {
+	for i := range blogPosts {
 		posts = append(posts, reformatPost(blogPosts[i], graphUser[i]))
 	}
 	return posts
 }
-
 
 func extractUsernameFromContext(ctx context.Context) string {
 	ginContext, _ := ggcontext.GinContextFromContext(ctx)
