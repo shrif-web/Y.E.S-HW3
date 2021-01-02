@@ -92,6 +92,7 @@ type Mutation {
     deleteUser(name: String!): String!
     updateUser(target: String!, toBe: ToBeUser!): UpdateUserPayload!
 
+
     login(input: Login!): LoginPayload!
     refreshToken(input: RefreshTokenInput!): String!
 

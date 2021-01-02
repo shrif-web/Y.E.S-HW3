@@ -71,11 +71,11 @@ func (u *User) UpdateName(name string) {
 	u.Name = name
 }
 
-func (u *User) Upgrade() {
+func (u *User) promote() {
 	u.Admin = true
 }
 
-func (u *User) degrade() {
+func (u *User) demote() {
 	u.Admin = false
 }
 
