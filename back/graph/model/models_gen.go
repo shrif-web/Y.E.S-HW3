@@ -125,10 +125,11 @@ type Token struct {
 func (Token) IsLoginPayload() {}
 
 type User struct {
-	ID    string  `json:"id"`
-	Name  string  `json:"name"`
-	Email string  `json:"email"`
-	Posts []*Post `json:"posts"`
+	ID      string  `json:"id"`
+	Name    string  `json:"name"`
+	Email   string  `json:"email"`
+	IsAdmin bool    `json:"isAdmin"`
+	Posts   []*Post `json:"posts"`
 }
 
 func (User) IsCreateUserPayload() {}

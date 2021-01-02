@@ -2,6 +2,7 @@ type User {
     id: ID!
     name: String!
     email: String!
+    isAdmin: Boolean!
     posts(start:Int=0,amount:Int=5): [Post!]!
 }
 
