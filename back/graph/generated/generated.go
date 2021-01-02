@@ -55,7 +55,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CreatePost   func(childComplexity int, input model.TargetPost) int
 		CreateUser   func(childComplexity int, target model.TargetUser) int
-		DeletePost   func(childComplexity int, targetID string, authorName string) int
+		DeletePost   func(childComplexity int, targetID string) int
 		DeleteUser   func(childComplexity int, name string) int
 		Login        func(childComplexity int, input model.Login) int
 		RefreshToken func(childComplexity int, input model.RefreshTokenInput) int
@@ -122,7 +122,7 @@ type MutationResolver interface {
 	Login(ctx context.Context, input model.Login) (model.LoginPayload, error)
 	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error)
 	CreatePost(ctx context.Context, input model.TargetPost) (model.CreatePostPayload, error)
-	DeletePost(ctx context.Context, targetID string, authorName string) (model.DeletePostPayload, error)
+	DeletePost(ctx context.Context, targetID string) (model.DeletePostPayload, error)
 	UpdatePost(ctx context.Context, targetID string, input model.TargetPost) (model.UpdatePostPayload, error)
 }
 type QueryResolver interface {
@@ -196,7 +196,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeletePost(childComplexity, args["targetID"].(string), args["authorName"].(string)), true
+		return e.complexity.Mutation.DeletePost(childComplexity, args["targetID"].(string)), true
 
 	case "Mutation.deleteUser":
 		if e.complexity.Mutation.DeleteUser == nil {
@@ -526,7 +526,6 @@ type Query {
 input TargetPost {
     title: String!
     content: String!
-    authorName: String!
 }
 
 input RefreshTokenInput{
@@ -597,7 +596,7 @@ type Mutation {
     refreshToken(input: RefreshTokenInput!): String!
 
     createPost(input: TargetPost!): CreatePostPayload!
-    deletePost(targetID: String!, authorName: String!): DeletePostPayload!
+    deletePost(targetID: String!): DeletePostPayload!
     updatePost(targetID: String!, input: TargetPost!): UpdatePostPayload!
 }
 `, BuiltIn: false},
@@ -650,15 +649,6 @@ func (ec *executionContext) field_Mutation_deletePost_args(ctx context.Context, 
 		}
 	}
 	args["targetID"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["authorName"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authorName"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["authorName"] = arg1
 	return args, nil
 }
 
@@ -1272,7 +1262,7 @@ func (ec *executionContext) _Mutation_deletePost(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeletePost(rctx, args["targetID"].(string), args["authorName"].(string))
+		return ec.resolvers.Mutation().DeletePost(rctx, args["targetID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3327,14 +3317,6 @@ func (ec *executionContext) unmarshalInputTargetPost(ctx context.Context, obj in
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("content"))
 			it.Content, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "authorName":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authorName"))
-			it.AuthorName, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}

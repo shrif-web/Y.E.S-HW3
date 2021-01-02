@@ -25,7 +25,6 @@ type Query {
 input TargetPost {
     title: String!
     content: String!
-    authorName: String!
 }
 
 input RefreshTokenInput{
@@ -97,6 +96,6 @@ type Mutation {
     refreshToken(input: RefreshTokenInput!): String!
 
     createPost(input: TargetPost!): CreatePostPayload!
-    deletePost(targetID: String!, authorName: String!): DeletePostPayload!
+    deletePost(targetID: String!): DeletePostPayload!
     updatePost(targetID: String!, input: TargetPost!): UpdatePostPayload!
 }

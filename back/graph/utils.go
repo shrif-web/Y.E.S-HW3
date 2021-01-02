@@ -31,7 +31,7 @@ func reformatUser(blogUser *user.User) *model.User {
 
 func reformatPost(blogPost *post.Post, graphUser *model.User) *model.Post {
 	return &model.Post{
-		ID:        blogPost.ID,
+		ID:        blogPost.ID.Hex(),
 		CreatedBy: graphUser,
 		CreatedAt: int(blogPost.TimeStamp),
 		Content:   blogPost.Body,
@@ -47,13 +47,18 @@ func reformatPosts(blogPosts []*post.Post, graphUser *model.User) []*model.Post 
 	return posts
 }
 
-func reformatAllPosts(blogPosts []*post.Post) []*model.Post {
+func reformatAllPosts(blogPosts []*post.Post, graphUser *model.User) []*model.Post {
 	var posts []*model.Post
 	for _, p := range blogPosts {
-		posts = append(posts, reformatPost(p, &model.User{
-			ID:    "",
-			Name:  p.Author,
-		}))
+		posts = append(posts, reformatPost(p, graphUser))
+	}
+	return posts
+}
+
+func reformatAllSeparatePosts(blogPosts []*post.Post, graphUser []*model.User) []*model.Post {
+	var posts []*model.Post
+	for i, _ := range blogPosts {
+		posts = append(posts, reformatPost(blogPosts[i], graphUser[i]))
 	}
 	return posts
 }
