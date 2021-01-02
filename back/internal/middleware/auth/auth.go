@@ -8,9 +8,7 @@ import (
 
 const authHeaderKey = "Authorization"
 const usernameKey = "username"
-type contextKey struct {
-	name string
-}
+
 
 
 func Middleware() gin.HandlerFunc {
