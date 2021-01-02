@@ -56,14 +56,14 @@ func (c *userController) Login(username, password string) (string, error) {
 	return token, nil
 }
 
-func (c *userController) Promote(admin, target string)error {
-	return c.setLevel(admin,target,true)
+func (c *userController) Promote(admin, target string) error {
+	return c.setLevel(admin, target, true)
 }
-func (c *userController) Demote(admin, target string)error {
-	return c.setLevel(admin,target,false)
+func (c *userController) Demote(admin, target string) error {
+	return c.setLevel(admin, target, false)
 }
 
-func (c *userController) setLevel(admin, target string,level bool) error {
+func (c *userController) setLevel(admin, target string, level bool) error {
 	isAdmin, err := c.isAdmin(admin)
 	if err != nil {
 		return err
@@ -88,4 +88,18 @@ func (c *userController) isAdmin(admin string) (bool, error) {
 		return false, model.NoUserFoundException{Message: "couldn't fetch admin"}
 	}
 	return adminUser.IsAdmin(), nil
+}
+
+func (c *userController) canOperate(operator, target string) (bool, error) {
+	if operator == target {
+		return true, nil
+	}
+	admin, err := c.isAdmin(operator)
+	if err != nil {
+		return false, err
+	}
+	if admin {
+		return true, nil
+	}
+	return false, nil
 }
