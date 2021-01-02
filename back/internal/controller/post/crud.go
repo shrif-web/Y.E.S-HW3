@@ -56,7 +56,7 @@ func (p *postController) UpdatePost(postID, title, body, authorName string) (str
 	if err != nil {
 		return "the post couldn't edit", err
 	}
-	return "the edited successfully", nil
+	return "the post edited successfully", nil
 }
 
 // delete the post from DB
