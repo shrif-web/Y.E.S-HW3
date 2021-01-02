@@ -31,7 +31,7 @@ func (c *userController) Get(name *string) (*user.User, error) {
 }
 
 func (c *userController) Delete(operator,name string) error {
-	canOperate, err := c.canOperate(operator, name)
+	canOperate, err := c.CanOperate(operator, name)
 	if err!=nil{
 		return err
 	}

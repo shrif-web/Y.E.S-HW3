@@ -90,7 +90,7 @@ func (c *userController) isAdmin(admin string) (bool, error) {
 	return adminUser.IsAdmin(), nil
 }
 
-func (c *userController) canOperate(operator, target string) (bool, error) {
+func (c *userController) CanOperate(operator, target string) (bool, error) {
 	if operator == target {
 		return true, nil
 	}
