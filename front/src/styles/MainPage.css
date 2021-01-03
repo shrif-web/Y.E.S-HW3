@@ -5,3 +5,7 @@
 .Grid {
     padding: 30px;
 }
+
+.Header {
+    position: fixed;
+}

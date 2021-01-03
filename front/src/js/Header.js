@@ -1,42 +1,101 @@
-import React from 'react'
-import { Input, Menu } from 'semantic-ui-react'
+import React, { useState } from "react";
+import { Input, Menu } from "semantic-ui-react";
+import { Redirect, Route, Switch, useHistory } from "react-router-dom";
 
-export default class Header extends React.Component {
-  state = { activeItem: 'home' }
+const Header = props => {
+  const [state, setState] = useState({
+    activeItem: ""
+  });
 
-  handleItemClick = (e, { name }) => this.setState({ activeItem: name })
+  const history = useHistory();
 
-  render() {
-    const { activeItem } = this.state
-
-    return (
-      <Menu pointing secondary>
-        <Menu.Item
-          name='home'
-          active={activeItem === 'home'}
-          onClick={this.handleItemClick}
-        />
-        <Menu.Item
-          name='messages'
-          active={activeItem === 'messages'}
-          onClick={this.handleItemClick}
-        />
-        <Menu.Item
-          name='friends'
-          active={activeItem === 'friends'}
-          onClick={this.handleItemClick}
-        />
-        <Menu.Menu position='right'>
-          <Menu.Item>
-            <Input icon='search' placeholder='Search...' />
-          </Menu.Item>
-          <Menu.Item
-            name='logout'
-            active={activeItem === 'logout'}
-            onClick={this.handleItemClick}
-          />
-        </Menu.Menu>
-      </Menu>
-    )
+  function handleItemClick(e, { name }) {
+    setState({ activeItem: name });
+    switch (name) {
+      case "Login":
+        console.log("login");
+        history.push("/login");
+        // return <Redirect to="/login" />
+        break;
+      case "Register":
+        console.log("Register");
+        break;
+      case "Homepage":
+        console.log("Homepage");
+        // return <Redirect to="/mainpage" />
+        history.push("/");
+    }
   }
-}
+
+  return (
+    <Menu fixed={props.fixed} inverted>
+      <Menu.Item
+        name="Login"
+        active={state.activeItem === "Login"}
+        onClick={handleItemClick}
+      />
+      <Menu.Item
+        name="Register"
+        active={state.activeItem === "Register"}
+        onClick={handleItemClick}
+      />
+      <Menu.Menu position="right">
+        <Menu.Item
+          name="Homepage"
+          active={state.activeItem === "Homepage"}
+          onClick={handleItemClick}
+        />
+      </Menu.Menu>
+    </Menu>
+  );
+};
+
+export default Header;
+
+// export default class Header extends React.Component {
+//   state = { activeItem: "Homepage" };
+
+//   handleItemClick = (e, { name }) => {
+//     this.setState({ activeItem: name });
+//     switch (name) {
+//       case "Login":
+//         console.log("login");
+//         history.push("/login");
+//         // return <Redirect to="/login" />
+//         break;
+//       case "Register":
+//         console.log("Register");
+//         break;
+//       case "Homepage":
+//         console.log("Homepage");
+//         // return <Redirect to="/mainpage" />
+//         history.push(".mainpage");
+//     }
+//   };
+
+//   render() {
+//     const { activeItem } = this.state;
+
+//     return (
+//       <Menu fixed={this.props.fixed} inverted>
+//         <Menu.Item
+//           name="Login"
+//           active={activeItem === "Login"}
+//           onClick={this.handleItemClick}
+//         />
+//         <Menu.Item
+//           name="Register"
+//           active={activeItem === "Register"}
+//           onClick={this.handleItemClick}
+//         />
+//         <Menu.Menu position="right">
+//           <Menu.Item
+//             name="Homepage"
+//             active={activeItem === "Homepage"}
+//             onClick={this.handleItemClick}
+//           />
+//         </Menu.Menu>
+//       </Menu>
+//     );
+//   }
+// }

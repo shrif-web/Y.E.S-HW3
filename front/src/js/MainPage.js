@@ -1,7 +1,8 @@
 import React from "react";
-import { Grid, Card, Icon } from "semantic-ui-react";
+import { Grid, Card, Icon, Message, Segment } from "semantic-ui-react";
 import "../styles/MainPage.css";
 import Header from "./Header.js";
+import { Redirect, Route, Switch } from 'react-router-dom';
 
 const posts = [
   {
@@ -82,16 +83,34 @@ const PostCell = ({ username, title, description }) => {
 class MainPage extends React.Component {
   constructor(props) {
     super(props);
+
+    this.updateSize = this.updateSize.bind(this);
+    // window.addEventListener("resize", this.updateSize);
+
+    this.state = {
+      isMobile: false
+    };
+  }
+
+  updateSize() {
+    if (window.innerWidth < 600 && !this.state.isMobile) {
+      this.setState({ isMobile: true });
+    }
+
+    if (window.innerWidth > 600 && this.state.isMobile) {
+      this.setState({ isMobile: false });
+    }
   }
 
   render() {
     return (
       <div>
-        <Header />
-        <Grid columns={3}>
-          {posts.map(post => {
+
+        <Grid columns={3} stackable>
+          {posts.map((post, i) => {
             return (
               <PostCell
+                key={i}
                 username={post.username}
                 title={post.title}
                 description={post.description}
@@ -99,6 +118,7 @@ class MainPage extends React.Component {
             );
           })}
         </Grid>
+        {/* {this.state.isMobile && <Header fixed="bottom" />} */}
       </div>
     );
   }

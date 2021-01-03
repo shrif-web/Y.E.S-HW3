@@ -4,6 +4,7 @@ import "./styles/index.css";
 import App from "./js/App";
 import reportWebVitals from "./reportWebVitals";
 import * as serviceWorker from "./serviceWorker";
+import { BrowserRouter } from "react-router-dom";
 
 import { ApolloClient } from "apollo-client";
 import {
@@ -31,11 +32,14 @@ const apolloClient = new ApolloClient({
 
 ReactDOM.render(
   // <React.StrictMode>
-  <ApolloProvider client={apolloClient}>
-    <App />
-  </ApolloProvider>,
-  // </React.StrictMode>,
+  <BrowserRouter>
+    <ApolloProvider client={apolloClient}>
+      <App />
+    </ApolloProvider>
+  </BrowserRouter>,
   document.getElementById("root")
+
+  // </React.StrictMode>,
 );
 
 serviceWorker.unregister();
