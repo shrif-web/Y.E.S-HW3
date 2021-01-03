@@ -15,20 +15,19 @@ const Header = props => {
       case "Login":
         console.log("login");
         history.push("/login");
-        // return <Redirect to="/login" />
         break;
       case "Register":
         console.log("Register");
+        history.push("/register");
         break;
       case "Homepage":
         console.log("Homepage");
-        // return <Redirect to="/mainpage" />
         history.push("/");
     }
   }
 
   return (
-    <Menu fixed={props.fixed} inverted>
+    <Menu fixed={props.fixed} inverted style={{borderRadius: '0px'}}>
       <Menu.Item
         name="Login"
         active={state.activeItem === "Login"}
