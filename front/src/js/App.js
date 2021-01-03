@@ -4,6 +4,7 @@ import React from "react";
 import { Button, Input } from "semantic-ui-react";
 import "semantic-ui-css/semantic.min.css";
 import Main from './main.js'
+import MainPage from './MainPage.js'
 
 
 class App extends React.Component {
@@ -25,10 +26,11 @@ class App extends React.Component {
 
     return (
       <div className="App">
-        <Main 
+        {/* <Main 
           onCreateUserClick={this.onCreateUserClick}
           onUsernameChange={this.onUsernameChange}
-        />
+        /> */}
+        <MainPage />
       </div>
     );
   }

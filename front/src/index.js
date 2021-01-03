@@ -6,13 +6,22 @@ import reportWebVitals from "./reportWebVitals";
 import * as serviceWorker from "./serviceWorker";
 
 import { ApolloClient } from "apollo-client";
-import { InMemoryCache } from "apollo-cache-inmemory";
+import {
+  InMemoryCache,
+  IntrospectionFragmentMatcher
+} from "apollo-cache-inmemory";
 import { HttpLink } from "apollo-link-http";
 import { ApolloProvider } from "@apollo/client";
 
-const cache = new InMemoryCache();
+import introspectionQueryResultData from "../src/fragmentTypes.json";
+
+const fragmentMatcher = new IntrospectionFragmentMatcher({
+  introspectionQueryResultData
+});
+
+const cache = new InMemoryCache({ fragmentMatcher });
 const link = new HttpLink({
-  uri: "http://localhost:8080"
+  uri: "http://localhost:8080/query"
 });
 
 const apolloClient = new ApolloClient({
@@ -22,9 +31,9 @@ const apolloClient = new ApolloClient({
 
 ReactDOM.render(
   // <React.StrictMode>
-    <ApolloProvider client={apolloClient}>
-      <App />
-    </ApolloProvider>,
+  <ApolloProvider client={apolloClient}>
+    <App />
+  </ApolloProvider>,
   // </React.StrictMode>,
   document.getElementById("root")
 );
