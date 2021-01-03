@@ -12,9 +12,6 @@ const GET_POSTS_QUERY = gql`
       created_at
       created_by {
         name
-        # posts {
-        #   id
-        # }
       }
     }
   }
@@ -70,22 +67,26 @@ const PostGrid = props => {
 
   return (
     <div>
-      <>salam</>
+      {/* <>salam</>
       <Button onClick={() => {
         createPost()
-      }}>Create Post</Button>
-      {/* <Grid columns={3} stackable>
-        {posts.map((post, i) => {
+      }}>Create Post</Button> */}
+      <Grid columns={3} stackable>
+        {!loading && data.users.map((user, i) => {
           return (
-            // <PostCell
-            //   key={i}
-            //   username={post.username}
-            //   title={post.title}
-            //   description={post.description}
-            // />
+            <PostCell
+              // key={i}
+              // username={post.username}
+              // title={post.title}
+              // description={post.description}
+              key={i}
+              username={user.name}
+              title={user.email}
+              description=":))))))))"
+            />
           );
         })}
-      </Grid> */}
+      </Grid>
       {/* {this.state.isMobile && <Header fixed="bottom" />} */}
     </div>
   );

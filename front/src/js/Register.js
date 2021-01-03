@@ -2,13 +2,19 @@ import React from "react";
 import { Form, Input, Button, Grid } from "semantic-ui-react";
 import gql from "graphql-tag";
 
-const REGISTER_MUTATION = gql`
-{
-    mutation register($username:String!, $email: String!, $password: String!) {
-        
-    }
-}
-`;
+// const Register_MUTATION = gql`
+//   mutation RegisterUser($username: String!, $email: String!, $password: String!) {
+//     login(input: { username: $username, password: $password }) {
+//       __typename
+//       ... on Token {
+//         token
+//       }
+//       ... on Exception {
+//         message
+//       }
+//     }
+//   }
+// `;
 
 const RegisterForm = props => {
   return (
