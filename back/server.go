@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"yes-blog/graph"
@@ -26,6 +27,7 @@ func main() {
 
 	// Setting up Gin
 	r := gin.Default()
+	r.Use(cors.Default())
 	r.Use(ggcontext.GinContextToContextMiddleware())
 	r.Use(auth.Middleware())
 
