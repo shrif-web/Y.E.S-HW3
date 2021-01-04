@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"yes-blog/graph"
@@ -26,15 +27,14 @@ func main() {
 
 	// Setting up Gin
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowAllOrigins: true,
+		AllowHeaders:    []string{auth.AuthHeaderKey},
+	}))
 	r.Use(ggcontext.GinContextToContextMiddleware())
 	r.Use(auth.Middleware())
 
 	// routing
-	//gql := r.Group("/query")
-	//gql.POST("/",graphqlHandler())
-	////gql.Use(auth.Middleware())
-	////gql.Use(ggcontext.GinContextToContextMiddleware())
-
 	r.POST("/query", graphqlHandler())
 	r.GET("/", playgroundHandler())
 

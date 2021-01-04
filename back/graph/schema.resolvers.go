@@ -33,12 +33,12 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (model.D
 		case model.UserNotAllowedException:
 			return err.(model.UserNotAllowedException), nil
 		case model.NoUserFoundException:
-			return err.(model.NoUserFoundException),nil
+			return err.(model.NoUserFoundException), nil
 		default:
 			return err.(model.InternalServerException), nil
 		}
 	}
-	return model.OperationSuccessfull{},nil
+	return model.OperationSuccessfull{}, nil
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, toBe model.ToBeUser) (model.UpdateUserPayload, error) {
