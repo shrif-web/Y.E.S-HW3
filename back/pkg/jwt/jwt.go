@@ -7,9 +7,10 @@ import (
 )
 
 // secret key being used to sign tokens
-var (
-	SecretKey = []byte("Y.E.S at its best")
-)
+var SecretKey = []byte("Y.E.S at its best")
+
+// expirationPeriod for jwt tokens
+const expirationPeriod = time.Minute * 6
 
 // GenerateToken generates a jwt token and store the username as a claim
 func GenerateToken(username string) (string, error) {
@@ -19,7 +20,7 @@ func GenerateToken(username string) (string, error) {
 	// Create a map to store our claims
 	claims := token.Claims.(jwt.MapClaims)
 	claims["username"] = username
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+	claims["exp"] = time.Now().Add(expirationPeriod).Unix()
 
 	// producing the token string
 	tokenString, err := token.SignedString(SecretKey)

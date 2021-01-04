@@ -1,18 +1,35 @@
 import logo from "../logo.svg";
 import "../styles/App.css";
 import React, { useState } from "react";
-import { Button, Input } from "semantic-ui-react";
+import { Button, Input, Header } from "semantic-ui-react";
 import "semantic-ui-css/semantic.min.css";
 
-import { useQuery, gql } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
+import gql from "graphql-tag";
 
-const CREATE_USER_QUERY = gql`
+const GET_USER_QUERY = gql`
   {
-    users(start:1, amount:3) {
+    users(start: 0, amount: 100) {
       name
       email
       posts {
-        amount
+        title
+      }
+    }
+  }
+`;
+
+const CREATE_USER_MUTATION = gql`
+  mutation createUser($username: String!, $password: String!, $email: String!) {
+    createUser(
+      target: { username: $username, password: $password, email: $email }
+    ) {
+      __typename
+      ... on User {
+        name
+      }
+      ... on Exception {
+        message
       }
     }
   }
@@ -24,19 +41,33 @@ const Main = props => {
   });
 
   function onButtonClick() {
-    console.log(mainState.inputText)
+    console.log(mainState.inputText);
   }
 
-  const test = useQuery(CREATE_USER_QUERY)
-  console.log("data:", test)
+  const { data } = useQuery(GET_USER_QUERY);
+  console.log("data:", data);
+
+  const [createUser] = useMutation(CREATE_USER_MUTATION, {
+    variables: {
+      username: "44",
+      password: "55",
+      email: "66@66.com"
+    }
+  });
 
   return (
     <div className="App">
       <div className="createUser">
-        <Button 
-        onClick={onButtonClick}
-        // onClick={props.onCreateUserClick}
-        >Create User</Button>
+        <Button
+          onClick={() => {
+            createUser({
+
+            });
+          }}
+          // onClick={props.onCreateUserClick}
+        >
+          Create User
+        </Button>
         <Input
           onChange={e => {
             setMainState({
@@ -47,6 +78,7 @@ const Main = props => {
           //   onChange={props.onUsernameChange.bind(this)}
           placeholder="Enter name ..."
         />
+        <Header as="h1">{JSON.stringify(data)}</Header>
       </div>
     </div>
   );

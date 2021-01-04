@@ -31,11 +31,11 @@ func (c *userController) Get(name *string) (*user.User, error) {
 }
 
 func (c *userController) Delete(operator,name string) error {
-	isAdmin, err := c.isAdmin(operator)
+	canOperate, err := c.CanOperate(operator, name)
 	if err!=nil{
 		return err
 	}
-	if ! isAdmin && operator!=name{
+	if !canOperate {
 		return model.UserNotAllowedException{}
 	}
 
