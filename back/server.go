@@ -18,7 +18,6 @@ import (
 const defaultPort = "8080"
 const queryComplexity = 8
 
-
 func main() {
 
 	//setting a mongodb driver for DBDriver filed of our controllers instance
@@ -29,8 +28,18 @@ func main() {
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
-		AllowHeaders:    []string{auth.AuthHeaderKey,
-								"content-type"},
+		AllowOrigins:    nil,
+		AllowOriginFunc: nil,
+		AllowMethods:    nil,
+		AllowHeaders: []string{auth.AuthHeaderKey,
+			"content-type"},
+		AllowCredentials:       true,
+		ExposeHeaders:          nil,
+		MaxAge:                 0,
+		AllowWildcard:          false,
+		AllowBrowserExtensions: false,
+		AllowWebSockets:        false,
+		AllowFiles:             false,
 	}))
 	r.Use(ggcontext.GinContextToContextMiddleware())
 	r.Use(auth.Middleware())
@@ -41,7 +50,7 @@ func main() {
 
 	//let it begin
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", defaultPort)
-	r.Run(":"+defaultPort)
+	r.Run(":" + defaultPort)
 
 }
 
