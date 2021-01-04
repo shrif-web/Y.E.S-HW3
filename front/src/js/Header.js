@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Input, Menu } from "semantic-ui-react";
+import { Input, Menu, Button } from "semantic-ui-react";
 import { Redirect, Route, Switch, useHistory } from "react-router-dom";
 import constants from "../constants";
 
@@ -53,10 +53,12 @@ const MainHeader = props => {
 
 const Header = props => {
   const [state, setState] = useState({
-    activeItem: ""
+    activeItem: "",
+    loggedIn: false
   });
 
   const history = useHistory();
+  const auth_token = localStorage.getItem(constants.AUTH_TOKEN);
 
   function handleItemClick(e, { name }) {
     setState({ activeItem: name });
@@ -86,11 +88,38 @@ const Header = props => {
   }
 
   return (
-    <LoggedInHeader
-      handleItemClick={handleItemClick}
-      state={state}
-      setState={setState}
-    />
+    <div>
+      {!auth_token && (
+        <MainHeader
+          handleItemClick={handleItemClick}
+          state={state}
+          setState={setState}
+        />
+      )}
+      {auth_token && (
+        <LoggedInHeader
+          handleItemClick={handleItemClick}
+          state={state}
+          setState={setState}
+        />
+      )}
+      <Button
+        onClick={() => {
+          localStorage.removeItem(constants.AUTH_TOKEN);
+          setState({ ...state, loggedIn: false });
+        }}
+      >
+        Remove token (test button)
+      </Button>
+      {/* <Button
+        onClick={() => {
+          localStorage.setItem(constants.AUTH_TOKEN, "test1");
+          setState({ ...state, loggedIn: true });
+        }}
+      >
+        Add token
+      </Button> */}
+    </div>
   );
 };
 

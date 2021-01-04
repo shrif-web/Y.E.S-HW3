@@ -33,10 +33,9 @@ const LoginForm = props => {
       password: state.password
     },
     onCompleted: ({ login }) => {
-      console.log("herererererere", login);
       if (login.__typename == "Token") {
         localStorage.setItem(constants.AUTH_TOKEN, login.token);
-        // history.push("/");
+        history.push("/");
       } else {
         // Todo : ERROR!
       }
@@ -55,6 +54,12 @@ const LoginForm = props => {
             username: e.target.value
           });
         }}
+        error={
+          !state.username && {
+            content: "Please enter a username!",
+            pointing: "below"
+          }
+        }
       />
       <Form.Field
         label="Password"
@@ -66,6 +71,12 @@ const LoginForm = props => {
             password: e.target.value
           });
         }}
+        error={
+          !state.password && {
+            content: "Please enter a password please!",
+            pointing: "below"
+          }
+        }
       />
       <Form.Button
         content="Login"

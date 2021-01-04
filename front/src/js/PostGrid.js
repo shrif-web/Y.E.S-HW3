@@ -67,18 +67,10 @@ const PostGrid = props => {
 
   return (
     <div>
-      {/* <>salam</>
-      <Button onClick={() => {
-        createPost()
-      }}>Create Post</Button> */}
       <Grid columns={3} stackable>
         {!loading && data.users.map((user, i) => {
           return (
             <PostCell
-              // key={i}
-              // username={post.username}
-              // title={post.title}
-              // description={post.description}
               key={i}
               username={user.name}
               title={user.email}
@@ -87,7 +79,6 @@ const PostGrid = props => {
           );
         })}
       </Grid>
-      {/* {this.state.isMobile && <Header fixed="bottom" />} */}
     </div>
   );
 };

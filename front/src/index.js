@@ -5,6 +5,8 @@ import App from "./js/App";
 import reportWebVitals from "./reportWebVitals";
 import * as serviceWorker from "./serviceWorker";
 import { BrowserRouter } from "react-router-dom";
+import constants from './constants.js'
+import {setContext} from '@apollo/client/link/context'
 
 import { ApolloClient } from "apollo-client";
 import {
@@ -25,9 +27,19 @@ const link = new HttpLink({
   uri: "http://localhost:8080/query"
 });
 
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem(constants.AUTH_TOKEN);
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : ''
+    }
+  };
+});
+
 const apolloClient = new ApolloClient({
   cache,
-  link
+  link: authLink.concat(link)
 });
 
 ReactDOM.render(
