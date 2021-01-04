@@ -11,6 +11,7 @@ import { Redirect, Route, Switch } from "react-router-dom";
 import Header from "./Header.js";
 import useToken from "./useToken";
 import userToken from "./useToken";
+import Dashboard from "./Dashboard";
 
 function App() {
   const { token, setToken } = userToken();
@@ -23,6 +24,11 @@ function App() {
       <Route exact path="/login">
         <Login setToken={setToken} />
       </Route>
+      {token && (
+        <Route exact path="/dashboard">
+          <Dashboard />
+        </Route>
+      )}
     </div>
   );
 }

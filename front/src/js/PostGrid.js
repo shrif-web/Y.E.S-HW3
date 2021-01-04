@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@apollo/client";
 import { Grid, Card, Button } from "semantic-ui-react";
 import gql from "graphql-tag";
 import constants from "../constants";
+import { async } from "q";
 
 const GET_POSTS_QUERY = gql`
   {
@@ -54,10 +55,6 @@ const PostCell = ({ username, title, description }) => {
 };
 
 const PostGrid = props => {
-  const { data, loading, error } = useQuery(GET_USER_QUERY);
-  console.log("data:", data);
-  console.log("error:", error);
-  console.log("loading:", loading);
 
   const [createPost] = useMutation(CREATE_POST_MUTATION, {
     variables: {
@@ -66,19 +63,33 @@ const PostGrid = props => {
     }
   });
 
+  const { data, loading, error } = useQuery(GET_USER_QUERY);
+  if (error) {
+    return (
+      <div>
+        Error!!!!! data:
+        {data}
+      </div>
+    );
+  }
+  console.log("data:", data);
+  console.log("error:", error);
+  console.log("loading:", loading);
+
   return (
     <div>
       <Grid columns={3} stackable>
-        {!loading && data.users.map((user, i) => {
-          return (
-            <PostCell
-              key={i}
-              username={user.name}
-              title={user.email}
-              description=":))))))))"
-            />
-          );
-        })}
+        {!loading &&
+          data.users.map((user, i) => {
+            return (
+              <PostCell
+                key={i}
+                username={user.name}
+                title={user.email}
+                description=":))))))))"
+              />
+            );
+          })}
       </Grid>
     </div>
   );
