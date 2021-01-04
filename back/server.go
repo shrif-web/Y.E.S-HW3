@@ -29,7 +29,8 @@ func main() {
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
-		AllowHeaders:    []string{auth.AuthHeaderKey},
+		AllowHeaders:    []string{auth.AuthHeaderKey,
+								"content-type"},
 	}))
 	r.Use(ggcontext.GinContextToContextMiddleware())
 	r.Use(auth.Middleware())
