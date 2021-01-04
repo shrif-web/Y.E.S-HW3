@@ -27,7 +27,10 @@ func main() {
 
 	// Setting up Gin
 	r := gin.Default()
-	r.Use(cors.Default())
+	r.Use(cors.New(cors.Config{
+		AllowAllOrigins: true,
+		AllowHeaders:    []string{auth.AuthHeaderKey},
+	}))
 	r.Use(ggcontext.GinContextToContextMiddleware())
 	r.Use(auth.Middleware())
 

@@ -6,14 +6,14 @@ import (
 	"yes-blog/pkg/jwt"
 )
 
-const authHeaderKey = "Authorization"
+const AuthHeaderKey = "Authorization"
 const usernameKey = "username"
 
 
 
 func Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.GetHeader(authHeaderKey)
+		token := c.GetHeader(AuthHeaderKey)
 		if token==""{
 			c.Next()
 			return
