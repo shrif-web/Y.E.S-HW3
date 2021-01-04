@@ -9,32 +9,22 @@ import Login from "./Login.js";
 import Register from "./Register.js";
 import { Redirect, Route, Switch } from "react-router-dom";
 import Header from "./Header.js";
+import useToken from "./useToken";
+import userToken from "./useToken";
 
-class App extends React.Component {
-  constructor(props) {
-    super(props);
+function App() {
+  const { token, setToken } = userToken();
 
-    // this.onCreateUserClick = this.onCreateUserClick.bind(this);
-  }
-
-  onCreateUserClick() {
-    // console.log("salam", this.inputName.value);
-  }
-
-  onUsernameChange(e) {
-    // this.inputName.value = e.target.value;
-  }
-
-  render() {
-    return (
-      <div className="App">
-        <Header />
-        <Route exact path="/" component={MainPage} />
-        <Route exact path="/register" component={Register} />
-        <Route exact path="/login" component={Login} />
-      </div>
-    );
-  }
+  return (
+    <div className="App">
+      <Header />
+      <Route exact path="/" component={MainPage} />
+      <Route exact path="/register" component={Register} />
+      <Route exact path="/login">
+        <Login setToken={setToken} />
+      </Route>
+    </div>
+  );
 }
 
 export default App;

@@ -2,6 +2,7 @@ import React from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { Grid, Card, Button } from "semantic-ui-react";
 import gql from "graphql-tag";
+import constants from "../constants";
 
 const GET_POSTS_QUERY = gql`
   {

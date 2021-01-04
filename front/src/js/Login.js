@@ -21,8 +21,8 @@ const LOGIN_MUTATION = gql`
 
 const LoginForm = props => {
   const [state, setState] = useState({
-    username: "",
-    password: ""
+    username: " ",
+    password: " "
   });
 
   const history = useHistory();
@@ -34,13 +34,20 @@ const LoginForm = props => {
     },
     onCompleted: ({ login }) => {
       if (login.__typename == "Token") {
-        localStorage.setItem(constants.AUTH_TOKEN, login.token);
+        // localStorage.setItem(constants.AUTH_TOKEN, login.token);
+        props.setToken(login.token);
         history.push("/");
       } else {
         // Todo : ERROR!
       }
     }
   });
+
+  function handleLogin() {
+    if (state.username && state.password) {
+      login();
+    }
+  }
 
   return (
     <Form>
@@ -82,7 +89,8 @@ const LoginForm = props => {
         content="Login"
         control={Button}
         onClick={() => {
-          login();
+          // login();
+          handleLogin();
         }}
       />
       <Form.Button
@@ -106,7 +114,7 @@ class Login extends React.Component {
       <Grid centered verticalAlign="middle">
         <Grid.Row columns={3}>
           <Grid.Column>
-            <LoginForm />
+            <LoginForm setToken={this.props.setToken} />
           </Grid.Column>
         </Grid.Row>
       </Grid>

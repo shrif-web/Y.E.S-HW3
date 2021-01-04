@@ -5,8 +5,8 @@ import App from "./js/App";
 import reportWebVitals from "./reportWebVitals";
 import * as serviceWorker from "./serviceWorker";
 import { BrowserRouter } from "react-router-dom";
-import constants from './constants.js'
-import {setContext} from '@apollo/client/link/context'
+import constants from "./constants.js";
+import { setContext } from "@apollo/client/link/context";
 
 import { ApolloClient } from "apollo-client";
 import {
@@ -32,7 +32,8 @@ const authLink = setContext((_, { headers }) => {
   return {
     headers: {
       ...headers,
-      Authorization: token ? `Bearer ${token}` : ''
+      Authorization: token ? `${token}` : ''
+      // Authorization: token ? `${token}` : ""
     }
   };
 });
@@ -43,15 +44,12 @@ const apolloClient = new ApolloClient({
 });
 
 ReactDOM.render(
-  // <React.StrictMode>
   <BrowserRouter>
     <ApolloProvider client={apolloClient}>
       <App />
     </ApolloProvider>
   </BrowserRouter>,
   document.getElementById("root")
-
-  // </React.StrictMode>,
 );
 
 serviceWorker.unregister();
