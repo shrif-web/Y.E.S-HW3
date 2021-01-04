@@ -89,14 +89,13 @@ const Header = props => {
 
   return (
     <div>
-      {!auth_token && (
+      {!auth_token ? (
         <MainHeader
           handleItemClick={handleItemClick}
           state={state}
           setState={setState}
         />
-      )}
-      {auth_token && (
+      ) : (
         <LoggedInHeader
           handleItemClick={handleItemClick}
           state={state}
