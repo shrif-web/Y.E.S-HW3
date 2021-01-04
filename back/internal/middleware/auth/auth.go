@@ -3,6 +3,7 @@ package auth
 import (
 "github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 	"yes-blog/pkg/jwt"
 )
 
@@ -19,7 +20,8 @@ func Middleware() gin.HandlerFunc {
 			return
 		}
 		//Set username in the context
-		username, err := jwt.ParseToken(token)
+		jwtToken := strings.Split(token, "Bearer ")[1]
+		username, err := jwt.ParseToken(jwtToken)
 		if err!=nil {
 			c.Status(http.StatusUnauthorized)
 			return
