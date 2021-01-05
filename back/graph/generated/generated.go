@@ -93,7 +93,7 @@ type ComplexityRoot struct {
 		Post        func(childComplexity int, id string) int
 		Posts       func(childComplexity int, start int, amount int) int
 		PostsOfUser func(childComplexity int, userName string) int
-		User        func(childComplexity int, name string) int
+		User        func(childComplexity int, name *string) int
 		Users       func(childComplexity int, start int, amount int) int
 	}
 
@@ -131,7 +131,7 @@ type MutationResolver interface {
 	UpdatePost(ctx context.Context, targetID string, input model.TargetPost) (model.UpdatePostPayload, error)
 }
 type QueryResolver interface {
-	User(ctx context.Context, name string) (*model.User, error)
+	User(ctx context.Context, name *string) (*model.User, error)
 	Users(ctx context.Context, start int, amount int) ([]*model.User, error)
 	Post(ctx context.Context, id string) (*model.Post, error)
 	Posts(ctx context.Context, start int, amount int) ([]*model.Post, error)
@@ -391,7 +391,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.User(childComplexity, args["name"].(string)), true
+		return e.complexity.Query.User(childComplexity, args["name"].(*string)), true
 
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
@@ -547,7 +547,7 @@ type Post {
 }
 
 type Query {
-    user(name:String!): User
+    user(name:String): User
     users(start:Int!=0,amount:Int!=5): [User!]!
 
     post(id:String!): Post!
@@ -861,10 +861,10 @@ func (ec *executionContext) field_Query_posts_args(ctx context.Context, rawArgs 
 func (ec *executionContext) field_Query_user_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 *string
 	if tmp, ok := rawArgs["name"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1782,7 +1782,7 @@ func (ec *executionContext) _Query_user(ctx context.Context, field graphql.Colle
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().User(rctx, args["name"].(string))
+		return ec.resolvers.Query().User(rctx, args["name"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
