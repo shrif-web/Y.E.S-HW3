@@ -4,33 +4,33 @@ import gql from "graphql-tag";
 import constants from "../constants";
 
 const GET_USER_POSTS = gql`
-  query Posts($username: String!) {
-    postsOfUser(userName: $username) {
-      id
-      title
-      content
-      created_at
-      created_by {
+  query Posts {
+    user {
         name
-      }
+    #   posts {
+    #     id
+    #     title
+    #     content
+    #     created_at
+    #     created_by {
+    #       name
+    #     }
+    #   }
     }
   }
 `;
 
 const UserPosts = props => {
+  console.log(
+    "===========",
+    localStorage.getItem(constants.AUTH_TOKEN).slice(1, -1)
+  );
+  const { data, loading, error } = useQuery(GET_USER_POSTS);
 
-  const { data, loading, error } = useQuery(GET_USER_POSTS, {
-      variables: {
-          username: localStorage.getItem(constants.AUTH_TOKEN)
-      }
-  });
-
-  console.log("in dashboard")
-  console.log("data: ", data)
-  console.log("error:", error)
-  console.log("loading:", loading)
-
-
+  console.log("in dashboard");
+  console.log("data: ", data);
+  console.log("error:", error);
+  console.log("loading:", loading);
 
   return <div>posts!</div>;
 };
