@@ -17,7 +17,7 @@ function App() {
 
   return (
     <div className="App">
-      <Header />
+      <Header setToken={setToken}/>
       <Route exact path="/" component={MainPage} />
       <Route exact path="/register" component={Register} />
       <Route exact path="/login">

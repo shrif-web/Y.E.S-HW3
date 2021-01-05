@@ -20,7 +20,12 @@ func Middleware() gin.HandlerFunc {
 			return
 		}
 		//Set username in the context
-		jwtToken := strings.Split(token, "Bearer ")[1]
+		parts := strings.Split(token, "Bearer ")
+		jwtToken := ""
+		if (len(parts) == 2){
+			jwtToken = strings.Split(token, "Bearer ")[1]
+		}
+		
 		username, err := jwt.ParseToken(jwtToken)
 		if err!=nil {
 			c.Status(http.StatusUnauthorized)

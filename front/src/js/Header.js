@@ -77,6 +77,7 @@ const Header = props => {
         break;
       case "Logout":
         console.log("Logout");
+        props.setToken("");
         history.push("/");
         break;
       case "Info":
@@ -102,14 +103,14 @@ const Header = props => {
           setState={setState}
         />
       )}
-      <Button
+      {/* <Button
         onClick={() => {
           localStorage.removeItem(constants.AUTH_TOKEN);
           setState({ ...state, loggedIn: false });
         }}
       >
         Remove token (test button)
-      </Button>
+      </Button> */}
       {/* <Button
         onClick={() => {
           localStorage.setItem(constants.AUTH_TOKEN, "test1");
