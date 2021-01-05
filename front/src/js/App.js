@@ -17,12 +17,18 @@ function App() {
 
   return (
     <div className="App">
-      <Header setToken={setToken}/>
+      <Header setToken={setToken} />
       <Route exact path="/" component={MainPage} />
-      <Route exact path="/register" component={Register} />
-      <Route exact path="/login">
-        <Login setToken={setToken} />
-      </Route>
+      {!token && (
+        <Route exact path="/register">
+          <Register setToken={setToken} />
+        </Route>
+      )}
+      {!token && (
+        <Route exact path="/login">
+          <Login setToken={setToken} />
+        </Route>
+      )}
     </div>
   );
 }

@@ -25,6 +25,7 @@ func Middleware() gin.HandlerFunc {
 		if (len(parts) == 2){
 			jwtToken = strings.Split(token, "Bearer ")[1]
 		}
+		// jwtToken := strings.Split(token, "Bearer ")[1]
 		
 		username, err := jwt.ParseToken(jwtToken)
 		if err!=nil {
