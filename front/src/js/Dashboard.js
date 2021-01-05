@@ -2,37 +2,60 @@ import React from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import gql from "graphql-tag";
 import constants from "../constants";
+import { Card, Grid, Button } from "semantic-ui-react";
 
 const GET_USER_POSTS = gql`
-  query Posts {
+  query getUser {
     user {
-        name
-    #   posts {
-    #     id
-    #     title
-    #     content
-    #     created_at
-    #     created_by {
-    #       name
-    #     }
-    #   }
+      name
+      posts {
+        title
+        created_by {
+          name
+          posts {
+            title
+          }
+        }
+      }
     }
   }
 `;
 
 const UserPosts = props => {
-  console.log(
-    "===========",
-    localStorage.getItem(constants.AUTH_TOKEN).slice(1, -1)
-  );
   const { data, loading, error } = useQuery(GET_USER_POSTS);
 
-  console.log("in dashboard");
-  console.log("data: ", data);
-  console.log("error:", error);
-  console.log("loading:", loading);
+  //   console.log("in dashboard");
+  //   console.log("data: ", data);
+  //   console.log("error:", error);
+  //   console.log("loading:", loading);
 
-  return <div>posts!</div>;
+  return (
+    <div>
+      <Button.Group>
+        <Button icon="plus" onClick={() => {
+            console.log("clicked in +")
+        }} />
+        <Button icon="minus" onClick={() => {
+            console.log("clicked on -")
+        }} />
+      </Button.Group>
+      <Grid columns={2} stackable>
+        {!loading &&
+          data.user.posts.map(post => {
+            return (
+              <Grid.Column>
+                <Card
+                  header={post.title}
+                  meta={post.created_by.name}
+                  description={post.content}
+                  fluid
+                />
+              </Grid.Column>
+            );
+          })}
+      </Grid>
+    </div>
+  );
 };
 
 class Dashboard extends React.Component {
