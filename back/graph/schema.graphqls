@@ -15,7 +15,7 @@ type Post {
 }
 
 type Query {
-    user(name:String!): User
+    user(name:String): User
     users(start:Int!=0,amount:Int!=5): [User!]!
 
     post(id:String!): Post!
