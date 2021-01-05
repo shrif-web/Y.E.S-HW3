@@ -10,16 +10,10 @@ import Register from "./Register.js";
 import { Redirect, Route, Switch } from "react-router-dom";
 import Header from "./Header.js";
 import useToken from "./useToken";
-import userToken from "./useToken";
+import Dashboard from './Dashboard.js'
 
 function App() {
-  const { token, setToken } = userToken();
-
-  // var variable = null
-  // console.log(JSON.parse(variable))
-  // if (variable) {
-  //   console.log("here")
-  // }
+  const { token, setToken } = useToken();
 
   return (
     <div className="App">
@@ -33,6 +27,11 @@ function App() {
       {!token && (
         <Route exact path="/login">
           <Login setToken={setToken} />
+        </Route>
+      )}
+      {token && (
+        <Route exact path="/dashboard">
+          <Dashboard setToken={setToken} />
         </Route>
       )}
     </div>

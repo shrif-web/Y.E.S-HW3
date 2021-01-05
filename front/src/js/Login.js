@@ -89,15 +89,7 @@ const LoginForm = props => {
         content="Login"
         control={Button}
         onClick={() => {
-          // login();
           handleLogin();
-        }}
-      />
-      <Form.Button
-        content="Test Button (Token?)"
-        control={Button}
-        onClick={() => {
-          console.log(localStorage.getItem(constants.AUTH_TOKEN));
         }}
       />
     </Form>
