@@ -1,25 +1,30 @@
-import React, {useState} from 'react'
-import constants from '../constants.js'
+import React, { useState } from "react";
+import constants from "../constants.js";
 
 function useToken() {
-    const getToken = () => {
-        const tokenString = localStorage.getItem(constants.AUTH_TOKEN)
-        const userToken = JSON.parse(tokenString);
-        return userToken
-    }
+  const getToken = () => {
+    const tokenString = localStorage.getItem(constants.AUTH_TOKEN);
+    console.log("??????", tokenString)
+    return tokenString
+    // const userToken = JSON.parse(tokenString);
+    // return userToken;
+  };
 
-    const [token, setToken] = useState(getToken())
+  const [token, setToken] = useState(getToken());
 
-    const saveToken = (userToken) => {
-        console.log("++++++++++++", JSON.stringify(userToken))
-        localStorage.setItem(constants.AUTH_TOKEN, JSON.stringify(userToken))
-        setToken(userToken)
+  const saveToken = userToken => {
+    if (userToken == undefined) {
+      localStorage.removeItem(constants.AUTH_TOKEN);
+    } else {
+      localStorage.setItem(constants.AUTH_TOKEN, JSON.stringify(userToken));
+      setToken(userToken);
     }
+  };
 
-    return {
-        setToken: saveToken,
-        token
-    }
+  return {
+    setToken: saveToken,
+    token
+  };
 }
 
-export default useToken
+export default useToken;

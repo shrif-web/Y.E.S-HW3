@@ -15,6 +15,12 @@ import userToken from "./useToken";
 function App() {
   const { token, setToken } = userToken();
 
+  // var variable = null
+  // console.log(JSON.parse(variable))
+  // if (variable) {
+  //   console.log("here")
+  // }
+
   return (
     <div className="App">
       <Header setToken={setToken} />

@@ -29,11 +29,11 @@ const link = new HttpLink({
 
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem(constants.AUTH_TOKEN);
+  console.log("token:::::", token)
   return {
     headers: {
       ...headers,
       Authorization: token ? `Bearer ${token.slice(1,-1)}` : ''
-      // Authorization: token ? `${token}` : ""
     }
   };
 });

@@ -78,7 +78,7 @@ const Header = props => {
       case "Logout":
         console.log("Logout");
         localStorage.removeItem(constants.AUTH_TOKEN)
-        // props.setToken('')
+        // props.setToken(undefined)
         history.push("/");
         break;
       case "Info":
