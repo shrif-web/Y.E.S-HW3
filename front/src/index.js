@@ -18,6 +18,8 @@ import { ApolloProvider } from "@apollo/client";
 
 import introspectionQueryResultData from "../src/fragmentTypes.json";
 
+import Test from './js/Test.js'
+
 const fragmentMatcher = new IntrospectionFragmentMatcher({
   introspectionQueryResultData
 });
@@ -45,7 +47,7 @@ const apolloClient = new ApolloClient({
 ReactDOM.render(
   <BrowserRouter>
     <ApolloProvider client={apolloClient}>
-      <App />
+      <Test />
     </ApolloProvider>
   </BrowserRouter>,
   document.getElementById("root")

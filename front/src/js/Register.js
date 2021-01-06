@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form, Input, Button, Grid } from "semantic-ui-react";
+import { Form, Input, Button, Grid, Segment } from "semantic-ui-react";
 import gql from "graphql-tag";
 import { useMutation } from "@apollo/client";
 import { useHistory } from "react-router-dom";
@@ -90,59 +90,67 @@ const RegisterForm = props => {
 
   return (
     <Form>
-      <Form.Field
-        label="Username"
-        placeholder="Enter your username ..."
-        control={Input}
-        onChange={e => {
-          setState({
-            ...state,
-            username: e.target.value
-          });
-        }}
-      />
-      <Form.Field
-        label="Email"
-        placeholder="Enter your email ..."
-        control={Input}
-        onChange={e => {
-          setState({
-            ...state,
-            email: e.target.value
-          });
-        }}
-      />
-      <Form.Field
-        label="Password"
-        placeholder="Choose a password ..."
-        control={Input}
-        onChange={e => {
-          setState({
-            ...state,
-            password: e.target.value
-          });
-        }}
-      />
-      <Form.Field
-        label="Confirm Password"
-        placeholder="Repeat your password ..."
-        control={Input}
-        onChange={e => {
-          setState({
-            ...state,
-            confirmPass: e.target.value
-          });
-        }}
-      />
-      <Form.Button
-        content="Register"
-        control={Button}
-        onClick={() => {
-          handleRegister();
-          // Handle error if passwords are not the same
-          // login()
-        }}
-      />
+      <Segment>
+        <Form.Input
+          icon="user"
+          iconPosition="left"
+          placeholder="Enter your username"
+          control={Input}
+          onChange={e => {
+            setState({
+              ...state,
+              username: e.target.value
+            });
+          }}
+        />
+        <Form.Input
+          icon="mail"
+          iconPosition="left"
+          placeholder="Enter your email"
+          control={Input}
+          onChange={e => {
+            setState({
+              ...state,
+              email: e.target.value
+            });
+          }}
+        />
+        <Form.Input
+          icon="lock"
+          iconPosition="left"
+          type="password"
+          placeholder="Choose a password ..."
+          control={Input}
+          onChange={e => {
+            setState({
+              ...state,
+              password: e.target.value
+            });
+          }}
+        />
+        <Form.Input
+          icon="lock"
+          iconPosition="left"
+          type="password"
+          placeholder="Repeat your password ..."
+          control={Input}
+          onChange={e => {
+            setState({
+              ...state,
+              confirmPass: e.target.value
+            });
+          }}
+        />
+        <Form.Button
+          fluid
+          color="blue"
+          content="Register"
+          control={Button}
+          onClick={() => {
+            handleRegister();
+          }}
+        />
+      </Segment>
     </Form>
   );
 };
@@ -154,9 +162,14 @@ class Register extends React.Component {
 
   render() {
     return (
-      <Grid centered verticalAlign="middle">
-        <Grid.Row columns={3}>
-          <Grid.Column>
+      <Grid
+        centered
+        verticalAlign="middle"
+        textAlign="center"
+        style={{ height: "100vh" }}
+      >
+        <Grid.Row>
+          <Grid.Column style={{ maxWidth: 450, marginRight: 20, marginLeft: 20, marginTop: -100 }}>
             <RegisterForm setToken={this.props.setToken} />
           </Grid.Column>
         </Grid.Row>
