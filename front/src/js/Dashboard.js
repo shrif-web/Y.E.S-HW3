@@ -15,7 +15,10 @@ import {
   Form,
   Modal,
   List,
-  Label
+  Label,
+  Sidebar,
+  Menu,
+  Icon
 } from "semantic-ui-react";
 import { tupleExpression } from "@babel/types";
 
@@ -89,9 +92,9 @@ const UPDATE_POST_MUTATION = gql`
   }
 `;
 
-const AddPostModal = () => {
+const AddPostModal = ({ addingPost, setAddingPost }) => {
   const [state, setState] = useState({
-    addingPost: false,
+    // addingPost: false,
     newTitle: "",
     newContent: ""
   });
@@ -99,13 +102,14 @@ const AddPostModal = () => {
   const [createPost] = useMutation(CREATE_POST_MUTATION, {
     onCompleted({ createPost }) {
       console.log("created post succesfully :D", createPost);
-      setState({...state, addingPost: false})
+      // setState({ ...state, addingPost: false });
+      setAddingPost(false);
     }
   });
 
   return (
     <div>
-      <Modal open={state.addingPost} dimmer="blurring">
+      <Modal open={addingPost} dimmer="blurring" fluid>
         <Modal.Header>Create a new post :)</Modal.Header>
         <Modal.Content>
           <List>
@@ -132,9 +136,7 @@ const AddPostModal = () => {
           </List>
         </Modal.Content>
         <Modal.Actions>
-          <Button onClick={() => setState({ addingPost: false })}>
-            Cancel
-          </Button>
+          <Button onClick={() => setAddingPost(false)}>Cancel</Button>
           <Button
             onClick={() => {
               createPost({
@@ -150,14 +152,6 @@ const AddPostModal = () => {
           </Button>
         </Modal.Actions>
       </Modal>
-      <Button
-        positive
-        onClick={() => {
-          setState({ addingPost: true });
-        }}
-      >
-        Add Post
-      </Button>
     </div>
   );
 };
@@ -261,29 +255,76 @@ const PostCell = ({ post }) => {
 
 const UserPosts = props => {
   const [state, setState] = useState({
-    trigger: false
+    trigger: false,
+    addingPost: false
   });
 
   const { data, loading, error } = useQuery(GET_USER_POSTS);
 
   function triggerState() {
-    console.log("here trigerringgggggg //////////");
     setState({ trigger: !state.trigger });
+  }
+
+  function setAddingPost(value) {
+    setState({ addingPost: value });
   }
 
   return (
     <div>
-      <AddPostModal />
-      <Grid columns={2} stackable>
-        {!loading &&
-          data.user.posts.map(post => {
-            return (
-              <Grid.Column>
-                <PostCell post={post} />
-              </Grid.Column>
-            );
-          })}
-      </Grid>
+        <Sidebar
+          as={Menu}
+          animation="overlay"
+          icon="labeled"
+          direction="left"
+          vertical
+          visible={props.isMobile ? props.sidebarIsOpen : true}
+          width="thin"
+          style={{ width: 250, top: 40 }}
+        >
+          <Menu.Item as="a">
+            <Icon name="home" />
+            Home
+          </Menu.Item>
+          <Menu.Item as="a">
+            <Icon name="gamepad" />
+            Games
+          </Menu.Item>
+          <Menu.Item as="a">
+            <Icon name="camera" />
+            Channels
+          </Menu.Item>
+        </Sidebar>
+          <AddPostModal
+            addingPost={state.addingPost}
+            setAddingPost={setAddingPost}
+          />
+          <Grid.Row>
+            <Grid
+              columns={2}
+              stackable
+              style={{ position: "absolute", left: props.isMobile ? 0 : 250, right: 0, margin: 30 }}
+            >
+              {!loading &&
+                data.user.posts.map(post => {
+                  return (
+                    <Grid.Column>
+                      <PostCell post={post} />
+                    </Grid.Column>
+                  );
+                })}
+            </Grid>
+          </Grid.Row>
+          <Grid.Row>
+            <Button
+              positive
+              onClick={() => {
+                setState({ addingPost: true });
+              }}
+              style={{ position: "absolute", left: props.isMobile ? 0 : 250 }}
+            >
+              Add Post
+            </Button>
+          </Grid.Row>
     </div>
   );
 };
@@ -296,7 +337,10 @@ class Dashboard extends React.Component {
   render() {
     return (
       <div>
-        <UserPosts />
+        <UserPosts
+          isMobile={this.props.isMobile}
+          sidebarIsOpen={this.props.sidebarIsOpen}
+        />
       </div>
     );
   }

@@ -1,6 +1,6 @@
 import logo from "../logo.svg";
 import "../styles/App.css";
-import React from "react";
+import React, { useState } from "react";
 import { Button, Input } from "semantic-ui-react";
 import "semantic-ui-css/semantic.min.css";
 import Main from "./main.js";
@@ -12,6 +12,7 @@ import Header from "./Header.js";
 import useToken from "./useToken";
 import Dashboard from "./Dashboard.js";
 import { useMutation, gql } from "@apollo/client";
+import { useMediaQuery } from "react-responsive";
 
 const REFRESH_TOKEN_MUTATION = gql`
   mutation RefreshToken {
@@ -22,11 +23,21 @@ const REFRESH_TOKEN_MUTATION = gql`
 function App(props) {
   const { token, setToken } = useToken();
 
-  console.log("------------------------ token in App compoennt:", token);
+  const isMobile = useMediaQuery({
+    query: "(max-device-width: 570px)"
+  });
+
+  const [sidebarIsOpen, setSidebarIsOpen] = useState(false);
 
   return (
     <div className="App">
-      <Header setToken={setToken} refresh={props.refresh} />
+      <Header
+        setToken={setToken}
+        refresh={props.refresh}
+        isMobile={isMobile}
+        sidebarIsOpen={sidebarIsOpen}
+        setSidebarIsOpen={setSidebarIsOpen}
+      />
       <Route exact path="/" component={MainPage} />
       {!token && (
         <Route exact path="/register">
@@ -40,7 +51,12 @@ function App(props) {
       )}
       {token && (
         <Route exact path="/dashboard">
-          <Dashboard setToken={setToken} />
+          <Dashboard
+            setToken={setToken}
+            sidebarIsOpen={sidebarIsOpen}
+            isMobile={isMobile}
+            // setSidebarIsOpen={setSidebarIsOpen}
+          />
         </Route>
       )}
     </div>
