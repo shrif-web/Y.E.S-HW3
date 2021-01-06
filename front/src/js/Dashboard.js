@@ -17,6 +17,7 @@ import {
   List,
   Label
 } from "semantic-ui-react";
+import { tupleExpression } from "@babel/types";
 
 const GET_USER_POSTS = gql`
   # query getUser
@@ -88,6 +89,78 @@ const UPDATE_POST_MUTATION = gql`
   }
 `;
 
+const AddPostModal = () => {
+  const [state, setState] = useState({
+    addingPost: false,
+    newTitle: "",
+    newContent: ""
+  });
+
+  const [createPost] = useMutation(CREATE_POST_MUTATION, {
+    onCompleted({ createPost }) {
+      console.log("created post succesfully :D", createPost);
+    }
+  });
+
+  return (
+    <div>
+      <Modal open={state.addingPost} dimmer="blurring">
+        <Modal.Header>Create a new post :)</Modal.Header>
+        <Modal.Content>
+          <List>
+            <List.Item>
+              <Header>Title :</Header>
+              <Input
+                placeholder="Please write the title of your post."
+                onChange={e => {
+                  setState({ ...state, newTitle: e.target.value });
+                }}
+              />
+            </List.Item>
+            <List.Item>
+              <Header>Content :</Header>
+              <Form>
+                <TextArea
+                  placeholder="Please write the content of your post."
+                  onChange={e => {
+                    setState({ ...state, newContent: e.target.value });
+                  }}
+                />
+              </Form>
+            </List.Item>
+          </List>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button onClick={() => setState({ addingPost: false })}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              createPost({
+                variables: {
+                  title: state.newTitle,
+                  content: state.newContent
+                }
+              });
+            }}
+            positive
+          >
+            Add
+          </Button>
+        </Modal.Actions>
+      </Modal>
+      <Button
+        positive
+        onClick={() => {
+          setState({ addingPost: true });
+        }}
+      >
+        Add Post
+      </Button>
+    </div>
+  );
+};
+
 const PostCell = ({ post }) => {
   const [state, setState] = useState({
     editingActive: false,
@@ -98,6 +171,12 @@ const PostCell = ({ post }) => {
   const [updatePost] = useMutation(UPDATE_POST_MUTATION, {
     onCompleted: ({ updatePost }) => {
       handleHide();
+    }
+  });
+
+  const [deletePost] = useMutation(DELETE_POST_MUTATION, {
+    onCompleted({ message }) {
+      // triggerState();
     }
   });
 
@@ -113,10 +192,22 @@ const PostCell = ({ post }) => {
         meta={post.created_by.name}
         description={post.content}
         fluid
-        onClick={() => {
-          handleShow();
-        }}
       />
+      <Button.Group>
+        <Button
+          icon="edit"
+          onClick={() => {
+            handleShow();
+          }}
+        />
+        <Button
+          icon="minus"
+          onClick={() => {
+            console.log("clicked on -");
+            deletePost({ variables: { targetID: post.id } });
+          }}
+        />
+      </Button.Group>
       <Modal open={state.editingActive} dimmer="blurring">
         <Modal.Header>Updating your post ...</Modal.Header>
         <Modal.Content>
@@ -174,22 +265,6 @@ const UserPosts = props => {
 
   const { data, loading, error } = useQuery(GET_USER_POSTS);
 
-  const [createPost] = useMutation(CREATE_POST_MUTATION, {
-    variables: {
-      title: "title of the test post :)",
-      content: "content of the test post !"
-    },
-    onCompleted({ data }) {
-      triggerState();
-    }
-  });
-
-  const [deletePost] = useMutation(DELETE_POST_MUTATION, {
-    onCompleted({ message }) {
-      triggerState();
-    }
-  });
-
   function triggerState() {
     console.log("here trigerringgggggg //////////");
     setState({ trigger: !state.trigger });
@@ -197,34 +272,13 @@ const UserPosts = props => {
 
   return (
     <div>
-      <Button
-        icon="plus"
-        content="Add Post"
-        onClick={() => {
-          // createPost();
-        }}
-      />
+      <AddPostModal />
       <Grid columns={2} stackable>
         {!loading &&
           data.user.posts.map(post => {
             return (
               <Grid.Column>
                 <PostCell post={post} />
-                <Button.Group>
-                  <Button
-                    icon="edit"
-                    onClick={() => {
-                      console.log("clicked in edit");
-                    }}
-                  />
-                  <Button
-                    icon="minus"
-                    onClick={() => {
-                      console.log("clicked on -");
-                      deletePost({ variables: { targetID: post.id } });
-                    }}
-                  />
-                </Button.Group>
               </Grid.Column>
             );
           })}
