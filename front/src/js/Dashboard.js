@@ -99,6 +99,7 @@ const AddPostModal = () => {
   const [createPost] = useMutation(CREATE_POST_MUTATION, {
     onCompleted({ createPost }) {
       console.log("created post succesfully :D", createPost);
+      setState({...state, addingPost: false})
     }
   });
 

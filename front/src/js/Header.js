@@ -65,9 +65,11 @@ const Header = props => {
     switch (name) {
       case "Login":
         console.log("login");
+        props.refresh()
         history.push("/login");
         break;
       case "Register":
+          props.refresh()
         console.log("Register");
         history.push("/register");
         break;
@@ -79,6 +81,7 @@ const Header = props => {
         console.log("Logout");
         localStorage.removeItem(constants.AUTH_TOKEN)
         history.push("/");
+        props.refresh()
         break;
       case "Info":
         console.log("Info");
@@ -102,24 +105,9 @@ const Header = props => {
           handleItemClick={handleItemClick}
           state={state}
           setState={setState}
+          setToken={props.setToken}
         />
       )}
-      {/* <Button
-        onClick={() => {
-          localStorage.removeItem(constants.AUTH_TOKEN);
-          setState({ ...state, loggedIn: false });
-        }}
-      >
-        Remove token (test button)
-      </Button> */}
-      {/* <Button
-        onClick={() => {
-          localStorage.setItem(constants.AUTH_TOKEN, "test1");
-          setState({ ...state, loggedIn: true });
-        }}
-      >
-        Add token
-      </Button> */}
     </div>
   );
 };

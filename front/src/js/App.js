@@ -10,14 +10,23 @@ import Register from "./Register.js";
 import { Redirect, Route, Switch } from "react-router-dom";
 import Header from "./Header.js";
 import useToken from "./useToken";
-import Dashboard from './Dashboard.js'
+import Dashboard from "./Dashboard.js";
+import { useMutation, gql } from "@apollo/client";
 
-function App() {
+const REFRESH_TOKEN_MUTATION = gql`
+  mutation RefreshToken {
+    refreshToken
+  }
+`;
+
+function App(props) {
   const { token, setToken } = useToken();
+
+  console.log("------------------------ token in App compoennt:", token);
 
   return (
     <div className="App">
-      <Header setToken={setToken} />
+      <Header setToken={setToken} refresh={props.refresh} />
       <Route exact path="/" component={MainPage} />
       {!token && (
         <Route exact path="/register">
