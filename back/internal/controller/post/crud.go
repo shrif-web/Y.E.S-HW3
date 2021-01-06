@@ -42,14 +42,27 @@ func (p *postController) CreatePost(title, body, authorName string) (*post.Post,
 }
 
 // edit the post in DB
-func (p *postController) UpdatePost(postID, title, body, authorName string) (string, error) {
-	id, errr := primitive.ObjectIDFromHex(postID)
-	if errr != nil {
-		return errr.Error(), &model.InternalServerException{Message: errr.Error()}
+func (p *postController) UpdatePost(postID, title, body, operator, authorName string) (string, error) {
+	c, err := userController.GetUserController().CanOperate(operator, authorName)
+	if err != nil {
+		switch err.(type) {
+		case *model.NoUserFoundException:
+			return err.Error(), &model.NoUserFoundException{Message: err.Error()}
+		default:
+			return err.Error(), &model.InternalServerException{Message: err.Error()}
+		}
+	}
+	if !c {
+		return "you are not allowed to update post@" + postID, &model.UserNotAllowedException{Message: "you are not allowed to update post@" + postID}
+	}
+
+	id, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		return err.Error(), &model.InternalServerException{Message: err.Error()}
 	}
 	upPost, err := post.NewRawPost(id, title, body, authorName, time.Now().Unix())
 	if err != nil {
-		return errr.Error(), &model.InternalServerException{Message: errr.Error()}
+		return err.Error(), &model.InternalServerException{Message: err.Error()}
 	}
 	err = p.dbDriver.Update(upPost)
 	err = CastDBEToGQLE(err)
@@ -60,12 +73,25 @@ func (p *postController) UpdatePost(postID, title, body, authorName string) (str
 }
 
 // delete the post from DB
-func (p *postController) DeletePost(postID string, authorName string) (string, error) {
-	id, errr := primitive.ObjectIDFromHex(postID)
-	if errr != nil {
-		return fmt.Sprint(errr), errr
+func (p *postController) DeletePost(postID string, operator, authorName string) (string, error) {
+	c, err := userController.GetUserController().CanOperate(operator, authorName)
+	if err != nil {
+		switch err.(type) {
+		case *model.NoUserFoundException:
+			return err.Error(), &model.NoUserFoundException{Message: err.Error()}
+		default:
+			return err.Error(), &model.InternalServerException{Message: err.Error()}
+		}
 	}
-	err := p.dbDriver.Delete(id, authorName)
+	if !c {
+		return "you are not allowed to delete post@" + postID, &model.UserNotAllowedException{Message: "you are not allowed to delete post@" + postID}
+	}
+
+	id, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		return fmt.Sprint(err), err
+	}
+	err = p.dbDriver.Delete(id, authorName)
 	err = CastDBEToGQLE(err)
 	if err != nil {
 		return "the post couldn't delete", err
