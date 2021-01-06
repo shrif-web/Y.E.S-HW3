@@ -10,7 +10,8 @@ import (
 var SecretKey = []byte("Y.E.S at its best")
 
 // expirationPeriod for jwt tokens
-const expirationPeriod = time.Minute * 6
+//const expirationPeriod = time.Minute * 6
+const expirationPeriod = time.Hour * 24
 
 // GenerateToken generates a jwt token and store the username as a claim
 func GenerateToken(username string) (string, error) {
