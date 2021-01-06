@@ -33,12 +33,16 @@ const LoginForm = props => {
       password: state.password
     },
     onCompleted: ({ login }) => {
+      console.log("loginnnnnnnn:", login)
       if (login.__typename == "Token") {
+        console.log("haaaaaaaaa?")
         // localStorage.setItem(constants.AUTH_TOKEN, login.token);
         props.setToken(login.token);
         history.push("/");
       } else {
         // Todo : ERROR!
+        console.log("error in login!", login)
+        alert(login.__typename)
       }
     }
   });

@@ -1,8 +1,9 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { Form, Input, Button, Grid } from "semantic-ui-react";
 import gql from "graphql-tag";
 import { useMutation } from "@apollo/client";
-import {useHistory} from 'react-router-dom'
+import { useHistory } from "react-router-dom";
+import constants from "../constants.js";
 
 const REGISTER_MUTATION = gql`
   mutation CreateUser($username: String!, $email: String!, $password: String!) {
@@ -36,13 +37,13 @@ const LOGIN_MUTATION = gql`
 
 const RegisterForm = props => {
   const [state, setState] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPass: ''
-  })
+    username: "",
+    email: "",
+    password: "",
+    confirmPass: ""
+  });
 
-  const history = useHistory()
+  const history = useHistory();
 
   const [registerUser] = useMutation(REGISTER_MUTATION, {
     variables: {
@@ -50,12 +51,16 @@ const RegisterForm = props => {
       email: state.email,
       password: state.password
     },
-    onCompleted: ({createUser}) => {
+    onCompleted: ({ createUser }) => {
+      console.log("createUser:", createUser);
       if (createUser.__typename == "User") {
-        login()
+        login();
       } else {
-        // Todo : ERROR!
-        alert(createUser.__typename)
+        //Handle Errors
+        switch (createUser.__typename) {
+          case "DuplicateUsernameException":
+            alert(constants.DUPLICATE_USERNAME_ERROR);
+        }
       }
     }
   });
@@ -75,6 +80,14 @@ const RegisterForm = props => {
     }
   });
 
+  function handleRegister() {
+    if (state.password === state.confirmPass) {
+      registerUser();
+    } else {
+      alert(constants.PASSWORDS_DIFFER);
+    }
+  }
+
   return (
     <Form>
       <Form.Field
@@ -85,7 +98,7 @@ const RegisterForm = props => {
           setState({
             ...state,
             username: e.target.value
-          })
+          });
         }}
       />
       <Form.Field
@@ -96,7 +109,7 @@ const RegisterForm = props => {
           setState({
             ...state,
             email: e.target.value
-          })
+          });
         }}
       />
       <Form.Field
@@ -107,7 +120,7 @@ const RegisterForm = props => {
           setState({
             ...state,
             password: e.target.value
-          })
+          });
         }}
       />
       <Form.Field
@@ -118,14 +131,14 @@ const RegisterForm = props => {
           setState({
             ...state,
             confirmPass: e.target.value
-          })
+          });
         }}
       />
       <Form.Button
         content="Register"
         control={Button}
         onClick={() => {
-          registerUser();
+          handleRegister();
           // Handle error if passwords are not the same
           // login()
         }}
