@@ -12,9 +12,11 @@ import {
   Header,
   Input,
   TextArea,
-  Form
+  Form,
+  Modal,
+  List,
+  Label
 } from "semantic-ui-react";
-import { from } from "zen-observable";
 
 const GET_USER_POSTS = gql`
   # query getUser
@@ -66,15 +68,22 @@ const DELETE_POST_MUTATION = gql`
 `;
 
 const UPDATE_POST_MUTATION = gql`
-  mutation UpdatePost($targetID: String!, $newTitle: String!, $newContent: String!) {
-    updatePost(targetID: $targetID, input: {title: $newTitle, content: $newContent}) {
+  mutation UpdatePost(
+    $targetID: String!
+    $newTitle: String!
+    $newContent: String!
+  ) {
+    updatePost(
+      targetID: $targetID
+      input: { title: $newTitle, content: $newContent }
+    ) {
       __typename
-    ... on OperationSuccessfull{
-      message
-    }
-    ... on Exception{
-      message
-    }
+      ... on OperationSuccessfull {
+        message
+      }
+      ... on Exception {
+        message
+      }
     }
   }
 `;
@@ -87,8 +96,8 @@ const PostCell = ({ post }) => {
   });
 
   const [updatePost] = useMutation(UPDATE_POST_MUTATION, {
-    onCompleted: ({updatePost}) => {
-      handleHide()
+    onCompleted: ({ updatePost }) => {
+      handleHide();
     }
   });
 
@@ -97,59 +106,63 @@ const PostCell = ({ post }) => {
 
   return (
     <div>
-      <Dimmer.Dimmable as={Segment} dimmed={state.editingActive}>
-        <Card
-          key={post.id}
-          id={post.id}
-          header={post.title}
-          meta={post.created_by.name}
-          description={post.content}
-          fluid
-          onClick={() => {
-            handleShow();
-          }}
-        />
-
-        <Dimmer
-          active={state.editingActive}
-          onClickOutside={handleHide}
-        >
-          <Form inverted>
-            <Form.Group>
-              <Form.Input
-                label="New Title"
-                placeholder="First name"
+      <Card
+        key={post.id}
+        id={post.id}
+        header={post.title}
+        meta={post.created_by.name}
+        description={post.content}
+        fluid
+        onClick={() => {
+          handleShow();
+        }}
+      />
+      <Modal open={state.editingActive} dimmer="blurring">
+        <Modal.Header>Updating your post ...</Modal.Header>
+        <Modal.Content>
+          <List>
+            <List.Item>
+              <Header>New Title :</Header>
+              <Input
+                placeholder="New Title"
                 defaultValue={post.title}
                 onChange={e => {
                   setState({ ...state, newTitle: e.target.value });
                 }}
               />
-              <Form.TextArea
-                label="New Content"
-                placeholder="Last name"
-                defaultValue={post.content}
-                onChange={e => {
-                  setState({ ...state, newContent: e.target.value });
-                }}
-              />
-              <Form.Button
-                onClick={() => {
-                  updatePost({
-                    variables: {
-                      targetID: post.id,
-                      newTitle: state.newTitle,
-                      newContent: state.newContent
-                    }
-                  });
-                }}
-              >
-                Update
-              </Form.Button>
-              <Form.Button onClick={handleHide}>Cancel</Form.Button>
-            </Form.Group>
-          </Form>
-        </Dimmer>
-      </Dimmer.Dimmable>
+            </List.Item>
+            <List.Item>
+              <Header>New Content :</Header>
+              <Form>
+                <TextArea
+                  placeholder="New Content"
+                  defaultValue={post.content}
+                  onChange={e => {
+                    setState({ ...state, newContent: e.target.value });
+                  }}
+                />
+              </Form>
+            </List.Item>
+          </List>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button onClick={() => handleHide()}>Cancel</Button>
+          <Button
+            onClick={() => {
+              updatePost({
+                variables: {
+                  targetID: post.id,
+                  newTitle: state.newTitle,
+                  newContent: state.newContent
+                }
+              });
+            }}
+            positive
+          >
+            Update
+          </Button>
+        </Modal.Actions>
+      </Modal>
     </div>
   );
 };
@@ -177,13 +190,6 @@ const UserPosts = props => {
     }
   });
 
-  console.log("in dashboard");
-  console.log("data: ", data);
-  console.log("error:", error);
-  console.log("loading:", loading);
-
-  function addPost() {}
-
   function triggerState() {
     console.log("here trigerringgggggg //////////");
     setState({ trigger: !state.trigger });
@@ -191,11 +197,11 @@ const UserPosts = props => {
 
   return (
     <div>
-      {/* <EditPostContent /> */}
       <Button
         icon="plus"
+        content="Add Post"
         onClick={() => {
-          createPost();
+          // createPost();
         }}
       />
       <Grid columns={2} stackable>
