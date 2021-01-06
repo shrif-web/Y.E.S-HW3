@@ -7,7 +7,7 @@ import { async } from "q";
 
 const GET_POSTS_QUERY = gql`
   {
-    posts(start: 0, amount: 100) {
+    posts(start: 0, amount: 1000) {
       id
       title
       content
@@ -46,24 +46,17 @@ const CREATE_POST_MUTATION = gql`
   }
 `;
 
-const PostCell = ({ username, title, description }) => {
+const PostCell = ({ title, content, created_by }) => {
   return (
     <Grid.Column>
-      <Card header={username} meta={title} description={description} fluid />
+      <Card header={title} meta={created_by.name} description={content} fluid />
     </Grid.Column>
   );
 };
 
 const PostGrid = props => {
 
-  const [createPost] = useMutation(CREATE_POST_MUTATION, {
-    variables: {
-      title: "TITLE",
-      content: "CONTENT"
-    }
-  });
-
-  const { data, loading, error } = useQuery(GET_USER_QUERY);
+  const { data, loading, error } = useQuery(GET_POSTS_QUERY);
   if (error) {
     return (
       <div>
@@ -80,13 +73,13 @@ const PostGrid = props => {
     <div>
       <Grid columns={3} stackable>
         {!loading &&
-          data.users.map((user, i) => {
+          data.posts.map((post, i) => {
             return (
               <PostCell
                 key={i}
-                username={user.name}
-                title={user.email}
-                description=":))))))))"
+                title={post.title}
+                content={post.content}
+                created_by={post.created_by}
               />
             );
           })}
