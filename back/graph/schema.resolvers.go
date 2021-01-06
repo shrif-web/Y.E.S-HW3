@@ -160,6 +160,7 @@ func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, inpu
 }
 
 func (r *queryResolver) User(ctx context.Context, name *string) (*model.User, error) {
+	//todo error handling
 	var username string
 	if name== nil || *name ==""{
 		username = extractUsernameFromContext(ctx)

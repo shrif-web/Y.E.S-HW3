@@ -33,7 +33,7 @@ const authLink = setContext((_, { headers }) => {
   return {
     headers: {
       ...headers,
-      Authorization: token ? `Bearer ${token.slice(1,-1)}` : ''
+      whoami: token ? `Bearer ${token.slice(1,-1)}` : ''
     }
   };
 });
