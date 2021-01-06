@@ -36,11 +36,7 @@ func (c *userController) Login(username, password string) (string, error) {
 	//retrieve user from data base
 	blogUser, err := c.Get(&username)
 	if err != nil {
-		switch err.(type) {
-		case *model.PostEmptyException:
-			return "", err.(*model.InternalServerException)
-		}
-		return "", err
+		return "", model.UserPassMissMatchException{}
 	}
 
 	// check if the username and password matches
