@@ -162,10 +162,10 @@ func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, inpu
 func (r *queryResolver) User(ctx context.Context, name *string) (*model.User, error) {
 	//todo error handling
 	var username string
-	if name== nil || *name ==""{
+	if name == nil || *name == "" {
 		username = extractUsernameFromContext(ctx)
-	}else{
-		username=*name
+	} else {
+		username = *name
 	}
 	blogUser, err := userController.GetUserController().Get(&username)
 	return reformatUser(blogUser), err
@@ -208,3 +208,4 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
