@@ -7,7 +7,7 @@ import { async } from "q";
 
 const GET_POSTS_QUERY = gql`
   {
-    posts(start: 0, amount: 1000) {
+    timeline(start: 0, amount: 1000) {
       id
       title
       content
@@ -79,7 +79,7 @@ const PostGrid = props => {
     <div>
       <Grid columns={3} stackable style={{margin: 20}}>
         {!loading &&
-          data.posts.map((post, i) => {
+          data.timeline.map((post, i) => {
             return (
               <PostCell
                 key={i}

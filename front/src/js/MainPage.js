@@ -1,8 +1,5 @@
 import React from "react";
-import { Grid, Card, Icon, Message, Segment } from "semantic-ui-react";
 import "../styles/MainPage.css";
-import Header from "./Header.js";
-import { Redirect, Route, Switch } from "react-router-dom";
 import PostGrid from "./PostGrid";
 
 class MainPage extends React.Component {
