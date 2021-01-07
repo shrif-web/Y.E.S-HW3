@@ -13,14 +13,32 @@ import Dashboard from "./Dashboard.js";
 import { useMutation, gql } from "@apollo/client";
 import { useMediaQuery } from "react-responsive";
 
-const REFRESH_TOKEN_MUTATION = gql`
-  mutation RefreshToken {
-    refreshToken
-  }
-`;
+// const REFRESH_TOKEN_MUTATION = gql`
+//   mutation RefreshToken {
+//     refreshToken
+//   }
+// `;
 
 function App(props) {
   const { token, setToken } = useToken();
+
+  const [state, setState] = useState({
+    refreshed: false
+  });
+
+  // const [refreshToken] = useMutation(REFRESH_TOKEN_MUTATION, {
+  //   onCompleted: ({ refreshToken }) => {
+  //     console.log("refreshed token", refreshToken);
+  //   }
+  // });
+
+
+  if (token && !state.refreshed) {
+    // refreshToken();
+    setState({ refreshed: true });
+  } else {
+    console.log("not have token yet")
+  }
 
   const isMobile = useMediaQuery({
     query: "(max-device-width: 570px)"
@@ -37,7 +55,7 @@ function App(props) {
         sidebarIsOpen={sidebarIsOpen}
         setSidebarIsOpen={setSidebarIsOpen}
       />
-      <Route exact path="/" >
+      <Route exact path="/">
         <MainPage isMobile={isMobile} />
       </Route>
       {!token && (

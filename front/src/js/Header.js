@@ -84,7 +84,8 @@ const Header = props => {
         console.log("Logout");
         localStorage.removeItem(constants.AUTH_TOKEN);
         history.push("/");
-        props.refresh();
+        window.location.reload(false);
+        // props.refresh();
         break;
       case "Dashboard":
         console.log("Dashboard");

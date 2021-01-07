@@ -16,6 +16,7 @@ import {
   Menu,
   Icon
 } from "semantic-ui-react";
+import { useHistory } from "react-router-dom";
 
 const GET_USER_POSTS = gql`
   {
@@ -68,14 +69,14 @@ const DELETE_POST_MUTATION = gql`
 
 const UPDATE_POST_MUTATION = gql`
   mutation UpdatePost(
-    $targetID: String!,
-    $newTitle: String!,
-    $newContent: String!,
+    $targetID: String!
+    $newTitle: String!
+    $newContent: String!
     $userName: String
   ) {
     updatePost(
-      targetID: $targetID,
-      input: { title: $newTitle, content: $newContent },
+      targetID: $targetID
+      input: { title: $newTitle, content: $newContent }
       userName: $userName
     ) {
       __typename
@@ -153,7 +154,7 @@ const AddPostModal = ({ addingPost, setAddingPost }) => {
   );
 };
 
-const PostCell = ({ post }) => {
+const PostCell = ({ post, rerenderComponent }) => {
   const [state, setState] = useState({
     editingActive: false,
     newTitle: post.title,
@@ -161,6 +162,32 @@ const PostCell = ({ post }) => {
   });
 
   const [updatePost] = useMutation(UPDATE_POST_MUTATION, {
+    update(cache, { data: { updatePost } }) {
+      // console.log("in update:", data)
+
+      const data = cache.readQuery({
+        query: GET_USER_POSTS
+      });
+
+      console.log("in update:", data, updatePost)
+
+      // cache.writeQuery({
+      //   query: GET_USER_POSTS,
+      //   data: {
+      //     user: {
+      //       posts: [updatePost, ...data.user.posts]
+      //     }
+      //   }
+      // })
+
+      // cache.writeQuery({
+      //   query: GET_USER_POSTS,
+      //   user: {
+      //     posts: [updatePost, ...user.posts]
+      //   }
+      // });
+
+    },
     onCompleted: ({ updatePost }) => {
       console.log("updatePost:", updatePost);
       handleHide();
@@ -176,6 +203,7 @@ const PostCell = ({ post }) => {
   const handleShow = () => setState({ ...state, editingActive: true });
   const handleHide = () => setState({ ...state, editingActive: false });
 
+  console.log("rendered PostCell");
   return (
     <div>
       <Segment>
@@ -235,7 +263,7 @@ const PostCell = ({ post }) => {
           <Button onClick={() => handleHide()}>Cancel</Button>
           <Button
             onClick={() => {
-              console.log("---=-=-=-=-=-= newTitle:", state.newTitle)
+              console.log("---=-=-=-=-=-= newTitle:", state.newTitle);
               updatePost({
                 variables: {
                   targetID: post.id,
@@ -262,16 +290,13 @@ const UserPosts = props => {
   });
 
   const { data, loading, error } = useQuery(GET_USER_POSTS);
+  // props.setPosts(data.user.posts)
 
-  function triggerState() {
-    setState({ trigger: !state.trigger });
-  }
+  console.log("data.user.posts:", data);
 
   function setAddingPost(value) {
     setState({ addingPost: value });
   }
-
-  console.log("data in dashboard:", data);
 
   return (
     <div>
@@ -330,7 +355,10 @@ const UserPosts = props => {
             data.user.posts.map(post => {
               return (
                 <Grid.Column textAlign="left">
-                  <PostCell post={post} />
+                  <PostCell
+                    post={post}
+                    rerenderComponent={props.rerenderComponent}
+                  />
                 </Grid.Column>
               );
             })}
@@ -343,14 +371,33 @@ const UserPosts = props => {
 class Dashboard extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      posts: [],
+      triggerState: false
+    };
+
+    this.rerenderComponent = this.rerenderComponent.bind(this);
+    this.setPosts = this.setPosts.bind(this);
+  }
+
+  setPosts(newPosts) {
+    this.setState({ ...this.state, posts: newPosts });
+  }
+
+  rerenderComponent() {
+    this.setState({ ...this.state, triggerState: !this.state.triggerState });
   }
 
   render() {
+    console.log("rendered Dashboard");
     return (
       <div>
         <UserPosts
           isMobile={this.props.isMobile}
           sidebarIsOpen={this.props.sidebarIsOpen}
+          rerenderComponent={this.rerenderComponent}
+          setPosts={this.setPosts}
         />
       </div>
     );
