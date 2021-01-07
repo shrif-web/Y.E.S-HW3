@@ -1,8 +1,9 @@
-import React, {useState} from "react";
-import { Form, Input, Button, Grid } from "semantic-ui-react";
+import React, { useState } from "react";
+import { Form, Input, Button, Grid, Segment } from "semantic-ui-react";
 import gql from "graphql-tag";
 import { useMutation } from "@apollo/client";
-import {useHistory} from 'react-router-dom'
+import { useHistory } from "react-router-dom";
+import constants from "../constants.js";
 
 const REGISTER_MUTATION = gql`
   mutation CreateUser($username: String!, $email: String!, $password: String!) {
@@ -36,13 +37,13 @@ const LOGIN_MUTATION = gql`
 
 const RegisterForm = props => {
   const [state, setState] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPass: ''
-  })
+    username: "",
+    email: "",
+    password: "",
+    confirmPass: ""
+  });
 
-  const history = useHistory()
+  const history = useHistory();
 
   const [registerUser] = useMutation(REGISTER_MUTATION, {
     variables: {
@@ -50,12 +51,16 @@ const RegisterForm = props => {
       email: state.email,
       password: state.password
     },
-    onCompleted: ({createUser}) => {
+    onCompleted: ({ createUser }) => {
+      console.log("createUser:", createUser);
       if (createUser.__typename == "User") {
-        login()
+        login();
       } else {
-        // Todo : ERROR!
-        alert(createUser.__typename)
+        //Handle Errors
+        switch (createUser.__typename) {
+          case "DuplicateUsernameException":
+            alert(constants.DUPLICATE_USERNAME_ERROR);
+        }
       }
     }
   });
@@ -75,61 +80,77 @@ const RegisterForm = props => {
     }
   });
 
+  function handleRegister() {
+    if (state.password === state.confirmPass) {
+      registerUser();
+    } else {
+      alert(constants.PASSWORDS_DIFFER);
+    }
+  }
+
   return (
     <Form>
-      <Form.Field
-        label="Username"
-        placeholder="Enter your username ..."
-        control={Input}
-        onChange={e => {
-          setState({
-            ...state,
-            username: e.target.value
-          })
-        }}
-      />
-      <Form.Field
-        label="Email"
-        placeholder="Enter your email ..."
-        control={Input}
-        onChange={e => {
-          setState({
-            ...state,
-            email: e.target.value
-          })
-        }}
-      />
-      <Form.Field
-        label="Password"
-        placeholder="Choose a password ..."
-        control={Input}
-        onChange={e => {
-          setState({
-            ...state,
-            password: e.target.value
-          })
-        }}
-      />
-      <Form.Field
-        label="Confirm Password"
-        placeholder="Repeat your password ..."
-        control={Input}
-        onChange={e => {
-          setState({
-            ...state,
-            confirmPass: e.target.value
-          })
-        }}
-      />
-      <Form.Button
-        content="Register"
-        control={Button}
-        onClick={() => {
-          registerUser();
-          // Handle error if passwords are not the same
-          // login()
-        }}
-      />
+      <Segment>
+        <Form.Input
+          icon="user"
+          iconPosition="left"
+          placeholder="Enter your username"
+          control={Input}
+          onChange={e => {
+            setState({
+              ...state,
+              username: e.target.value
+            });
+          }}
+        />
+        <Form.Input
+          icon="mail"
+          iconPosition="left"
+          placeholder="Enter your email"
+          control={Input}
+          onChange={e => {
+            setState({
+              ...state,
+              email: e.target.value
+            });
+          }}
+        />
+        <Form.Input
+          icon="lock"
+          iconPosition="left"
+          type="password"
+          placeholder="Choose a password ..."
+          control={Input}
+          onChange={e => {
+            setState({
+              ...state,
+              password: e.target.value
+            });
+          }}
+        />
+        <Form.Input
+          icon="lock"
+          iconPosition="left"
+          type="password"
+          placeholder="Repeat your password ..."
+          control={Input}
+          onChange={e => {
+            setState({
+              ...state,
+              confirmPass: e.target.value
+            });
+          }}
+        />
+        <Form.Button
+          fluid
+          color="blue"
+          content="Register"
+          control={Button}
+          onClick={() => {
+            handleRegister();
+          }}
+        />
+      </Segment>
     </Form>
   );
 };
@@ -141,9 +162,14 @@ class Register extends React.Component {
 
   render() {
     return (
-      <Grid centered verticalAlign="middle">
-        <Grid.Row columns={3}>
-          <Grid.Column>
+      <Grid
+        centered
+        verticalAlign="middle"
+        textAlign="center"
+        style={{ height: "100vh" }}
+      >
+        <Grid.Row>
+          <Grid.Column style={{ maxWidth: 450, marginRight: 20, marginLeft: 20, marginTop: -100 }}>
             <RegisterForm setToken={this.props.setToken} />
           </Grid.Column>
         </Grid.Row>

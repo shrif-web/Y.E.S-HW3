@@ -123,8 +123,8 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPos
 	return reformatPost(newPost, reformatUser(usr)), nil
 }
 
-func (r *mutationResolver) DeletePost(ctx context.Context, targetID string) (model.DeletePostPayload, error) {
-	message, err := postController.GetPostController().DeletePost(targetID, extractUsernameFromContext(ctx))
+func (r *mutationResolver) DeletePost(ctx context.Context, targetID string, userName *string) (model.DeletePostPayload, error) {
+	message, err := postController.GetPostController().DeletePost(targetID, extractUsernameFromContext(ctx), getUserName(ctx, userName))
 	if err != nil {
 		switch err.(type) {
 		case *model.UserNotAllowedException:
@@ -140,8 +140,8 @@ func (r *mutationResolver) DeletePost(ctx context.Context, targetID string) (mod
 	return &model.OperationSuccessfull{Message: message}, nil
 }
 
-func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, input model.TargetPost) (model.UpdatePostPayload, error) {
-	message, err := postController.GetPostController().UpdatePost(targetID, input.Title, input.Content, extractUsernameFromContext(ctx))
+func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, input model.TargetPost, userName *string) (model.UpdatePostPayload, error) {
+	message, err := postController.GetPostController().UpdatePost(targetID, input.Title, input.Content, extractUsernameFromContext(ctx), getUserName(ctx, userName))
 	if err != nil {
 		switch err.(type) {
 		case *model.UserNotAllowedException:
@@ -161,12 +161,7 @@ func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, inpu
 
 func (r *queryResolver) User(ctx context.Context, name *string) (*model.User, error) {
 	//todo error handling
-	var username string
-	if name == nil || *name == "" {
-		username = extractUsernameFromContext(ctx)
-	} else {
-		username = *name
-	}
+	username := getUserName(ctx, name)
 	blogUser, err := userController.GetUserController().Get(&username)
 	return reformatUser(blogUser), err
 }
@@ -184,7 +179,7 @@ func (r *queryResolver) Post(ctx context.Context, id string) (*model.Post, error
 	return reformatPost(newPost, reformatUser(usr)), nil
 }
 
-func (r *queryResolver) Posts(ctx context.Context, start int, amount int) ([]*model.Post, error) {
+func (r *queryResolver) Timeline(ctx context.Context, start int, amount int) ([]*model.Post, error) {
 	posts, usrs, err := postController.GetPostController().GetAllPosts(start, amount)
 	if err != nil {
 		return nil, err
@@ -192,8 +187,8 @@ func (r *queryResolver) Posts(ctx context.Context, start int, amount int) ([]*mo
 	return reformatAllSeparatePosts(posts, reformatUsers(usrs)), nil
 }
 
-func (r *queryResolver) PostsOfUser(ctx context.Context, userName string) ([]*model.Post, error) {
-	posts, usr, err := postController.GetPostController().GetPostByUser(userName)
+func (r *queryResolver) PostsOfUser(ctx context.Context, userName *string) ([]*model.Post, error) {
+	posts, usr, err := postController.GetPostController().GetPostByUser(getUserName(ctx, userName))
 	if err != nil {
 		return nil, err
 	}
