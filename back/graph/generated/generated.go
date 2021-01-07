@@ -120,7 +120,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateUser(ctx context.Context, target model.TargetUser) (model.CreateUserPayload, error)
-	DeleteUser(ctx context.Context, name string) (model.DeletePostPayload, error)
+	DeleteUser(ctx context.Context, name string) (model.DeleteUserPayload, error)
 	UpdateUser(ctx context.Context, toBe model.ToBeUser) (model.UpdateUserPayload, error)
 	Promote(ctx context.Context, target string) (model.AdminPayload, error)
 	Demote(ctx context.Context, target string) (model.AdminPayload, error)
@@ -619,11 +619,11 @@ union LoginPayload      = Token | UserPassMissMatchException | InternalServerExc
 union DeleteUserPayload = OperationSuccessfull | UserNotAllowedException | NoUserFoundException | InternalServerException
 
 union CreatePostPayload = Post  | NoUserFoundException | PostEmptyException  | InternalServerException
-union DeletePostPayload = OperationSuccessfull | UserNotAllowedException | NoUserFoundException | PostNotFoundException | InternalServerException
-union UpdatePostPayload = OperationSuccessfull | UserNotAllowedException | PostEmptyException   | NoUserFoundException | PostNotFoundException | InternalServerException
+union DeletePostPayload = Post | UserNotAllowedException | NoUserFoundException | PostNotFoundException | InternalServerException
+union UpdatePostPayload = Post | UserNotAllowedException | PostEmptyException   | NoUserFoundException | PostNotFoundException | InternalServerException
 type Mutation {
     createUser(target: TargetUser!): CreateUserPayload!
-    deleteUser(name: String!): DeletePostPayload!
+    deleteUser(name: String!): DeleteUserPayload!
 
     updateUser(toBe: ToBeUser!): UpdateUserPayload!
     promote(target:String!):AdminPayload!
@@ -1126,9 +1126,9 @@ func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.DeletePostPayload)
+	res := resTmp.(model.DeleteUserPayload)
 	fc.Result = res
-	return ec.marshalNDeletePostPayload2yesᚑblogᚋgraphᚋmodelᚐDeletePostPayload(ctx, field.Selections, res)
+	return ec.marshalNDeleteUserPayload2yesᚑblogᚋgraphᚋmodelᚐDeleteUserPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3687,13 +3687,13 @@ func (ec *executionContext) _DeletePostPayload(ctx context.Context, sel ast.Sele
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.OperationSuccessfull:
-		return ec._OperationSuccessfull(ctx, sel, &obj)
-	case *model.OperationSuccessfull:
+	case model.Post:
+		return ec._Post(ctx, sel, &obj)
+	case *model.Post:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._OperationSuccessfull(ctx, sel, obj)
+		return ec._Post(ctx, sel, obj)
 	case model.UserNotAllowedException:
 		return ec._UserNotAllowedException(ctx, sel, &obj)
 	case *model.UserNotAllowedException:
@@ -3856,13 +3856,13 @@ func (ec *executionContext) _UpdatePostPayload(ctx context.Context, sel ast.Sele
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case model.OperationSuccessfull:
-		return ec._OperationSuccessfull(ctx, sel, &obj)
-	case *model.OperationSuccessfull:
+	case model.Post:
+		return ec._Post(ctx, sel, &obj)
+	case *model.Post:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._OperationSuccessfull(ctx, sel, obj)
+		return ec._Post(ctx, sel, obj)
 	case model.UserNotAllowedException:
 		return ec._UserNotAllowedException(ctx, sel, &obj)
 	case *model.UserNotAllowedException:
@@ -4094,7 +4094,7 @@ func (ec *executionContext) _NoUserFoundException(ctx context.Context, sel ast.S
 	return out
 }
 
-var operationSuccessfullImplementors = []string{"OperationSuccessfull", "AdminPayload", "DeleteUserPayload", "DeletePostPayload", "UpdatePostPayload"}
+var operationSuccessfullImplementors = []string{"OperationSuccessfull", "AdminPayload", "DeleteUserPayload"}
 
 func (ec *executionContext) _OperationSuccessfull(ctx context.Context, sel ast.SelectionSet, obj *model.OperationSuccessfull) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, operationSuccessfullImplementors)
@@ -4121,7 +4121,7 @@ func (ec *executionContext) _OperationSuccessfull(ctx context.Context, sel ast.S
 	return out
 }
 
-var postImplementors = []string{"Post", "CreatePostPayload"}
+var postImplementors = []string{"Post", "CreatePostPayload", "DeletePostPayload", "UpdatePostPayload"}
 
 func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj *model.Post) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, postImplementors)
@@ -4745,6 +4745,16 @@ func (ec *executionContext) marshalNDeletePostPayload2yesᚑblogᚋgraphᚋmodel
 		return graphql.Null
 	}
 	return ec._DeletePostPayload(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNDeleteUserPayload2yesᚑblogᚋgraphᚋmodelᚐDeleteUserPayload(ctx context.Context, sel ast.SelectionSet, v model.DeleteUserPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._DeleteUserPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {

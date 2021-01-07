@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 	"yes-blog/graph/model"
@@ -42,61 +41,68 @@ func (p *postController) CreatePost(title, body, authorName string) (*post.Post,
 }
 
 // edit the post in DB
-func (p *postController) UpdatePost(postID, title, body, operator, authorName string) (string, error) {
+func (p *postController) UpdatePost(postID, title, body, operator, authorName string) (*post.Post, *user.User, error) {
 	c, err := userController.GetUserController().CanOperate(operator, authorName)
 	if err != nil {
 		switch err.(type) {
 		case *model.NoUserFoundException:
-			return err.Error(), &model.NoUserFoundException{Message: err.Error()}
+			return nil, nil, &model.NoUserFoundException{Message: err.Error()}
 		default:
-			return err.Error(), &model.InternalServerException{Message: err.Error()}
+			return nil, nil, &model.InternalServerException{Message: err.Error()}
 		}
 	}
 	if !c {
-		return "you are not allowed to update post@" + postID, &model.UserNotAllowedException{Message: "you are not allowed to update post@" + postID}
+		return nil, nil, &model.UserNotAllowedException{Message: "you are not allowed to update post@" + postID}
 	}
 
 	id, err := primitive.ObjectIDFromHex(postID)
 	if err != nil {
-		return err.Error(), &model.InternalServerException{Message: err.Error()}
+		return nil, nil, &model.InternalServerException{Message: err.Error()}
 	}
-	upPost, err := post.NewRawPost(id, title, body, authorName, time.Now().Unix())
+
+	usr, err := userController.GetUserController().Get(&authorName)
 	if err != nil {
-		return err.Error(), &model.InternalServerException{Message: err.Error()}
+		return nil, nil, &model.NoUserFoundException{Message: err.Error()}
+	}
+
+	upPost, err := post.NewRawPost(id, title, body, usr.ID.Hex(), time.Now().Unix())
+	if err != nil {
+		return nil, nil, &model.InternalServerException{Message: err.Error()}
 	}
 	err = p.dbDriver.Update(upPost)
 	err = CastDBEToGQLE(err)
 	if err != nil {
-		return "the post couldn't edit", err
+		return nil, nil, err
 	}
-	return "the post edited successfully", nil
+	return upPost, usr, nil
 }
 
 // delete the post from DB
-func (p *postController) DeletePost(postID string, operator, authorName string) (string, error) {
+func (p *postController) DeletePost(postID string, operator, authorName string) (*post.Post, *user.User, error) {
 	c, err := userController.GetUserController().CanOperate(operator, authorName)
 	if err != nil {
 		switch err.(type) {
 		case *model.NoUserFoundException:
-			return err.Error(), &model.NoUserFoundException{Message: err.Error()}
+			return nil, nil, &model.NoUserFoundException{Message: err.Error()}
 		default:
-			return err.Error(), &model.InternalServerException{Message: err.Error()}
+			return nil, nil, &model.InternalServerException{Message: err.Error()}
 		}
 	}
 	if !c {
-		return "you are not allowed to delete post@" + postID, &model.UserNotAllowedException{Message: "you are not allowed to delete post@" + postID}
+		return nil, nil, &model.UserNotAllowedException{Message: "you are not allowed to delete post@" + postID}
 	}
 
 	id, err := primitive.ObjectIDFromHex(postID)
 	if err != nil {
-		return fmt.Sprint(err), err
+		return nil, nil, err
 	}
-	err = p.dbDriver.Delete(id, authorName)
+
+	pst, usr, err := p.dbDriver.Delete(id, authorName)
 	err = CastDBEToGQLE(err)
 	if err != nil {
-		return "the post couldn't delete", err
+		return nil, nil, err
 	}
-	return "the post deleted successfully", nil
+	return pst, usr, nil
 }
 
 // get the post specified with id from DB

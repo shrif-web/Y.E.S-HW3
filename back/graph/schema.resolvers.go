@@ -26,7 +26,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUs
 	return reformatUser(newUser), err
 }
 
-func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (model.DeletePostPayload, error) {
+func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (model.DeleteUserPayload, error) {
 	err := userController.GetUserController().Delete(extractUsernameFromContext(ctx), name)
 	if err != nil {
 		switch err.(type) {
@@ -124,7 +124,7 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPos
 }
 
 func (r *mutationResolver) DeletePost(ctx context.Context, targetID string, userName *string) (model.DeletePostPayload, error) {
-	message, err := postController.GetPostController().DeletePost(targetID, extractUsernameFromContext(ctx), getUserName(ctx, userName))
+	delPost, usr, err := postController.GetPostController().DeletePost(targetID, extractUsernameFromContext(ctx), getUserName(ctx, userName))
 	if err != nil {
 		switch err.(type) {
 		case *model.UserNotAllowedException:
@@ -137,11 +137,11 @@ func (r *mutationResolver) DeletePost(ctx context.Context, targetID string, user
 			return err.(*model.InternalServerException), nil
 		}
 	}
-	return &model.OperationSuccessfull{Message: message}, nil
+	return reformatPost(delPost, reformatUser(usr)), nil
 }
 
 func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, input model.TargetPost, userName *string) (model.UpdatePostPayload, error) {
-	message, err := postController.GetPostController().UpdatePost(targetID, input.Title, input.Content, extractUsernameFromContext(ctx), getUserName(ctx, userName))
+	upPost, usr, err := postController.GetPostController().UpdatePost(targetID, input.Title, input.Content, extractUsernameFromContext(ctx), getUserName(ctx, userName))
 	if err != nil {
 		switch err.(type) {
 		case *model.UserNotAllowedException:
@@ -156,7 +156,7 @@ func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, inpu
 			return err.(*model.InternalServerException), nil
 		}
 	}
-	return &model.OperationSuccessfull{Message: message}, nil
+	return reformatPost(upPost, reformatUser(usr)), nil
 }
 
 func (r *queryResolver) User(ctx context.Context, name *string) (*model.User, error) {
@@ -203,4 +203,3 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-

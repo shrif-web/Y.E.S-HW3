@@ -42,7 +42,7 @@ func (p PostMongoDriver) Insert(pst *post.Post, authorName string) error {
 	return nil
 }
 
-func (p PostMongoDriver) Delete(postID primitive.ObjectID, authorName string) error {
+func (p PostMongoDriver) Delete(postID primitive.ObjectID, authorName string) (*post.Post, *user.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), PostDeleteTimeOut*time.Millisecond)
 	defer cancel()
 
@@ -52,11 +52,12 @@ func (p PostMongoDriver) Delete(postID primitive.ObjectID, authorName string) er
 	var usr user.User
 	findErr := p.collection.FindOne(ctx, target).Decode(&usr)
 	if findErr != nil {
-		return DBException.ThrowUserNotFoundException(authorName)
+		return nil, nil, DBException.ThrowUserNotFoundException(authorName)
 	}
 
-	if _, _, fr := post.Find(usr.Posts, postID.Hex()); !fr {
-		return DBException.ThrowPostNotFoundException(postID.Hex())
+	pst, _, fr := post.Find(usr.Posts, postID.Hex())
+	if !fr {
+		return nil, nil, DBException.ThrowPostNotFoundException(postID.Hex())
 	}
 
 	change := bson.M{
@@ -68,17 +69,22 @@ func (p PostMongoDriver) Delete(postID primitive.ObjectID, authorName string) er
 	}
 	_, err := p.collection.UpdateOne(ctx, target, change)
 	if err != nil {
-		return DBException.ThrowInternalDBException(err.Error())
+		return nil, nil, DBException.ThrowInternalDBException(err.Error())
 	}
-	return nil
+	return pst, &usr, nil
 }
 
 func (p PostMongoDriver) Update(pst *post.Post) error {
 	ctx, cancel := context.WithTimeout(context.Background(), PostUpdateTimeOut*time.Millisecond)
 	defer cancel()
 
+	id, err := primitive.ObjectIDFromHex(pst.AuthorID)
+	if err != nil {
+		return DBException.ThrowInternalDBException(err.Error())
+	}
+
 	target := bson.M{
-		"name":      pst.AuthorID,
+		"_id":       id,
 		"posts._id": pst.ID,
 	}
 	var usr user.User
@@ -94,7 +100,7 @@ func (p PostMongoDriver) Update(pst *post.Post) error {
 			"posts.$.timeStamp": pst.TimeStamp,
 		},
 	}
-	_, err := p.collection.UpdateOne(ctx, target, change)
+	_, err = p.collection.UpdateOne(ctx, target, change)
 	if err != nil {
 		return DBException.ThrowInternalDBException(err.Error())
 	}
