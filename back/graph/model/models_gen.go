@@ -82,8 +82,6 @@ type OperationSuccessfull struct {
 
 func (OperationSuccessfull) IsAdminPayload()      {}
 func (OperationSuccessfull) IsDeleteUserPayload() {}
-func (OperationSuccessfull) IsDeletePostPayload() {}
-func (OperationSuccessfull) IsUpdatePostPayload() {}
 
 type Post struct {
 	ID        string `json:"id"`
@@ -94,6 +92,8 @@ type Post struct {
 }
 
 func (Post) IsCreatePostPayload() {}
+func (Post) IsDeletePostPayload() {}
+func (Post) IsUpdatePostPayload() {}
 
 type PostEmptyException struct {
 	Message string `json:"message"`

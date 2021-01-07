@@ -11,6 +11,6 @@ type PostDBDriver interface {
 	Get(postID primitive.ObjectID) (*post.Post, *user.User, error)
 	GetAll(startIndex, amount int) ([]*post.Post, []*user.User, error)
 	GetByUser(userName string) ([]*post.Post, *user.User, error)
-	Delete(postID primitive.ObjectID, authorName string) error
+	Delete(postID primitive.ObjectID, authorName string) (*post.Post, *user.User, error)
 	Update(post *post.Post) error
 }
