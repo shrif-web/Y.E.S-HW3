@@ -39,7 +39,7 @@ const LoginForm = props => {
         console.log("haaaaaaaaa?");
         // localStorage.setItem(constants.AUTH_TOKEN, login.token);
         props.setToken(login.token);
-        history.push("/");
+        history.push("/dashboard");
       } else {
         // Todo : ERROR!
         console.log("error in login!", login);

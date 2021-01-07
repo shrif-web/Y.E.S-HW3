@@ -3,7 +3,6 @@ import "../styles/App.css";
 import React, { useState } from "react";
 import { Button, Input } from "semantic-ui-react";
 import "semantic-ui-css/semantic.min.css";
-import Main from "./main.js";
 import MainPage from "./MainPage.js";
 import Login from "./Login.js";
 import Register from "./Register.js";

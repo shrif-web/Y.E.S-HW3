@@ -21,11 +21,6 @@ const LoggedInHeader = props => {
       />
       <Menu.Menu position="right">
         <Menu.Item
-          name="Info"
-          active={props.state.activeItem === "Info"}
-          onClick={props.handleItemClick}
-        />
-        <Menu.Item
           name="Dashboard"
           active={props.state.activeItem === "Dashboard"}
           onClick={props.handleItemClick}
@@ -90,9 +85,6 @@ const Header = props => {
         localStorage.removeItem(constants.AUTH_TOKEN);
         history.push("/");
         props.refresh();
-        break;
-      case "Info":
-        console.log("Info");
         break;
       case "Dashboard":
         console.log("Dashboard");

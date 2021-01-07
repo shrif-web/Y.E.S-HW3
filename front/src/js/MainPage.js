@@ -31,91 +31,9 @@ class MainPage extends React.Component {
     return (
       <div>
         <PostGrid />
-
-        {/* <Grid columns={3} stackable>
-          {posts.map((post, i) => {
-            return (
-              <PostCell
-                key={i}
-                username={post.username}
-                title={post.title}
-                description={post.description}
-              />
-            );
-          })}
-        </Grid> */}
-        {/* {this.state.isMobile && <Header fixed="bottom" />} */}
       </div>
     );
   }
 }
 
 export default MainPage;
-
-const posts = [
-  {
-    username: "Bahar",
-    title: "Front End Development",
-    description: "Hi! nice to meet you"
-  },
-  {
-    username: "Bahar",
-    title: "Front End Development",
-    description: "Hi! nice to meet you"
-  },
-  {
-    username: "KK",
-    title: "Back End Development",
-    description: "Bye! nice to meet you"
-  },
-  {
-    username: "Bahar",
-    title: "Front End Development",
-    description: "Hi! nice to meet you"
-  },
-  {
-    username: "Bahar",
-    title: "Front End Development",
-    description: "Hi! nice to meet you"
-  },
-  {
-    username: "Bahar",
-    title: "Front End Development",
-    description: "Hi! nice to meet you"
-  },
-  {
-    username: "Bahar",
-    title: "Front End Development",
-    description: "Hi! nice to meet you"
-  },
-  {
-    username: "Bahar",
-    title: "Front End Development",
-    description: "Hi! nice to meet you"
-  },
-  {
-    username: "Bahar",
-    title: "Front End Development",
-    description: "Hi! nice to meet you"
-  },
-  {
-    username: "Bahar",
-    title: "Front End Development",
-    description: "Hi! nice to meet you"
-  },
-  {
-    username: "Bahar",
-    title: "Front End Development",
-    description: "Hi! nice to meet you"
-  },
-  {
-    username: "Bahar",
-    title: "Front End Development",
-    description: "Hi! nice to meet you"
-  },
-  {
-    username: "Bahar",
-    title: "Front End Development",
-    description: "Hi! nice to meet you"
-  }
-];

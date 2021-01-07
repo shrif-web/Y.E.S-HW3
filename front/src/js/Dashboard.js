@@ -1,32 +1,27 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import gql from "graphql-tag";
-import constants from "../constants";
 import {
   Card,
   Grid,
   Button,
-  Dimmer,
   Segment,
-  Image,
   Header,
   Input,
   TextArea,
   Form,
   Modal,
   List,
-  Label,
   Sidebar,
   Menu,
   Icon
 } from "semantic-ui-react";
-import { tupleExpression } from "@babel/types";
 
 const GET_USER_POSTS = gql`
-  # query getUser
   {
     user {
       name
+      email
       posts {
         id
         title
@@ -180,29 +175,33 @@ const PostCell = ({ post }) => {
 
   return (
     <div>
-      <Card
-        key={post.id}
-        id={post.id}
-        header={post.title}
-        meta={post.created_by.name}
-        description={post.content}
-        fluid
-      />
-      <Button.Group>
-        <Button
-          icon="edit"
-          onClick={() => {
-            handleShow();
-          }}
-        />
-        <Button
-          icon="minus"
-          onClick={() => {
-            console.log("clicked on -");
-            deletePost({ variables: { targetID: post.id } });
-          }}
-        />
-      </Button.Group>
+      <Segment>
+        <Card fluid color="blue">
+          <Card.Content header={post.title} />
+          <Card.Content description={post.content} />
+          {/* <Card.Content extra>
+          <Icon name="user" />
+          created by <b>{post.created_by.name}</b>
+        </Card.Content> */}
+        </Card>
+
+        <Button.Group>
+          <Button
+            icon="edit"
+            onClick={() => {
+              handleShow();
+            }}
+          />
+          <Button
+            icon="minus"
+            onClick={() => {
+              console.log("clicked on -");
+              deletePost({ variables: { targetID: post.id } });
+            }}
+          />
+        </Button.Group>
+      </Segment>
+
       <Modal open={state.editingActive} dimmer="blurring">
         <Modal.Header>Updating your post ...</Modal.Header>
         <Modal.Content>
@@ -269,8 +268,11 @@ const UserPosts = props => {
     setState({ addingPost: value });
   }
 
+  console.log("data in dashboard:", data);
+
   return (
     <div>
+      {!loading && (
         <Sidebar
           as={Menu}
           animation="overlay"
@@ -282,49 +284,55 @@ const UserPosts = props => {
           style={{ width: 250, top: 40 }}
         >
           <Menu.Item as="a">
-            <Icon name="home" />
-            Home
+            <Icon name="user" />
+            {data.user.name}
           </Menu.Item>
           <Menu.Item as="a">
-            <Icon name="gamepad" />
-            Games
+            <Icon name="mail" />
+            {data.user.email}
           </Menu.Item>
           <Menu.Item as="a">
-            <Icon name="camera" />
-            Channels
+            <Icon name="question circle" />
+            You have {data.user.posts.length} post
+            {data.user.posts.length == 1 ? "" : "s"}!
           </Menu.Item>
-        </Sidebar>
-          <AddPostModal
-            addingPost={state.addingPost}
-            setAddingPost={setAddingPost}
-          />
-          <Grid.Row>
-            <Grid
-              columns={2}
-              stackable
-              style={{ position: "absolute", left: props.isMobile ? 0 : 250, right: 0, margin: 30 }}
-            >
-              {!loading &&
-                data.user.posts.map(post => {
-                  return (
-                    <Grid.Column>
-                      <PostCell post={post} />
-                    </Grid.Column>
-                  );
-                })}
-            </Grid>
-          </Grid.Row>
-          <Grid.Row>
+          <Menu.Item as="a">
             <Button
               positive
               onClick={() => {
                 setState({ addingPost: true });
               }}
-              style={{ position: "absolute", left: props.isMobile ? 0 : 250 }}
             >
-              Add Post
+              Add New Post
             </Button>
-          </Grid.Row>
+          </Menu.Item>
+        </Sidebar>
+      )}
+      <AddPostModal
+        addingPost={state.addingPost}
+        setAddingPost={setAddingPost}
+      />
+      <Grid.Row>
+        <Grid
+          columns={2}
+          stackable
+          style={{
+            position: "absolute",
+            left: props.isMobile ? 0 : 250,
+            right: 0,
+            margin: 30,
+          }}
+        >
+          {!loading &&
+            data.user.posts.map(post => {
+              return (
+                <Grid.Column textAlign="left">
+                  <PostCell post={post} />
+                </Grid.Column>
+              );
+            })}
+        </Grid>
+      </Grid.Row>
     </div>
   );
 };
