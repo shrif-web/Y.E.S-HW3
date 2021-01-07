@@ -5,7 +5,7 @@ import constants from "../constants";
 
 const LoggedInHeader = props => {
   return (
-    <Menu fixed={props.fixed} inverted style={{ borderRadius: "0px" }}>
+    <Menu fixed="top" inverted style={{ borderRadius: "0px" }}>
       {props.isMobile && (
         <Menu.Item
           icon="bars"
@@ -32,7 +32,7 @@ const LoggedInHeader = props => {
 
 const MainHeader = props => {
   return (
-    <Menu fixed={props.fixed} inverted style={{ borderRadius: "0px" }}>
+    <Menu fixed="top" inverted style={{ borderRadius: "0px" }}>
       <Menu.Item
         name="Login"
         active={props.state.activeItem === "Login"}
