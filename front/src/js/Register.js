@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form, Input, Button, Grid, Segment } from "semantic-ui-react";
+import { Form, Input, Button, Grid, Segment, Message } from "semantic-ui-react";
 import gql from "graphql-tag";
 import { useMutation } from "@apollo/client";
 import { useHistory } from "react-router-dom";
@@ -151,6 +151,9 @@ const RegisterForm = props => {
           }}
         />
       </Segment>
+      <Message>
+        Already have an account? <a href="/login">Login</a>
+      </Message>
     </Form>
   );
 };
@@ -169,7 +172,7 @@ class Register extends React.Component {
         style={{ height: "100vh" }}
       >
         <Grid.Row>
-          <Grid.Column style={{ maxWidth: 450, marginRight: 20, marginLeft: 20, marginTop: -100 }}>
+          <Grid.Column style={{ maxWidth: 450, marginRight: 20, marginLeft: 20}}>
             <RegisterForm setToken={this.props.setToken} />
           </Grid.Column>
         </Grid.Row>

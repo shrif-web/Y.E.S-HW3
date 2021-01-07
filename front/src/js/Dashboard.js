@@ -53,8 +53,8 @@ const CREATE_POST_MUTATION = gql`
 `;
 
 const DELETE_POST_MUTATION = gql`
-  mutation DeletePost($targetID: String!) {
-    deletePost(targetID: $targetID) {
+  mutation DeletePost($targetID: String!, $userName: String!) {
+    deletePost(targetID: $targetID, userName: $userName) {
       __typename
       ... on OperationSuccessfull {
         message
@@ -68,13 +68,15 @@ const DELETE_POST_MUTATION = gql`
 
 const UPDATE_POST_MUTATION = gql`
   mutation UpdatePost(
-    $targetID: String!
-    $newTitle: String!
-    $newContent: String!
+    $targetID: String!,
+    $newTitle: String!,
+    $newContent: String!,
+    $userName: String
   ) {
     updatePost(
-      targetID: $targetID
-      input: { title: $newTitle, content: $newContent }
+      targetID: $targetID,
+      input: { title: $newTitle, content: $newContent },
+      userName: $userName
     ) {
       __typename
       ... on OperationSuccessfull {
@@ -160,6 +162,7 @@ const PostCell = ({ post }) => {
 
   const [updatePost] = useMutation(UPDATE_POST_MUTATION, {
     onCompleted: ({ updatePost }) => {
+      console.log("updatePost:", updatePost);
       handleHide();
     }
   });
@@ -170,8 +173,8 @@ const PostCell = ({ post }) => {
     }
   });
 
-  const handleShow = () => setState({ editingActive: true });
-  const handleHide = () => setState({ editingActive: false });
+  const handleShow = () => setState({ ...state, editingActive: true });
+  const handleHide = () => setState({ ...state, editingActive: false });
 
   return (
     <div>
@@ -179,10 +182,6 @@ const PostCell = ({ post }) => {
         <Card fluid color="blue">
           <Card.Content header={post.title} />
           <Card.Content description={post.content} />
-          {/* <Card.Content extra>
-          <Icon name="user" />
-          created by <b>{post.created_by.name}</b>
-        </Card.Content> */}
         </Card>
 
         <Button.Group>
@@ -196,7 +195,9 @@ const PostCell = ({ post }) => {
             icon="minus"
             onClick={() => {
               console.log("clicked on -");
-              deletePost({ variables: { targetID: post.id } });
+              deletePost({
+                variables: { targetID: post.id, userName: post.created_by.name }
+              });
             }}
           />
         </Button.Group>
@@ -234,11 +235,13 @@ const PostCell = ({ post }) => {
           <Button onClick={() => handleHide()}>Cancel</Button>
           <Button
             onClick={() => {
+              console.log("---=-=-=-=-=-= newTitle:", state.newTitle)
               updatePost({
                 variables: {
                   targetID: post.id,
                   newTitle: state.newTitle,
-                  newContent: state.newContent
+                  newContent: state.newContent,
+                  userName: post.created_by.name
                 }
               });
             }}
@@ -320,7 +323,7 @@ const UserPosts = props => {
             position: "absolute",
             left: props.isMobile ? 0 : 250,
             right: 0,
-            margin: 30,
+            margin: 30
           }}
         >
           {!loading &&
