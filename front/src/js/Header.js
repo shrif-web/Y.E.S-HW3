@@ -32,7 +32,7 @@ const LoggedInHeader = props => {
 
 const MainHeader = props => {
   return (
-    <Menu fixed="top" inverted style={{ borderRadius: "0px" }}>
+    <Menu fixed="top" inverted style={{ borderRadius: "0px", marginBottom: 20 }}>
       <Menu.Item
         name="Login"
         active={props.state.activeItem === "Login"}

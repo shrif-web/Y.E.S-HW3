@@ -37,7 +37,9 @@ function App(props) {
         sidebarIsOpen={sidebarIsOpen}
         setSidebarIsOpen={setSidebarIsOpen}
       />
-      <Route exact path="/" component={MainPage} />
+      <Route exact path="/" >
+        <MainPage isMobile={isMobile} />
+      </Route>
       {!token && (
         <Route exact path="/register">
           <Register setToken={setToken} />

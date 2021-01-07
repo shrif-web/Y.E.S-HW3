@@ -124,7 +124,7 @@ class Login extends React.Component {
     return (
       <Grid
         centered
-        style={{ height: "100vh" }}
+        style={{ height: "100vh"}}
         verticalAlign="middle"
         textAlign="center"
       >
@@ -134,7 +134,7 @@ class Login extends React.Component {
               maxWidth: 450,
               marginRight: 20,
               marginLeft: 20,
-              marginTop: -100
+              // marginTop: -100
             }}
           >
             <LoginForm setToken={this.props.setToken} />

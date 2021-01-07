@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery, useMutation } from "@apollo/client";
-import { Grid, Card, Button, Icon } from "semantic-ui-react";
+import { Grid, Card, Button, Icon, Header } from "semantic-ui-react";
 import gql from "graphql-tag";
 import constants from "../constants";
 import { async } from "q";
@@ -31,25 +31,10 @@ const GET_USER_QUERY = gql`
   }
 `;
 
-const CREATE_POST_MUTATION = gql`
-  mutation CreatePost($title: String!, $content: String!) {
-    createPost(input: { title: $title, content: $content }) {
-      __typename
-      ... on Post {
-        id
-        title
-      }
-      ... on Exception {
-        message
-      }
-    }
-  }
-`;
-
-const PostCell = ({ title, content, created_by }) => {
+const PostCell = ({ title, content, created_by, isMobile }) => {
   return (
-    <Grid.Column textAlign="left">
-      <Card fluid >
+    <Grid.Column fluid textAlign="left">
+      <Card fluid>
         <Card.Content header={title} />
         <Card.Content description={content} />
         <Card.Content extra>
@@ -76,8 +61,12 @@ const PostGrid = props => {
   console.log("loading:", loading);
 
   return (
-    <div>
-      <Grid columns={3} stackable style={{margin: 20}}>
+    <div style={{ top: "50px", position: "absolute", width: "100%" }}>
+      <Header as='h2' icon textAlign='center'>
+      <Icon name='users' circular />
+      <Header.Content>Timeline</Header.Content>
+    </Header>
+      <Grid columns={3} stackable style={{ margin: 20 }}>
         {!loading &&
           data.timeline.map((post, i) => {
             return (
@@ -86,6 +75,7 @@ const PostGrid = props => {
                 title={post.title}
                 content={post.content}
                 created_by={post.created_by}
+                isMobile={props.isMobile}
               />
             );
           })}
