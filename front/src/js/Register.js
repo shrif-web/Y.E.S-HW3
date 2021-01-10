@@ -73,7 +73,7 @@ const RegisterForm = props => {
     onCompleted: ({ login }) => {
       if (login.__typename == "Token") {
         props.setToken(login.token);
-        history.push("/");
+        history.push("/dashbaord");
       } else {
         // Todo : ERROR!
       }

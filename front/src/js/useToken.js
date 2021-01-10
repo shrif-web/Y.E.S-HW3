@@ -4,13 +4,13 @@ import constants from "../constants.js";
 function useToken() {
   const getToken = () => {
     const tokenString = localStorage.getItem(constants.AUTH_TOKEN);
-    console.log("??????", tokenString)
+    // console.log("??????", tokenString)
     return tokenString
     // const userToken = JSON.parse(tokenString);
     // return userToken;
   };
 
-  console.log("in use token:)))))=============")
+  // console.log("in use token:)))))=============")
 
   const [token, setToken] = useState(getToken());
 

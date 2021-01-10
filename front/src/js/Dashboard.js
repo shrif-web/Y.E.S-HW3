@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import gql from "graphql-tag";
+import _ from "lodash";
 import {
   Card,
   Grid,
@@ -45,6 +46,10 @@ const CREATE_POST_MUTATION = gql`
       ... on Post {
         id
         title
+        content
+        created_by {
+          name
+        }
       }
       ... on Exception {
         message
@@ -57,8 +62,10 @@ const DELETE_POST_MUTATION = gql`
   mutation DeletePost($targetID: String!, $userName: String!) {
     deletePost(targetID: $targetID, userName: $userName) {
       __typename
-      ... on OperationSuccessfull {
-        message
+      ... on Post {
+        id
+        title
+        content
       }
       ... on Exception {
         message
@@ -80,8 +87,10 @@ const UPDATE_POST_MUTATION = gql`
       userName: $userName
     ) {
       __typename
-      ... on OperationSuccessfull {
-        message
+      ... on Post {
+        id
+        content
+        title
       }
       ... on Exception {
         message
@@ -98,6 +107,29 @@ const AddPostModal = ({ addingPost, setAddingPost }) => {
   });
 
   const [createPost] = useMutation(CREATE_POST_MUTATION, {
+    update(cache, { data: { createPost } }) {
+      const data = cache.readQuery({
+        query: GET_USER_POSTS
+      });
+
+      console.log("create post:", data);
+
+      data.user.posts = [...data.user.posts, createPost];
+      cache.writeQuery({ query: GET_USER_POSTS }, data);
+
+      // const newPosts = data.user.posts;
+      // newPosts.push(createPost);
+
+      // cache.writeQuery({
+      //   query: GET_USER_POSTS,
+      //   data: {
+      //     user: {
+      //       // __typename: ["Post"],
+      //       posts: newPosts
+      //     }
+      //   }
+      // });
+    },
     onCompleted({ createPost }) {
       console.log("created post succesfully :D", createPost);
       // setState({ ...state, addingPost: false });
@@ -169,32 +201,58 @@ const PostCell = ({ post, rerenderComponent }) => {
         query: GET_USER_POSTS
       });
 
-      console.log("in update:", data, updatePost)
-
-      // cache.writeQuery({
-      //   query: GET_USER_POSTS,
-      //   data: {
-      //     user: {
-      //       posts: [updatePost, ...data.user.posts]
-      //     }
-      //   }
-      // })
-
-      // cache.writeQuery({
-      //   query: GET_USER_POSTS,
-      //   user: {
-      //     posts: [updatePost, ...user.posts]
-      //   }
+      // const newPosts = data.user.posts.filter(function(post) {
+      //   return post.id !== updatePost.id;
       // });
 
+      const newPosts = data.user.posts.map(post => {
+        return post.id === updatePost.id ? updatePost : post;
+      });
+
+      console.log("in update:", data, updatePost);
+
+      cache.writeQuery({
+        query: GET_USER_POSTS,
+        data: {
+          user: {
+            posts: [...newPosts]
+          }
+        }
+      });
     },
     onCompleted: ({ updatePost }) => {
-      console.log("updatePost:", updatePost);
       handleHide();
     }
   });
 
   const [deletePost] = useMutation(DELETE_POST_MUTATION, {
+    update(cache, { data: { deletePost } }) {
+      console.log("deletePost:", deletePost);
+
+      const data = cache.readQuery({
+        query: GET_USER_POSTS
+      });
+
+      const newPosts = data.user.posts.filter(function(post) {
+        return post.id !== deletePost.id;
+      });
+
+      console.log("data:", data)
+      console.log("newPosts:", newPosts)
+
+      cache.writeQuery({
+        query: GET_USER_POSTS,
+        data: {
+          user: {
+            posts: [...newPosts]
+          }
+        }
+      });
+
+      // console.log("alo?", data);
+
+      // console.log("newPosts:", newPosts);
+    },
     onCompleted({ message }) {
       // triggerState();
     }
