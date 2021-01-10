@@ -20,11 +20,40 @@ const LOGIN_MUTATION = gql`
   }
 `;
 
+const REFRESH_TOKEN_MUTATION = gql`
+  mutation RefreshToken {
+    refreshToken {
+      __typename
+      ... on Token {
+        token
+      }
+      ... on Exception {
+        message
+      }
+
+    }
+  }
+`;
+
 const LoginForm = props => {
   const [state, setState] = useState({
     username: " ",
     password: " "
   });
+
+  const [refreshToken] = useMutation(REFRESH_TOKEN_MUTATION, {
+    onCompleted: ({ refreshToken }) => {
+      console.log("()()()() refreshed token", refreshToken);
+      props.setToken(refreshToken.token);
+    }
+  });
+
+  function setTokenInterval() {
+    const interval = setInterval(() => {
+      refreshToken()
+    }, 360000)
+    return interval
+  }
 
   const history = useHistory();
 
@@ -34,10 +63,10 @@ const LoginForm = props => {
       password: state.password
     },
     onCompleted: ({ login }) => {
-      console.log("loginnnnnnnn:", login);
+      // console.log("loginnnnnnnn:", login);
       if (login.__typename == "Token") {
-        console.log("haaaaaaaaa?");
-        // localStorage.setItem(constants.AUTH_TOKEN, login.token);
+        // console.log("haaaaaaaaa?");
+        // // localStorage.setItem(constants.AUTH_TOKEN, login.token);
         props.setToken(login.token);
         history.push("/dashboard");
       } else {
@@ -51,10 +80,14 @@ const LoginForm = props => {
   function handleLogin() {
     if (state.username && state.password) {
       login();
+      const interval = setInterval(() => {
+        console.log("refreshingg.........")
+        refreshToken()
+        
+      }, 360000)
+      props.setIntervalID(interval)
     }
   }
-
-  console.log("login rendereddddddddddd+++++++++++++++++++++++++++");
 
   return (
     <div>
@@ -137,7 +170,7 @@ class Login extends React.Component {
               // marginTop: -100
             }}
           >
-            <LoginForm setToken={this.props.setToken} />
+            <LoginForm setToken={this.props.setToken} setIntervalID={this.props.setIntervalID} />
           </Grid.Column>
         </Grid.Row>
       </Grid>

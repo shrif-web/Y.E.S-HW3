@@ -33,7 +33,7 @@ const GET_USER_QUERY = gql`
 
 const PostCell = ({ title, content, created_by, isMobile }) => {
   return (
-    <Grid.Column fluid textAlign="left">
+    <Grid.Column fluid="true" textAlign="left">
       <Card fluid>
         <Card.Content header={title} />
         <Card.Content description={content} />

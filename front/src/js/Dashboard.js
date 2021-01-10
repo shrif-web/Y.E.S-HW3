@@ -59,8 +59,8 @@ const CREATE_POST_MUTATION = gql`
 `;
 
 const DELETE_POST_MUTATION = gql`
-  mutation DeletePost($targetID: String!, $userName: String!) {
-    deletePost(targetID: $targetID, userName: $userName) {
+  mutation DeletePost($targetID: String!, $username: String!) {
+    deletePost(targetID: $targetID, username: $username) {
       __typename
       ... on Post {
         id
@@ -79,12 +79,12 @@ const UPDATE_POST_MUTATION = gql`
     $targetID: String!
     $newTitle: String!
     $newContent: String!
-    $userName: String
+    $username: String
   ) {
     updatePost(
       targetID: $targetID
       input: { title: $newTitle, content: $newContent }
-      userName: $userName
+      username: $username
     ) {
       __typename
       ... on Post {
@@ -111,6 +111,8 @@ const AddPostModal = ({ addingPost, setAddingPost }) => {
       const data = cache.readQuery({
         query: GET_USER_POSTS
       });
+
+      console.log("creating posttttttt cache: ", cache, cache.data.data.ROOT_QUERY)
 
       console.log("create post:", data);
 
@@ -139,7 +141,7 @@ const AddPostModal = ({ addingPost, setAddingPost }) => {
 
   return (
     <div>
-      <Modal open={addingPost} dimmer="blurring" fluid>
+      <Modal open={addingPost} dimmer="blurring" fluid="true">
         <Modal.Header>Create a new post :)</Modal.Header>
         <Modal.Content>
           <List>
@@ -244,14 +246,10 @@ const PostCell = ({ post, rerenderComponent }) => {
         query: GET_USER_POSTS,
         data: {
           user: {
-            posts: [...newPosts]
+            posts: newPosts
           }
         }
       });
-
-      // console.log("alo?", data);
-
-      // console.log("newPosts:", newPosts);
     },
     onCompleted({ message }) {
       // triggerState();
@@ -282,7 +280,7 @@ const PostCell = ({ post, rerenderComponent }) => {
             onClick={() => {
               console.log("clicked on -");
               deletePost({
-                variables: { targetID: post.id, userName: post.created_by.name }
+                variables: { targetID: post.id, username: post.created_by.name }
               });
             }}
           />
@@ -327,7 +325,7 @@ const PostCell = ({ post, rerenderComponent }) => {
                   targetID: post.id,
                   newTitle: state.newTitle,
                   newContent: state.newContent,
-                  userName: post.created_by.name
+                  username: post.created_by.name
                 }
               });
             }}
@@ -412,7 +410,7 @@ const UserPosts = props => {
           {!loading &&
             data.user.posts.map(post => {
               return (
-                <Grid.Column textAlign="left">
+                <Grid.Column textAlign="left" key={post.id}>
                   <PostCell
                     post={post}
                     rerenderComponent={props.rerenderComponent}

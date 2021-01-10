@@ -2,15 +2,42 @@ import React, { useState } from "react";
 import { Input, Menu, Button } from "semantic-ui-react";
 import { Redirect, Route, Switch, useHistory } from "react-router-dom";
 import constants from "../constants";
+import { useMutation, gql } from "@apollo/client";
+
+// const REFRESH_TOKEN_MUTATION = gql`
+//   mutation RefreshToken {
+//     refreshToken {
+//       __typename
+//       ... on Token {
+//         token
+//       }
+//       ... on Exception {
+//         message
+//       }
+
+//     }
+//   }
+// `;
 
 const LoggedInHeader = props => {
+
+  // const [refreshToken] = useMutation(REFRESH_TOKEN_MUTATION, {
+  //   onCompleted: ({ refreshToken }) => {
+  //     console.log("refreshed token", refreshToken.token);
+  //     props.setToken(refreshToken.token)
+  //   }
+  // });
+
   return (
     <Menu fixed="top" inverted style={{ borderRadius: "0px" }}>
+      {/* <Menu.Item name="Refresh Token" onClick={() => {
+        refreshToken()
+      }} /> */}
       {props.isMobile && (
         <Menu.Item
           icon="bars"
           onClick={() => {
-            props.setSidebarIsOpen(!props.sidebarIsOpen)
+            props.setSidebarIsOpen(!props.sidebarIsOpen);
           }}
         />
       )}
@@ -32,7 +59,11 @@ const LoggedInHeader = props => {
 
 const MainHeader = props => {
   return (
-    <Menu fixed="top" inverted style={{ borderRadius: "0px", marginBottom: 20 }}>
+    <Menu
+      fixed="top"
+      inverted
+      style={{ borderRadius: "0px", marginBottom: 20 }}
+    >
       <Menu.Item
         name="Login"
         active={props.state.activeItem === "Login"}
@@ -63,12 +94,14 @@ const Header = props => {
   const history = useHistory();
   const auth_token = localStorage.getItem(constants.AUTH_TOKEN);
 
+
   function handleItemClick(e, { name }) {
     setState({ activeItem: name });
     switch (name) {
       case "Login":
         console.log("login");
         props.refresh();
+        // interval = props.setTokenInterval()
         history.push("/login");
         break;
       case "Register":
@@ -83,9 +116,9 @@ const Header = props => {
       case "Logout":
         console.log("Logout");
         localStorage.removeItem(constants.AUTH_TOKEN);
+        clearInterval(props.intervalID)
         history.push("/");
         window.location.reload(false);
-        // props.refresh();
         break;
       case "Dashboard":
         console.log("Dashboard");

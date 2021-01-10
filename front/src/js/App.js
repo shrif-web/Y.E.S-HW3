@@ -13,11 +13,20 @@ import Dashboard from "./Dashboard.js";
 import { useMutation, gql } from "@apollo/client";
 import { useMediaQuery } from "react-responsive";
 
-// const REFRESH_TOKEN_MUTATION = gql`
-//   mutation RefreshToken {
-//     refreshToken
-//   }
-// `;
+const REFRESH_TOKEN_MUTATION = gql`
+  mutation RefreshToken {
+    refreshToken {
+      __typename
+      ... on Token {
+        token
+      }
+      ... on Exception {
+        message
+      }
+
+    }
+  }
+`;
 
 function App(props) {
   const { token, setToken } = useToken();
@@ -26,18 +35,27 @@ function App(props) {
     refreshed: false
   });
 
+  const [intervalID, setIntervalID] = useState()
+
   // const [refreshToken] = useMutation(REFRESH_TOKEN_MUTATION, {
   //   onCompleted: ({ refreshToken }) => {
   //     console.log("refreshed token", refreshToken);
   //   }
   // });
 
+  // function setTokenInterval() {
+  //   const interval = setInterval(() => {
+  //     refreshToken()
+  //   }, 360000)
+  //   return interval
+  // }
 
-  if (token && !state.refreshed) {
-    // refreshToken();
-    setState({ refreshed: true });
+
+  if (!token) {
+    console.log("********* there is NO token!!!! ***********")
+    
   } else {
-    console.log("not have token yet")
+    console.log("+++++++++ there IS token!!!! +++++++++")
   }
 
   const isMobile = useMediaQuery({
@@ -54,6 +72,7 @@ function App(props) {
         isMobile={isMobile}
         sidebarIsOpen={sidebarIsOpen}
         setSidebarIsOpen={setSidebarIsOpen}
+        intervalID={intervalID}
       />
       <Route exact path="/">
         <MainPage isMobile={isMobile} />
@@ -65,7 +84,7 @@ function App(props) {
       )}
       {!token && (
         <Route exact path="/login">
-          <Login setToken={setToken} />
+          <Login setToken={setToken} setIntervalID={setIntervalID} />
         </Route>
       )}
       {token && (
