@@ -20,7 +20,7 @@ type Query {
 
     post(id:String!): Post!
     timeline(start:Int!=0,amount:Int!=5): [Post!]!
-    postsOfUser(userName:String): [Post!]!
+    postsOfUser(username:String): [Post!]!
 }
 
 input TargetPost {
@@ -102,6 +102,6 @@ type Mutation {
     refreshToken: LoginPayload!
 
     createPost(input: TargetPost!): CreatePostPayload!
-    deletePost(targetID: String!, userName:String): DeletePostPayload!
-    updatePost(targetID: String!, input: TargetPost!, userName:String): UpdatePostPayload!
+    deletePost(targetID: String!, username:String): DeletePostPayload!
+    updatePost(targetID: String!, input: TargetPost!, username:String): UpdatePostPayload!
 }

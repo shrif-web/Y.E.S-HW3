@@ -55,13 +55,13 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CreatePost   func(childComplexity int, input model.TargetPost) int
 		CreateUser   func(childComplexity int, target model.TargetUser) int
-		DeletePost   func(childComplexity int, targetID string, userName *string) int
+		DeletePost   func(childComplexity int, targetID string, username *string) int
 		DeleteUser   func(childComplexity int, name string) int
 		Demote       func(childComplexity int, target string) int
 		Login        func(childComplexity int, input model.Login) int
 		Promote      func(childComplexity int, target string) int
 		RefreshToken func(childComplexity int) int
-		UpdatePost   func(childComplexity int, targetID string, input model.TargetPost, userName *string) int
+		UpdatePost   func(childComplexity int, targetID string, input model.TargetPost, username *string) int
 		UpdateUser   func(childComplexity int, toBe model.ToBeUser) int
 	}
 
@@ -91,7 +91,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Post        func(childComplexity int, id string) int
-		PostsOfUser func(childComplexity int, userName *string) int
+		PostsOfUser func(childComplexity int, username *string) int
 		Timeline    func(childComplexity int, start int, amount int) int
 		User        func(childComplexity int, name *string) int
 		Users       func(childComplexity int, start int, amount int) int
@@ -127,15 +127,15 @@ type MutationResolver interface {
 	Login(ctx context.Context, input model.Login) (model.LoginPayload, error)
 	RefreshToken(ctx context.Context) (model.LoginPayload, error)
 	CreatePost(ctx context.Context, input model.TargetPost) (model.CreatePostPayload, error)
-	DeletePost(ctx context.Context, targetID string, userName *string) (model.DeletePostPayload, error)
-	UpdatePost(ctx context.Context, targetID string, input model.TargetPost, userName *string) (model.UpdatePostPayload, error)
+	DeletePost(ctx context.Context, targetID string, username *string) (model.DeletePostPayload, error)
+	UpdatePost(ctx context.Context, targetID string, input model.TargetPost, username *string) (model.UpdatePostPayload, error)
 }
 type QueryResolver interface {
 	User(ctx context.Context, name *string) (*model.User, error)
 	Users(ctx context.Context, start int, amount int) ([]*model.User, error)
 	Post(ctx context.Context, id string) (*model.Post, error)
 	Timeline(ctx context.Context, start int, amount int) ([]*model.Post, error)
-	PostsOfUser(ctx context.Context, userName *string) ([]*model.Post, error)
+	PostsOfUser(ctx context.Context, username *string) ([]*model.Post, error)
 }
 
 type executableSchema struct {
@@ -201,7 +201,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeletePost(childComplexity, args["targetID"].(string), args["userName"].(*string)), true
+		return e.complexity.Mutation.DeletePost(childComplexity, args["targetID"].(string), args["username"].(*string)), true
 
 	case "Mutation.deleteUser":
 		if e.complexity.Mutation.DeleteUser == nil {
@@ -268,7 +268,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdatePost(childComplexity, args["targetID"].(string), args["input"].(model.TargetPost), args["userName"].(*string)), true
+		return e.complexity.Mutation.UpdatePost(childComplexity, args["targetID"].(string), args["input"].(model.TargetPost), args["username"].(*string)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -367,7 +367,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.PostsOfUser(childComplexity, args["userName"].(*string)), true
+		return e.complexity.Query.PostsOfUser(childComplexity, args["username"].(*string)), true
 
 	case "Query.timeline":
 		if e.complexity.Query.Timeline == nil {
@@ -552,7 +552,7 @@ type Query {
 
     post(id:String!): Post!
     timeline(start:Int!=0,amount:Int!=5): [Post!]!
-    postsOfUser(userName:String): [Post!]!
+    postsOfUser(username:String): [Post!]!
 }
 
 input TargetPost {
@@ -634,8 +634,8 @@ type Mutation {
     refreshToken: LoginPayload!
 
     createPost(input: TargetPost!): CreatePostPayload!
-    deletePost(targetID: String!, userName:String): DeletePostPayload!
-    updatePost(targetID: String!, input: TargetPost!, userName:String): UpdatePostPayload!
+    deletePost(targetID: String!, username:String): DeletePostPayload!
+    updatePost(targetID: String!, input: TargetPost!, username:String): UpdatePostPayload!
 }
 `, BuiltIn: false},
 }
@@ -688,14 +688,14 @@ func (ec *executionContext) field_Mutation_deletePost_args(ctx context.Context, 
 	}
 	args["targetID"] = arg0
 	var arg1 *string
-	if tmp, ok := rawArgs["userName"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userName"))
+	if tmp, ok := rawArgs["username"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
 		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["userName"] = arg1
+	args["username"] = arg1
 	return args, nil
 }
 
@@ -781,14 +781,14 @@ func (ec *executionContext) field_Mutation_updatePost_args(ctx context.Context, 
 	}
 	args["input"] = arg1
 	var arg2 *string
-	if tmp, ok := rawArgs["userName"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userName"))
+	if tmp, ok := rawArgs["username"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
 		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["userName"] = arg2
+	args["username"] = arg2
 	return args, nil
 }
 
@@ -841,14 +841,14 @@ func (ec *executionContext) field_Query_postsOfUser_args(ctx context.Context, ra
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *string
-	if tmp, ok := rawArgs["userName"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userName"))
+	if tmp, ok := rawArgs["username"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
 		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["userName"] = arg0
+	args["username"] = arg0
 	return args, nil
 }
 
@@ -1401,7 +1401,7 @@ func (ec *executionContext) _Mutation_deletePost(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeletePost(rctx, args["targetID"].(string), args["userName"].(*string))
+		return ec.resolvers.Mutation().DeletePost(rctx, args["targetID"].(string), args["username"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1443,7 +1443,7 @@ func (ec *executionContext) _Mutation_updatePost(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdatePost(rctx, args["targetID"].(string), args["input"].(model.TargetPost), args["userName"].(*string))
+		return ec.resolvers.Mutation().UpdatePost(rctx, args["targetID"].(string), args["input"].(model.TargetPost), args["username"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1965,7 +1965,7 @@ func (ec *executionContext) _Query_postsOfUser(ctx context.Context, field graphq
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().PostsOfUser(rctx, args["userName"].(*string))
+		return ec.resolvers.Query().PostsOfUser(rctx, args["username"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

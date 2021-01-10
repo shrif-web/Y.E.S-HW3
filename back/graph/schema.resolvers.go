@@ -123,8 +123,8 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.TargetPos
 	return reformatPost(newPost, reformatUser(usr)), nil
 }
 
-func (r *mutationResolver) DeletePost(ctx context.Context, targetID string, userName *string) (model.DeletePostPayload, error) {
-	delPost, usr, err := postController.GetPostController().DeletePost(targetID, extractUsernameFromContext(ctx), getUserName(ctx, userName))
+func (r *mutationResolver) DeletePost(ctx context.Context, targetID string, username *string) (model.DeletePostPayload, error) {
+	delPost, usr, err := postController.GetPostController().DeletePost(targetID, extractUsernameFromContext(ctx), getUserName(ctx, username))
 	if err != nil {
 		switch err.(type) {
 		case *model.UserNotAllowedException:
@@ -140,8 +140,8 @@ func (r *mutationResolver) DeletePost(ctx context.Context, targetID string, user
 	return reformatPost(delPost, reformatUser(usr)), nil
 }
 
-func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, input model.TargetPost, userName *string) (model.UpdatePostPayload, error) {
-	upPost, usr, err := postController.GetPostController().UpdatePost(targetID, input.Title, input.Content, extractUsernameFromContext(ctx), getUserName(ctx, userName))
+func (r *mutationResolver) UpdatePost(ctx context.Context, targetID string, input model.TargetPost, username *string) (model.UpdatePostPayload, error) {
+	upPost, usr, err := postController.GetPostController().UpdatePost(targetID, input.Title, input.Content, extractUsernameFromContext(ctx), getUserName(ctx, username))
 	if err != nil {
 		switch err.(type) {
 		case *model.UserNotAllowedException:
@@ -187,8 +187,8 @@ func (r *queryResolver) Timeline(ctx context.Context, start int, amount int) ([]
 	return reformatAllSeparatePosts(posts, reformatUsers(usrs)), nil
 }
 
-func (r *queryResolver) PostsOfUser(ctx context.Context, userName *string) ([]*model.Post, error) {
-	posts, usr, err := postController.GetPostController().GetPostByUser(getUserName(ctx, userName))
+func (r *queryResolver) PostsOfUser(ctx context.Context, username *string) ([]*model.Post, error) {
+	posts, usr, err := postController.GetPostController().GetPostByUser(getUserName(ctx, username))
 	if err != nil {
 		return nil, err
 	}
