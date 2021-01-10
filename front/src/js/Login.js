@@ -159,28 +159,30 @@ class Login extends React.Component {
 
   render() {
     return (
-      <Grid
-        centered
-        style={{ height: "100vh" }}
-        verticalAlign="middle"
-        textAlign="center"
-      >
-        <Grid.Row>
-          <Grid.Column
-            style={{
-              maxWidth: 450,
-              marginRight: 20,
-              marginLeft: 20
-              // marginTop: -100
-            }}
-          >
-            <LoginForm
-              setToken={this.props.setToken}
-              setIntervalID={this.props.setIntervalID}
-            />
-          </Grid.Column>
-        </Grid.Row>
-      </Grid>
+      <div style={{ top: "50px", position: "absolute", width: "100%" }}>
+        <Grid
+          centered
+          style={{ height: "100vh" }}
+          verticalAlign="middle"
+          textAlign="center"
+        >
+          <Grid.Row>
+            <Grid.Column
+              style={{
+                maxWidth: 450,
+                marginRight: 20,
+                marginLeft: 20
+                // marginTop: -100
+              }}
+            >
+              <LoginForm
+                setToken={this.props.setToken}
+                setIntervalID={this.props.setIntervalID}
+              />
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
+      </div>
     );
   }
 }

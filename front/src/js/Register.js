@@ -116,10 +116,19 @@ const RegisterForm = props => {
   });
 
   function handleRegister() {
-    if (state.password === state.confirmPass) {
-      registerUser();
+    if (
+      state.username !== "" &&
+      state.password !== "" &&
+      state.email !== "" &&
+      state.confirmPass !== ""
+    ) {
+      if (state.password === state.confirmPass) {
+        registerUser();
+      } else {
+        setState({ ...state, error: constants.PASSWORDS_DIFFER });
+      }
     } else {
-      setState({ ...state, error: constants.PASSWORDS_DIFFER });
+      setState({ error: constants.EMPTY_FIELDS });
     }
   }
 
@@ -201,23 +210,25 @@ class Register extends React.Component {
 
   render() {
     return (
-      <Grid
-        centered
-        verticalAlign="middle"
-        textAlign="center"
-        style={{ height: "100vh" }}
-      >
-        <Grid.Row>
-          <Grid.Column
-            style={{ maxWidth: 450, marginRight: 20, marginLeft: 20 }}
-          >
-            <RegisterForm
-              setToken={this.props.setToken}
-              setIntervalID={this.props.setIntervalID}
-            />
-          </Grid.Column>
-        </Grid.Row>
-      </Grid>
+      <div style={{ top: "50px", position: "absolute", width: "100%" }}>
+        <Grid
+          centered
+          verticalAlign="middle"
+          textAlign="center"
+          style={{ height: "100vh" }}
+        >
+          <Grid.Row>
+            <Grid.Column
+              style={{ maxWidth: 450, marginRight: 20, marginLeft: 20 }}
+            >
+              <RegisterForm
+                setToken={this.props.setToken}
+                setIntervalID={this.props.setIntervalID}
+              />
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
+      </div>
     );
   }
 }
