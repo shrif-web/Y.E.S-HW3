@@ -112,25 +112,23 @@ const AddPostModal = ({ addingPost, setAddingPost }) => {
         query: GET_USER_POSTS
       });
 
-      console.log("creating posttttttt cache: ", cache, cache.data.data.ROOT_QUERY)
+      const localData = _.cloneDeep(data);
 
-      console.log("create post:", data);
+      localData.user.posts = [...localData.user.posts, createPost];
 
-      data.user.posts = [...data.user.posts, createPost];
-      cache.writeQuery({ query: GET_USER_POSTS }, data);
+      // console.log("creating posttttttt cache: ", cache, cache.data.data.ROOT_QUERY)
 
-      // const newPosts = data.user.posts;
-      // newPosts.push(createPost);
+      // console.log("create post:", data);
 
-      // cache.writeQuery({
-      //   query: GET_USER_POSTS,
-      //   data: {
-      //     user: {
-      //       // __typename: ["Post"],
-      //       posts: newPosts
-      //     }
-      //   }
-      // });
+      console.log("new post in createPost:", createPost)
+      console.log("local data in create post:", localData);
+
+      cache.writeQuery({
+        query: GET_USER_POSTS,
+        data: {
+          ...localData
+        }
+      });
     },
     onCompleted({ createPost }) {
       console.log("created post succesfully :D", createPost);
@@ -203,22 +201,25 @@ const PostCell = ({ post, rerenderComponent }) => {
         query: GET_USER_POSTS
       });
 
+      const localData = _.cloneDeep(data);
+      localData.user.posts = localData.user.posts.map(post => {
+        return post.id === updatePost.id ? updatePost : post;
+      });
+
       // const newPosts = data.user.posts.filter(function(post) {
       //   return post.id !== updatePost.id;
       // });
 
-      const newPosts = data.user.posts.map(post => {
-        return post.id === updatePost.id ? updatePost : post;
-      });
+      // const newPosts = data.user.posts.map(post => {
+      //   return post.id === updatePost.id ? updatePost : post;
+      // });
 
-      console.log("in update:", data, updatePost);
+      console.log("in update local data:", localData);
 
       cache.writeQuery({
         query: GET_USER_POSTS,
         data: {
-          user: {
-            posts: [...newPosts]
-          }
+          ...localData
         }
       });
     },
@@ -235,19 +236,23 @@ const PostCell = ({ post, rerenderComponent }) => {
         query: GET_USER_POSTS
       });
 
-      const newPosts = data.user.posts.filter(function(post) {
+      console.log("data in deletPost:", data)
+
+      const localData = _.cloneDeep(data);
+      localData.user.posts = localData.user.posts.filter(function(post) {
         return post.id !== deletePost.id;
       });
 
-      console.log("data:", data)
-      console.log("newPosts:", newPosts)
+      // const newPosts = data.user.posts.filter(function(post) {
+      //   return post.id !== deletePost.id;
+      // });
+
+      console.log("delete post local data:", localData)
 
       cache.writeQuery({
         query: GET_USER_POSTS,
         data: {
-          user: {
-            posts: newPosts
-          }
+          ...localData
         }
       });
     },

@@ -48,13 +48,6 @@ const LoginForm = props => {
     }
   });
 
-  function setTokenInterval() {
-    const interval = setInterval(() => {
-      refreshToken()
-    }, 360000)
-    return interval
-  }
-
   const history = useHistory();
 
   const [login] = useMutation(LOGIN_MUTATION, {
@@ -79,12 +72,13 @@ const LoginForm = props => {
 
   function handleLogin() {
     if (state.username && state.password) {
+      console.log("handliing login?????????")
       login();
       const interval = setInterval(() => {
         console.log("refreshingg.........")
         refreshToken()
         
-      }, 360000)
+      }, 60000)
       props.setIntervalID(interval)
     }
   }

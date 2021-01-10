@@ -35,6 +35,21 @@ const LOGIN_MUTATION = gql`
   }
 `;
 
+const REFRESH_TOKEN_MUTATION = gql`
+  mutation RefreshToken {
+    refreshToken {
+      __typename
+      ... on Token {
+        token
+      }
+      ... on Exception {
+        message
+      }
+
+    }
+  }
+`;
+
 const RegisterForm = props => {
   const [state, setState] = useState({
     username: "",
@@ -44,6 +59,13 @@ const RegisterForm = props => {
   });
 
   const history = useHistory();
+
+  const [refreshToken] = useMutation(REFRESH_TOKEN_MUTATION, {
+    onCompleted: ({ refreshToken }) => {
+      console.log("()()()() refreshed token", refreshToken);
+      props.setToken(refreshToken.token);
+    }
+  });
 
   const [registerUser] = useMutation(REGISTER_MUTATION, {
     variables: {
@@ -55,6 +77,12 @@ const RegisterForm = props => {
       console.log("createUser:", createUser);
       if (createUser.__typename == "User") {
         login();
+        // const interval = setInterval(() => {
+        //   console.log("refreshingg......... in register")
+        //   refreshToken()
+          
+        // }, 120000)
+        // props.setIntervalID(interval)
       } else {
         //Handle Errors
         switch (createUser.__typename) {
@@ -173,7 +201,7 @@ class Register extends React.Component {
       >
         <Grid.Row>
           <Grid.Column style={{ maxWidth: 450, marginRight: 20, marginLeft: 20}}>
-            <RegisterForm setToken={this.props.setToken} />
+            <RegisterForm setToken={this.props.setToken} setIntervalID={this.props.setIntervalID} />
           </Grid.Column>
         </Grid.Row>
       </Grid>

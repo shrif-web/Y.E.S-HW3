@@ -37,11 +37,12 @@ function App(props) {
 
   const [intervalID, setIntervalID] = useState()
 
-  // const [refreshToken] = useMutation(REFRESH_TOKEN_MUTATION, {
-  //   onCompleted: ({ refreshToken }) => {
-  //     console.log("refreshed token", refreshToken);
-  //   }
-  // });
+  const [refreshToken] = useMutation(REFRESH_TOKEN_MUTATION, {
+    onCompleted: ({ refreshToken }) => {
+      console.log("()()()() refreshed token", refreshToken);
+      setToken(refreshToken.token);
+    }
+  });
 
   // function setTokenInterval() {
   //   const interval = setInterval(() => {
@@ -53,9 +54,12 @@ function App(props) {
 
   if (!token) {
     console.log("********* there is NO token!!!! ***********")
-    
   } else {
     console.log("+++++++++ there IS token!!!! +++++++++")
+    // const intr = setInterval(function() {
+    //   refreshToken()
+    // }, 120000)
+    // setIntervalID(intr)
   }
 
   const isMobile = useMediaQuery({
@@ -79,7 +83,7 @@ function App(props) {
       </Route>
       {!token && (
         <Route exact path="/register">
-          <Register setToken={setToken} />
+          <Register setToken={setToken} setIntervalID={setIntervalID} />
         </Route>
       )}
       {!token && (
