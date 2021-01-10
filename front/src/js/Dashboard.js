@@ -451,7 +451,7 @@ class Dashboard extends React.Component {
   }
 
   render() {
-    console.log("rendered Dashboard");
+    console.log("rendered Dashboard lamasabbbbbbbbbb");
     return (
       <div>
         <UserPosts

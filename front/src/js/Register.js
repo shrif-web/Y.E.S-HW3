@@ -45,7 +45,6 @@ const REFRESH_TOKEN_MUTATION = gql`
       ... on Exception {
         message
       }
-
     }
   }
 `;
@@ -55,7 +54,8 @@ const RegisterForm = props => {
     username: "",
     email: "",
     password: "",
-    confirmPass: ""
+    confirmPass: "",
+    error: ""
   });
 
   const history = useHistory();
@@ -77,18 +77,25 @@ const RegisterForm = props => {
       console.log("createUser:", createUser);
       if (createUser.__typename == "User") {
         login();
+        setState({ ...state, error: "" });
         // const interval = setInterval(() => {
         //   console.log("refreshingg......... in register")
         //   refreshToken()
-          
+
         // }, 120000)
         // props.setIntervalID(interval)
       } else {
         //Handle Errors
+        console.log("+_+_+_+_+_+_+_+", createUser.message);
         switch (createUser.__typename) {
           case "DuplicateUsernameException":
-            alert(constants.DUPLICATE_USERNAME_ERROR);
+            setState({ ...state, error: constants.DUPLICATE_USERNAME_ERROR });
+            break;
+          case "InternalServerException":
+            setState({ ...state, error: constants.INTERNAL_SERVER_EXCEPTION });
+            break;
         }
+        // setState({...state, error: 'Please enter proper information!'})
       }
     }
   });
@@ -112,7 +119,7 @@ const RegisterForm = props => {
     if (state.password === state.confirmPass) {
       registerUser();
     } else {
-      alert(constants.PASSWORDS_DIFFER);
+      setState({ ...state, error: constants.PASSWORDS_DIFFER });
     }
   }
 
@@ -182,6 +189,7 @@ const RegisterForm = props => {
       <Message>
         Already have an account? <a href="/login">Login</a>
       </Message>
+      {state.error !== "" && <Message negative>{state.error}</Message>}
     </Form>
   );
 };
@@ -200,8 +208,13 @@ class Register extends React.Component {
         style={{ height: "100vh" }}
       >
         <Grid.Row>
-          <Grid.Column style={{ maxWidth: 450, marginRight: 20, marginLeft: 20}}>
-            <RegisterForm setToken={this.props.setToken} setIntervalID={this.props.setIntervalID} />
+          <Grid.Column
+            style={{ maxWidth: 450, marginRight: 20, marginLeft: 20 }}
+          >
+            <RegisterForm
+              setToken={this.props.setToken}
+              setIntervalID={this.props.setIntervalID}
+            />
           </Grid.Column>
         </Grid.Row>
       </Grid>

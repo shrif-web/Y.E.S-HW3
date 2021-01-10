@@ -30,7 +30,6 @@ const REFRESH_TOKEN_MUTATION = gql`
       ... on Exception {
         message
       }
-
     }
   }
 `;
@@ -38,7 +37,8 @@ const REFRESH_TOKEN_MUTATION = gql`
 const LoginForm = props => {
   const [state, setState] = useState({
     username: " ",
-    password: " "
+    password: " ",
+    error: ""
   });
 
   const [refreshToken] = useMutation(REFRESH_TOKEN_MUTATION, {
@@ -64,22 +64,31 @@ const LoginForm = props => {
         history.push("/dashboard");
       } else {
         // Todo : ERROR!
-        console.log("error in login!", login);
-        alert(login.__typename);
+        // console.log("error in login!", login);
+        // alert(login.__typename);
+
+        switch (login.__typename) {
+          case "UserPassMissMatchException":
+            setState({ ...state, error: constants.USER_PASS_MISMATCH });
+            break;
+          case "InternalServerException":
+            setState({ ...state, error: constants.INTERNAL_SERVER_EXCEPTION });
+            break;
+        }
       }
     }
   });
 
   function handleLogin() {
     if (state.username && state.password) {
-      console.log("handliing login?????????")
+      console.log("handliing login?????????");
       login();
-      const interval = setInterval(() => {
-        console.log("refreshingg.........")
-        refreshToken()
-        
-      }, 60000)
-      props.setIntervalID(interval)
+      setState({ ...state, error: "" });
+      // const interval = setInterval(() => {
+      //   console.log("refreshingg.........");
+      //   refreshToken();
+      // }, 60000);
+      // props.setIntervalID(interval);
     }
   }
 
@@ -138,6 +147,7 @@ const LoginForm = props => {
       <Message>
         New to us? <a href="/register">Sign Up</a>
       </Message>
+      {state.error !== "" && <Message negative>{state.error}</Message>}
     </div>
   );
 };
@@ -151,7 +161,7 @@ class Login extends React.Component {
     return (
       <Grid
         centered
-        style={{ height: "100vh"}}
+        style={{ height: "100vh" }}
         verticalAlign="middle"
         textAlign="center"
       >
@@ -160,11 +170,14 @@ class Login extends React.Component {
             style={{
               maxWidth: 450,
               marginRight: 20,
-              marginLeft: 20,
+              marginLeft: 20
               // marginTop: -100
             }}
           >
-            <LoginForm setToken={this.props.setToken} setIntervalID={this.props.setIntervalID} />
+            <LoginForm
+              setToken={this.props.setToken}
+              setIntervalID={this.props.setIntervalID}
+            />
           </Grid.Column>
         </Grid.Row>
       </Grid>
