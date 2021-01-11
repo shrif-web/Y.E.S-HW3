@@ -60,13 +60,6 @@ const RegisterForm = props => {
 
   const history = useHistory();
 
-  const [refreshToken] = useMutation(REFRESH_TOKEN_MUTATION, {
-    onCompleted: ({ refreshToken }) => {
-      console.log("()()()() refreshed token", refreshToken);
-      props.setToken(refreshToken.token);
-    }
-  });
-
   const [registerUser] = useMutation(REGISTER_MUTATION, {
     variables: {
       username: state.username,
@@ -78,12 +71,6 @@ const RegisterForm = props => {
       if (createUser.__typename == "User") {
         login();
         setState({ ...state, error: "" });
-        // const interval = setInterval(() => {
-        //   console.log("refreshingg......... in register")
-        //   refreshToken()
-
-        // }, 120000)
-        // props.setIntervalID(interval)
       } else {
         //Handle Errors
         console.log("+_+_+_+_+_+_+_+", createUser.message);
@@ -95,7 +82,6 @@ const RegisterForm = props => {
             setState({ ...state, error: constants.INTERNAL_SERVER_EXCEPTION });
             break;
         }
-        // setState({...state, error: 'Please enter proper information!'})
       }
     }
   });

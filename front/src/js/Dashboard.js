@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import gql from "graphql-tag";
 import _ from "lodash";
+import constants from "../constants.js";
 import {
   Card,
   Grid,
@@ -97,16 +98,27 @@ const UPDATE_POST_MUTATION = gql`
 `;
 
 const AddPostModal = ({ addingPost, setAddingPost }) => {
-  
   const [state, setState] = useState({
     // addingPost: false,
     newTitle: "",
     newContent: ""
   });
 
-  const [createPost] = useMutation(CREATE_POST_MUTATION, {
-    update(cache, { data: { createPost } }) {
+  const history = useHistory();
 
+  function logout() {
+    localStorage.removeItem(constants.AUTH_TOKEN);
+    history.push("/");
+    window.location.reload(false);
+  }
+
+  const [createPost] = useMutation(CREATE_POST_MUTATION, {
+    onError(err) {
+      if (err.message.includes("401")) {
+        logout();
+      }
+    },
+    update(cache, { data: { createPost } }) {
       const data = cache.readQuery({
         query: GET_USER_POSTS
       });
@@ -115,24 +127,15 @@ const AddPostModal = ({ addingPost, setAddingPost }) => {
 
       localData.user.posts = [...localData.user.posts, createPost];
 
-      // console.log("creating posttttttt cache: ", cache, cache.data.data.ROOT_QUERY)
-
-      // console.log("create post:", data);
-
-      console.log("new post in createPost:", createPost)
-      console.log("local data in create post:", localData);
-
       cache.writeQuery({
         query: GET_USER_POSTS,
         data: {
           ...localData
         }
       });
-
     },
     onCompleted({ createPost }) {
       console.log("created post succesfully :D", createPost);
-      // setState({ ...state, addingPost: false });
       setAddingPost(false);
     }
   });
@@ -193,9 +196,21 @@ const PostCell = ({ post, rerenderComponent }) => {
     newContent: post.content
   });
 
+  const history = useHistory()
+
+  function logout() {
+    localStorage.removeItem(constants.AUTH_TOKEN);
+    history.push("/");
+    window.location.reload(false);
+  }
+
   const [updatePost] = useMutation(UPDATE_POST_MUTATION, {
+    onError(err) {
+      if (err.message.includes("401")) {
+        logout();
+      }
+    },
     update(cache, { data: { updatePost } }) {
-      // console.log("in update:", data)
 
       const data = cache.readQuery({
         query: GET_USER_POSTS
@@ -205,16 +220,6 @@ const PostCell = ({ post, rerenderComponent }) => {
       localData.user.posts = localData.user.posts.map(post => {
         return post.id === updatePost.id ? updatePost : post;
       });
-
-      // const newPosts = data.user.posts.filter(function(post) {
-      //   return post.id !== updatePost.id;
-      // });
-
-      // const newPosts = data.user.posts.map(post => {
-      //   return post.id === updatePost.id ? updatePost : post;
-      // });
-
-      console.log("in update local data:", localData);
 
       cache.writeQuery({
         query: GET_USER_POSTS,
@@ -229,25 +234,21 @@ const PostCell = ({ post, rerenderComponent }) => {
   });
 
   const [deletePost] = useMutation(DELETE_POST_MUTATION, {
+    onError(err) {
+      if (err.message.includes("401")) {
+        logout();
+      }
+    },
     update(cache, { data: { deletePost } }) {
-      console.log("deletePost:", deletePost);
 
       const data = cache.readQuery({
         query: GET_USER_POSTS
       });
 
-      console.log("data in deletPost:", data)
-
       const localData = _.cloneDeep(data);
       localData.user.posts = localData.user.posts.filter(function(post) {
         return post.id !== deletePost.id;
       });
-
-      // const newPosts = data.user.posts.filter(function(post) {
-      //   return post.id !== deletePost.id;
-      // });
-
-      console.log("delete post local data:", localData)
 
       cache.writeQuery({
         query: GET_USER_POSTS,
@@ -264,7 +265,6 @@ const PostCell = ({ post, rerenderComponent }) => {
   const handleShow = () => setState({ ...state, editingActive: true });
   const handleHide = () => setState({ ...state, editingActive: false });
 
-  console.log("rendered PostCell");
   return (
     <div>
       <Segment>
@@ -324,7 +324,6 @@ const PostCell = ({ post, rerenderComponent }) => {
           <Button onClick={() => handleHide()}>Cancel</Button>
           <Button
             onClick={() => {
-              console.log("---=-=-=-=-=-= newTitle:", state.newTitle);
               updatePost({
                 variables: {
                   targetID: post.id,
@@ -351,9 +350,6 @@ const UserPosts = props => {
   });
 
   const { data, loading, error } = useQuery(GET_USER_POSTS);
-  // props.setPosts(data.user.posts)
-
-  console.log("data.user.posts:", data);
 
   function setAddingPost(value) {
     setState({ addingPost: value });
@@ -432,37 +428,14 @@ const UserPosts = props => {
 class Dashboard extends React.Component {
   constructor(props) {
     super(props);
-
-    this.state = {
-      posts: [],
-      triggerState: false
-    };
-
-    this.rerenderComponent = this.rerenderComponent.bind(this);
-    this.setPosts = this.setPosts.bind(this);
-  }
-
-  componentDidMount() {
-    console.log("component DASHBOARD did mount")
-  }
-
-  setPosts(newPosts) {
-    this.setState({ ...this.state, posts: newPosts });
-  }
-
-  rerenderComponent() {
-    this.setState({ ...this.state, triggerState: !this.state.triggerState });
   }
 
   render() {
-    console.log("rendered Dashboard lamasabbbbbbbbbb");
     return (
       <div>
         <UserPosts
           isMobile={this.props.isMobile}
           sidebarIsOpen={this.props.sidebarIsOpen}
-          rerenderComponent={this.rerenderComponent}
-          setPosts={this.setPosts}
         />
       </div>
     );

@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { Form, Input, Button, Grid, Segment, Message } from "semantic-ui-react";
 import gql from "graphql-tag";
-import { useQuery, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import constants from "../constants.js";
 import { useHistory } from "react-router-dom";
-import "../styles/Login.css";
 
 const LOGIN_MUTATION = gql`
   mutation LoginUser($username: String!, $password: String!) {
@@ -56,17 +55,10 @@ const LoginForm = props => {
       password: state.password
     },
     onCompleted: ({ login }) => {
-      // console.log("loginnnnnnnn:", login);
       if (login.__typename == "Token") {
-        // console.log("haaaaaaaaa?");
-        // // localStorage.setItem(constants.AUTH_TOKEN, login.token);
         props.setToken(login.token);
         history.push("/dashboard");
       } else {
-        // Todo : ERROR!
-        // console.log("error in login!", login);
-        // alert(login.__typename);
-
         switch (login.__typename) {
           case "UserPassMissMatchException":
             setState({ ...state, error: constants.USER_PASS_MISMATCH });
@@ -84,11 +76,6 @@ const LoginForm = props => {
       console.log("handliing login?????????");
       login();
       setState({ ...state, error: "" });
-      // const interval = setInterval(() => {
-      //   console.log("refreshingg.........");
-      //   refreshToken();
-      // }, 60000);
-      // props.setIntervalID(interval);
     }
   }
 
@@ -172,7 +159,6 @@ class Login extends React.Component {
                 maxWidth: 450,
                 marginRight: 20,
                 marginLeft: 20
-                // marginTop: -100
               }}
             >
               <LoginForm

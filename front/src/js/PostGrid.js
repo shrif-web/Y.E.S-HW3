@@ -1,9 +1,7 @@
 import React from "react";
-import { useQuery, useMutation } from "@apollo/client";
-import { Grid, Card, Button, Icon, Header } from "semantic-ui-react";
+import { useQuery } from "@apollo/client";
+import { Grid, Card, Icon, Header } from "semantic-ui-react";
 import gql from "graphql-tag";
-import constants from "../constants";
-import { async } from "q";
 
 const GET_POSTS_QUERY = gql`
   {
@@ -14,18 +12,6 @@ const GET_POSTS_QUERY = gql`
       created_at
       created_by {
         name
-      }
-    }
-  }
-`;
-
-const GET_USER_QUERY = gql`
-  {
-    users(start: 0, amount: 100) {
-      name
-      email
-      posts {
-        title
       }
     }
   }
@@ -56,9 +42,6 @@ const PostGrid = props => {
       </div>
     );
   }
-  console.log("data:", data);
-  console.log("error:", error);
-  console.log("loading:", loading);
 
   return (
     <div style={{ top: "50px", position: "absolute", width: "100%" }}>

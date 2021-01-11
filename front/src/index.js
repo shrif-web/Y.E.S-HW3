@@ -1,6 +1,5 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./styles/index.css";
 import App from "./js/App";
 import reportWebVitals from "./reportWebVitals";
 import * as serviceWorker from "./serviceWorker";
@@ -17,8 +16,6 @@ import { HttpLink } from "apollo-link-http";
 import { ApolloProvider } from "@apollo/client";
 
 import introspectionQueryResultData from "../src/fragmentTypes.json";
-
-import Test from './js/Test.js'
 
 const fragmentMatcher = new IntrospectionFragmentMatcher({
   introspectionQueryResultData
@@ -47,7 +44,7 @@ const apolloClient = new ApolloClient({
 ReactDOM.render(
   <BrowserRouter>
     <ApolloProvider client={apolloClient}>
-      <Test />
+      <App />
     </ApolloProvider>
   </BrowserRouter>,
   document.getElementById("root")
