@@ -23,7 +23,6 @@ const REFRESH_TOKEN_MUTATION = gql`
       ... on Exception {
         message
       }
-
     }
   }
 `;
@@ -35,7 +34,7 @@ function App(props) {
     refreshed: false
   });
 
-  const [intervalID, setIntervalID] = useState()
+  const [intervalID, setIntervalID] = useState();
 
   const [refreshToken] = useMutation(REFRESH_TOKEN_MUTATION, {
     onCompleted: ({ refreshToken }) => {
@@ -51,11 +50,10 @@ function App(props) {
   //   return interval
   // }
 
-
   if (!token) {
-    console.log("********* there is NO token!!!! ***********")
+    console.log("********* there is NO token!!!! ***********");
   } else {
-    console.log("+++++++++ there IS token!!!! +++++++++")
+    console.log("+++++++++ there IS token!!!! +++++++++");
     // const intr = setInterval(function() {
     //   refreshToken()
     // }, 120000)
@@ -78,9 +76,11 @@ function App(props) {
         setSidebarIsOpen={setSidebarIsOpen}
         intervalID={intervalID}
       />
-      <Route exact path="/">
-        <MainPage isMobile={isMobile} />
-      </Route>
+      {!token && (
+        <Route exact path="/">
+          <MainPage isMobile={isMobile} />
+        </Route>
+      )}
       {!token && (
         <Route exact path="/register">
           <Register setToken={setToken} setIntervalID={setIntervalID} />

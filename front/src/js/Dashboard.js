@@ -30,9 +30,6 @@ const GET_USER_POSTS = gql`
         content
         created_by {
           name
-          posts {
-            title
-          }
         }
       }
     }
@@ -100,6 +97,7 @@ const UPDATE_POST_MUTATION = gql`
 `;
 
 const AddPostModal = ({ addingPost, setAddingPost }) => {
+  
   const [state, setState] = useState({
     // addingPost: false,
     newTitle: "",
@@ -108,6 +106,7 @@ const AddPostModal = ({ addingPost, setAddingPost }) => {
 
   const [createPost] = useMutation(CREATE_POST_MUTATION, {
     update(cache, { data: { createPost } }) {
+
       const data = cache.readQuery({
         query: GET_USER_POSTS
       });
@@ -129,6 +128,7 @@ const AddPostModal = ({ addingPost, setAddingPost }) => {
           ...localData
         }
       });
+
     },
     onCompleted({ createPost }) {
       console.log("created post succesfully :D", createPost);
@@ -440,6 +440,10 @@ class Dashboard extends React.Component {
 
     this.rerenderComponent = this.rerenderComponent.bind(this);
     this.setPosts = this.setPosts.bind(this);
+  }
+
+  componentDidMount() {
+    console.log("component DASHBOARD did mount")
   }
 
   setPosts(newPosts) {
