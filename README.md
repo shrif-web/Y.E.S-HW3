@@ -6,5 +6,5 @@
 	bahar khodabakhshian		97105906
 
 ## API Doc
-click ![API Doc](https://documenter.getpostman.com/view/14134916/TVzREcU4) to see the full API Doc
-you can also use the postman collection provided ![here](./"API doc")
+click [API Doc](https://documenter.getpostman.com/view/14134916/TVzREcU4) to see the full API Doc
+you can also use the postman collection provided [here](./API\ doc)
