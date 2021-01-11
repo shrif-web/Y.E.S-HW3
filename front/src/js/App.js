@@ -1,7 +1,6 @@
 import logo from "../logo.svg";
 import "../styles/App.css";
 import React, { useState } from "react";
-import { Button, Input } from "semantic-ui-react";
 import "semantic-ui-css/semantic.min.css";
 import MainPage from "./MainPage.js";
 import Login from "./Login.js";
@@ -76,6 +75,9 @@ function App(props) {
         setSidebarIsOpen={setSidebarIsOpen}
         intervalID={intervalID}
       />
+      {token && <Redirect exact from="/login" to="/dashboard" />}
+      {token && <Redirect exact from="/register" to="/dashboard" />}
+      {!token && <Redirect exact from="/dashboard" to="/" />}
       {!token && (
         <Route exact path="/">
           <MainPage isMobile={isMobile} />
@@ -101,6 +103,7 @@ function App(props) {
           />
         </Route>
       )}
+      <Redirect exact from="/*" to="/" />
     </div>
   );
 }
