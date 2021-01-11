@@ -56,7 +56,7 @@ type ComplexityRoot struct {
 		CreatePost   func(childComplexity int, input model.TargetPost) int
 		CreateUser   func(childComplexity int, target model.TargetUser) int
 		DeletePost   func(childComplexity int, targetID string, username *string) int
-		DeleteUser   func(childComplexity int, name string) int
+		DeleteUser   func(childComplexity int, name *string) int
 		Demote       func(childComplexity int, target string) int
 		Login        func(childComplexity int, input model.Login) int
 		Promote      func(childComplexity int, target string) int
@@ -120,7 +120,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateUser(ctx context.Context, target model.TargetUser) (model.CreateUserPayload, error)
-	DeleteUser(ctx context.Context, name string) (model.DeleteUserPayload, error)
+	DeleteUser(ctx context.Context, name *string) (model.DeleteUserPayload, error)
 	UpdateUser(ctx context.Context, toBe model.ToBeUser) (model.UpdateUserPayload, error)
 	Promote(ctx context.Context, target string) (model.AdminPayload, error)
 	Demote(ctx context.Context, target string) (model.AdminPayload, error)
@@ -213,7 +213,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteUser(childComplexity, args["name"].(string)), true
+		return e.complexity.Mutation.DeleteUser(childComplexity, args["name"].(*string)), true
 
 	case "Mutation.demote":
 		if e.complexity.Mutation.Demote == nil {
@@ -623,7 +623,7 @@ union DeletePostPayload = Post | UserNotAllowedException | NoUserFoundException 
 union UpdatePostPayload = Post | UserNotAllowedException | PostEmptyException   | NoUserFoundException | PostNotFoundException | InternalServerException
 type Mutation {
     createUser(target: TargetUser!): CreateUserPayload!
-    deleteUser(name: String!): DeleteUserPayload!
+    deleteUser(name: String): DeleteUserPayload!
 
     updateUser(toBe: ToBeUser!): UpdateUserPayload!
     promote(target:String!):AdminPayload!
@@ -702,10 +702,10 @@ func (ec *executionContext) field_Mutation_deletePost_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_deleteUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
+	var arg0 *string
 	if tmp, ok := rawArgs["name"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1114,7 +1114,7 @@ func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteUser(rctx, args["name"].(string))
+		return ec.resolvers.Mutation().DeleteUser(rctx, args["name"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

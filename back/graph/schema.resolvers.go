@@ -26,8 +26,12 @@ func (r *mutationResolver) CreateUser(ctx context.Context, target model.TargetUs
 	return reformatUser(newUser), err
 }
 
-func (r *mutationResolver) DeleteUser(ctx context.Context, name string) (model.DeleteUserPayload, error) {
-	err := userController.GetUserController().Delete(extractUsernameFromContext(ctx), name)
+func (r *mutationResolver) DeleteUser(ctx context.Context, name *string) (model.DeleteUserPayload, error) {
+	if name==nil{
+		temp:=extractUsernameFromContext(ctx)
+		name=&temp
+	}
+	err := userController.GetUserController().Delete(extractUsernameFromContext(ctx), *name)
 	if err != nil {
 		switch err.(type) {
 		case model.UserNotAllowedException:
