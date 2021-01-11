@@ -7,4 +7,4 @@
 
 ## API Doc
 click [API Doc](https://documenter.getpostman.com/view/14134916/TVzREcU4) to see the full API Doc
-you can also use the postman collection provided [here](./API\ doc)
+you can also use the postman collection provided [here](./API)
