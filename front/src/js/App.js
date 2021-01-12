@@ -1,4 +1,3 @@
-import "../styles/App.css";
 import React, { useState } from "react";
 import "semantic-ui-css/semantic.min.css";
 import MainPage from "./MainPage.js";
