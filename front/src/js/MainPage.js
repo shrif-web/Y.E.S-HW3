@@ -1,5 +1,4 @@
 import React from "react";
-import "../styles/MainPage.css";
 import PostGrid from "./PostGrid";
 
 class MainPage extends React.Component {
