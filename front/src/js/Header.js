@@ -21,9 +21,14 @@ const LoggedInHeader = props => {
         onClick={props.handleItemClick}
       />
       <Menu.Menu position="right">
-        <Menu.Item
+      <Menu.Item
           name="Dashboard"
           active={props.state.activeItem === "Dashboard"}
+          onClick={props.handleItemClick}
+        />
+        <Menu.Item
+          name="Homepage"
+          active={props.state.activeItem === "Homepage"}
           onClick={props.handleItemClick}
         />
       </Menu.Menu>
@@ -87,8 +92,11 @@ const Header = props => {
         window.location.reload(false);
         break;
       case "Dashboard":
-        console.log("Dashboard");
         history.push("/dashboard");
+        break
+      case "Homepage":
+        history.push("/")
+        break
     }
   }
 

@@ -31,11 +31,11 @@ function App(props) {
         {token && <Redirect exact from="/login" to="/dashboard" />}
         {token && <Redirect exact from="/register" to="/dashboard" />}
         {!token && <Redirect exact from="/dashboard" to="/" />}
-        {!token && (
-          <Route exact path="/">
-            <MainPage isMobile={isMobile} />
-          </Route>
-        )}
+        {/* {!token && ( */}
+        <Route exact path="/">
+          <MainPage isMobile={isMobile} />
+        </Route>
+        {/* )} */}
         {!token && (
           <Route exact path="/register">
             <Register setToken={setToken} />
