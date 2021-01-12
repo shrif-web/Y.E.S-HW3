@@ -3,7 +3,7 @@ import "semantic-ui-css/semantic.min.css";
 import MainPage from "./MainPage.js";
 import Login from "./Login.js";
 import Register from "./Register.js";
-import { Redirect, Route } from "react-router-dom";
+import { Redirect, Route, Switch } from "react-router-dom";
 import Header from "./Header.js";
 import useToken from "./useToken";
 import Dashboard from "./Dashboard.js";
@@ -27,34 +27,35 @@ function App(props) {
         sidebarIsOpen={sidebarIsOpen}
         setSidebarIsOpen={setSidebarIsOpen}
       />
-      {token && <Redirect exact from="/login" to="/dashboard" />}
-      {token && <Redirect exact from="/register" to="/dashboard" />}
-      {!token && <Redirect exact from="/dashboard" to="/" />}
-      {!token && (
-        <Route exact path="/">
-          <MainPage isMobile={isMobile} />
-        </Route>
-      )}
-      {!token && (
-        <Route exact path="/register">
-          <Register setToken={setToken}/>
-        </Route>
-      )}
-      {!token && (
-        <Route exact path="/login">
-          <Login setToken={setToken} />
-        </Route>
-      )}
-      {token && (
-        <Route exact path="/dashboard">
-          <Dashboard
-            setToken={setToken}
-            sidebarIsOpen={sidebarIsOpen}
-            isMobile={isMobile}
-          />
-        </Route>
-      )}
-      <Redirect exact from="/*" to="/" />
+      <Switch>
+        {token && <Redirect exact from="/login" to="/dashboard" />}
+        {token && <Redirect exact from="/register" to="/dashboard" />}
+        {!token && <Redirect exact from="/dashboard" to="/" />}
+        {!token && (
+          <Route exact path="/">
+            <MainPage isMobile={isMobile} />
+          </Route>
+        )}
+        {!token && (
+          <Route exact path="/register">
+            <Register setToken={setToken} />
+          </Route>
+        )}
+        {!token && (
+          <Route exact path="/login">
+            <Login setToken={setToken} />
+          </Route>
+        )}
+        {token && (
+          <Route exact path="/dashboard">
+            <Dashboard
+              setToken={setToken}
+              sidebarIsOpen={sidebarIsOpen}
+              isMobile={isMobile}
+            />
+          </Route>
+        )}
+      </Switch>
     </div>
   );
 }
